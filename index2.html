@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment Box (PHP)</title>
+    <link rel="stylesheet" href="style2.css">
+</head>
+<body>
+
+  <div class="ui-container">
+        <!-- Level 1: Starts visible -->
+        <div id="level-1">
+            <h1>Level 1</h1>
+            <p>Click the button 17 times to advance.</p>
+            <button id="main-button">Click Me</button>
+            <p id="click-counter">Clicks: 0</p>
+        </div>
+
+        <!-- Level 2: Starts hidden -->
+        <div id="level-2" style="display: none;">
+            <h1>Level 2</h1>
+            <p>Congratulations, you've advanced!</p>
+            <div class="button-group">
+                <button>Button A</button>
+                <button>Button B</button>
+                <button>Button C</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container">
+        <h1>Leave a Comment</h1>
+        <form id="comment-form">
+            <textarea id="comment-input" placeholder="Write your comment here..." required></textarea>
+            <button type="submit">Submit</button>
+        </form>
+        <div class="comments-container">
+            <h2>Comments</h2>
+            <div id="comments-list">
+                <!-- Comments will be loaded here -->
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
