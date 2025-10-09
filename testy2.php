@@ -84,5 +84,30 @@ if (isset($_GET['logout'])) {
     <h2>Welcome, <?php echo htmlspecialchars($_SESSION['email']); ?>!</h2>
     <a href="?logout=1">Logout</a>
 <?php endif; ?>
+
+<?php    
+$baseDir = "/var/www/html/pusers2";
+
+echo '<div id="user-profiles">';
+if (is_dir($baseDir)) {
+    $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
+    foreach ($dirs as $dir) {
+        $profilePath = $dir . "/profile.json";
+        if (file_exists($profilePath)) {
+            $profileData = json_decode(file_get_contents($profilePath), true);
+            if ($profileData) {
+                echo '<div class="user-profile" style="border:1px solid #ccc; margin:10px; padding:10px;">';
+                foreach ($profileData as $key => $value) {
+                    echo "<strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br>";
+                }
+                echo '</div>';
+            }
+        }
+    }
+} else {
+    echo "User profiles directory not found.";
+}
+echo '</div>';
+    ?>
 </body>
 </html>
