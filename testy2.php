@@ -21,7 +21,8 @@ function create_user_profile($first, $last, $email) {
         "first" => $first,
         "last" => $last,
         "email" => $email,
-        "created_at" => date("Y-m-d H:i:s")
+        "created_at" => date("Y-m-d H:i:s"),
+        "work" => []
     ];
     file_put_contents($user_dir . "/profile.json", json_encode($profile, JSON_PRETTY_PRINT));
     return $user_dir;
@@ -38,6 +39,26 @@ function update_user_profile_extra($first, $last, $bio, $dob, $country) {
         $profile['bio'] = $bio;
         $profile['dob'] = $dob;
         $profile['country'] = $country;
+        file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
+    }
+}
+
+// Helper: add work to profile.json
+function add_user_work($first, $last, $desc, $date, $image_path) {
+    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
+    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
+    $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
+    $profile_path = $user_dir . "/profile.json";
+    if (file_exists($profile_path)) {
+        $profile = json_decode(file_get_contents($profile_path), true);
+        if (!isset($profile['work']) || !is_array($profile['work'])) {
+            $profile['work'] = [];
+        }
+        $profile['work'][] = [
+            "desc" => $desc,
+            "date" => $date,
+            "image" => $image_path
+        ];
         file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
     }
 }
@@ -126,6 +147,36 @@ if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
     update_user_profile_extra($_SESSION['first'], $_SESSION['last'], $bio, $dob, $country);
     $profile_extra_msg = "Profile info updated!";
 }
+
+// Handle work upload
+$work_upload_msg = "";
+if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
+    $desc = isset($_POST['work_desc']) ? $_POST['work_desc'] : "";
+    $date = isset($_POST['work_date']) ? $_POST['work_date'] : "";
+    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+    $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
+    $image_path = "";
+    if (isset($_FILES['work_image']) && $_FILES['work_image']['error'] == 0) {
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        $file_type = mime_content_type($_FILES['work_image']['tmp_name']);
+        if (!in_array($file_type, $allowed_types)) {
+            $work_upload_msg = "Only JPG, PNG, and GIF files are allowed for work image.";
+        } else {
+            $ext = pathinfo($_FILES['work_image']['name'], PATHINFO_EXTENSION);
+            $target_file = $user_dir . "/work_image_" . time() . "." . $ext;
+            if (move_uploaded_file($_FILES['work_image']['tmp_name'], $target_file)) {
+                $image_path = $target_file;
+                add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $image_path);
+                $work_upload_msg = "Work uploaded successfully!";
+            } else {
+                $work_upload_msg = "Failed to upload work image.";
+            }
+        }
+    } else {
+        $work_upload_msg = "No work image uploaded or upload error.";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -211,6 +262,16 @@ if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
         Country: <input type="text" name="country"><br>
         <button type="submit" name="update_profile_extra">Save Info</button>
     </form>
+
+    <!-- Work upload form -->
+    <h3>Upload Work</h3>
+    <?php if (!empty($work_upload_msg)) { echo '<p>' . htmlspecialchars($work_upload_msg) . '</p>'; } ?>
+    <form method="POST" enctype="multipart/form-data">
+        Description: <textarea name="work_desc" rows="2" cols="40" required></textarea><br>
+        Date of Work: <input type="date" name="work_date" required><br>
+        Work Image: <input type="file" name="work_image" accept="image/*" required><br>
+        <button type="submit" name="upload_work">Upload Work</button>
+    </form>
 <?php endif; ?>
 
 <?php    
@@ -240,7 +301,26 @@ foreach ($userProfiles as $profileData) {
     $profile_username = $safe_first . "_" . $safe_last;
     echo '<div class="user-profile" data-username="' . htmlspecialchars($profile_username) . '" style="border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer;">';
     foreach ($profileData as $key => $value) {
-        echo "<span class='profile-data'><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br></span>";
+        if ($key === 'work' && is_array($value)) {
+            echo "<strong>Work:</strong><ul>";
+            foreach ($value as $work_item) {
+                echo "<li>";
+                if (!empty($work_item['image'])) {
+                    $web_path = str_replace("/var/www/html", "", $work_item['image']);
+                    echo '<img src="' . htmlspecialchars($web_path) . '" alt="Work Image" style="max-width:100px; max-height:100px;"><br>';
+                }
+                if (!empty($work_item['desc'])) {
+                    echo "<strong>Description:</strong> " . htmlspecialchars($work_item['desc']) . "<br>";
+                }
+                if (!empty($work_item['date'])) {
+                    echo "<strong>Date:</strong> " . htmlspecialchars($work_item['date']) . "<br>";
+                }
+                echo "</li>";
+            }
+            echo "</ul>";
+        } else {
+            echo "<span class='profile-data'><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br></span>";
+        }
     }
     echo '</div>';
 }
