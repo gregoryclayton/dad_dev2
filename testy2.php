@@ -107,19 +107,26 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
 <head>
     <title>Register/Login Example</title>
     <script>
-    // Add event delegation for user-profile click
     document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('user-profiles').addEventListener('click', function(e) {
             var target = e.target;
-            // Click on any data display inside user-profile
             while (target && !target.classList.contains('user-profile')) {
-                // If a profile-data span, traverse up
                 target = target.parentElement;
             }
             if (target && target.classList.contains('user-profile')) {
                 var profileName = target.getAttribute('data-username');
                 if (profileName) {
-                    window.location.href = "profile/" + encodeURIComponent(profileName) + ".php";
+                    // AJAX request to create the profile page
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "create_profile_page.php", true);
+                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            // After creation, redirect
+                            window.location.href = "profile/" + encodeURIComponent(profileName) + ".php";
+                        }
+                    };
+                    xhr.send("username=" + encodeURIComponent(profileName));
                 }
             }
         });
