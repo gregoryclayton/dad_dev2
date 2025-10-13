@@ -29,6 +29,42 @@ $php .= "?>\n";
 $php .= "<!DOCTYPE html>\n<html><head><title>User Profile: " . htmlspecialchars($username) . "</title></head><body>\n";
 $php .= "<h1>User Profile: " . htmlspecialchars($profile['first'] . " " . $profile['last']) . "</h1>\n";
 $php .= "<ul>\n";
+$php .= "<li><strong>First Name:</strong> " . htmlspecialchars($profile['first']) . "</li>\n";
+$php .= "<li><strong>Last Name:</strong> " . htmlspecialchars($profile['last']) . "</li>\n";
+$php .= "<li><strong>Email:</strong> " . htmlspecialchars($profile['email']) . "</li>\n";
+$php .= "<li><strong>Created At:</strong> " . htmlspecialchars($profile['created_at']) . "</li>\n";
+// Optionally display bio/dob/country if present
+if (!empty($profile['bio'])) {
+    $php .= "<li><strong>Bio:</strong> " . nl2br(htmlspecialchars($profile['bio'])) . "</li>\n";
+}
+if (!empty($profile['dob'])) {
+    $php .= "<li><strong>Date of Birth:</strong> " . htmlspecialchars($profile['dob']) . "</li>\n";
+}
+if (!empty($profile['country'])) {
+    $php .= "<li><strong>Country:</strong> " . htmlspecialchars($profile['country']) . "</li>\n";
+}
+$php .= "</ul>\n";
+$php .= "</body></html>\n";
+
+// Ensure the profile directory exists
+$profile_dir = __DIR__ . "/profile";
+if (!is_dir($profile_dir)) {
+    mkdir($profile_dir, 0755, true);
+}
+// Write the file
+file_put_contents($profile_php_path, $php);
+
+echo "Profile page created";
+
+$profile = json_decode(file_get_contents($profile_json_path), true);
+
+// Create the PHP file
+$php = "<?php\n";
+$php .= "/* Dynamically generated profile page */\n";
+$php .= "?>\n";
+$php .= "<!DOCTYPE html>\n<html><head><title>User Profile: " . htmlspecialchars($username) . "</title></head><body>\n";
+$php .= "<h1>User Profile: " . htmlspecialchars($profile['first'] . " " . $profile['last']) . "</h1>\n";
+$php .= "<ul>\n";
 foreach ($profile as $key => $value) {
     $php .= "<li><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "</li>\n";
 }
