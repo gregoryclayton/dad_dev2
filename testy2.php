@@ -27,6 +27,21 @@ function create_user_profile($first, $last, $email) {
     return $user_dir;
 }
 
+// Helper: update profile.json with bio, dob, country
+function update_user_profile_extra($first, $last, $bio, $dob, $country) {
+    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
+    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
+    $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
+    $profile_path = $user_dir . "/profile.json";
+    if (file_exists($profile_path)) {
+        $profile = json_decode(file_get_contents($profile_path), true);
+        $profile['bio'] = $bio;
+        $profile['dob'] = $dob;
+        $profile['country'] = $country;
+        file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
+    }
+}
+
 // Handle registration
 if (isset($_POST['register'])) {
     $first = $conn->real_escape_string($_POST['first']);
@@ -100,6 +115,16 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
     } else {
         $image_upload_msg = "No file uploaded or upload error.";
     }
+}
+
+// Handle bio/dob/country form submission
+$profile_extra_msg = "";
+if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
+    $bio = isset($_POST['bio']) ? $_POST['bio'] : "";
+    $dob = isset($_POST['dob']) ? $_POST['dob'] : "";
+    $country = isset($_POST['country']) ? $_POST['country'] : "";
+    update_user_profile_extra($_SESSION['first'], $_SESSION['last'], $bio, $dob, $country);
+    $profile_extra_msg = "Profile info updated!";
 }
 ?>
 
@@ -177,6 +202,15 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
         }
     }
     ?>
+    <!-- Bio/DOB/Country form -->
+    <h3>Update Bio Information</h3>
+    <?php if (!empty($profile_extra_msg)) { echo '<p>' . htmlspecialchars($profile_extra_msg) . '</p>'; } ?>
+    <form method="POST">
+        Bio: <textarea name="bio" rows="3" cols="40"></textarea><br>
+        Date of Birth: <input type="date" name="dob"><br>
+        Country: <input type="text" name="country"><br>
+        <button type="submit" name="update_profile_extra">Save Info</button>
+    </form>
 <?php endif; ?>
 
 <?php    
