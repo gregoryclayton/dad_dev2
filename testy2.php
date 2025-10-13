@@ -10,29 +10,37 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
 // Helper: create user folder and profile.json
-function create_user_profile($email) {
-    $user_dir = "/var/www/html/pusers/" . preg_replace('/[^a-zA-Z0-9_\-\.@]/', '_', $email);
+function create_user_profile($first, $last, $email) {
+    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
+    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
+    $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
     if (!is_dir($user_dir)) {
         mkdir($user_dir, 0755, true);
     }
     $profile = [
+        "first" => $first,
+        "last" => $last,
         "email" => $email,
         "created_at" => date("Y-m-d H:i:s")
     ];
     file_put_contents($user_dir . "/profile.json", json_encode($profile, JSON_PRETTY_PRINT));
+    return $user_dir;
 }
 
 // Handle registration
 if (isset($_POST['register'])) {
+    $first = $conn->real_escape_string($_POST['first']);
+    $last = $conn->real_escape_string($_POST['last']);
     $email = $conn->real_escape_string($_POST['email']);
     $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
+
     // Check if email already exists
     $check = $conn->query("SELECT * FROM users WHERE email='$email'");
     if ($check->num_rows > 0) {
         echo "Email already registered!";
     } else {
-        $conn->query("INSERT INTO users (email,password) VALUES ('$email','$pass')");
-        create_user_profile($email);
+        $conn->query("INSERT INTO users (first,last,email,password) VALUES ('$first','$last','$email','$pass')");
+        $user_dir = create_user_profile($first, $last, $email);
         echo "Registration successful! Please log in.";
     }
 }
@@ -46,6 +54,8 @@ if (isset($_POST['login'])) {
         $row = $result->fetch_assoc();
         if (password_verify($pass, $row['password'])) {
             $_SESSION['email'] = $email;
+            $_SESSION['first'] = $row['first'];
+            $_SESSION['last'] = $row['last'];
             echo "Logged in!";
         } else {
             echo "Incorrect password!";
@@ -66,7 +76,9 @@ if (isset($_GET['logout'])) {
 $image_upload_msg = "";
 if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-        $user_dir = "/var/www/html/pusers/" . preg_replace('/[^a-zA-Z0-9_\-\.@]/', '_', $_SESSION['email']);
+        $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+        $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+        $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
         if (!is_dir($user_dir)) {
             mkdir($user_dir, 0755, true);
         }
@@ -92,11 +104,34 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
 
 <!DOCTYPE html>
 <html>
-<head><title>Register/Login Example</title></head>
+<head>
+    <title>Register/Login Example</title>
+    <script>
+    // Add event delegation for user-profile click
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('user-profiles').addEventListener('click', function(e) {
+            var target = e.target;
+            // Click on any data display inside user-profile
+            while (target && !target.classList.contains('user-profile')) {
+                // If a profile-data span, traverse up
+                target = target.parentElement;
+            }
+            if (target && target.classList.contains('user-profile')) {
+                var profileName = target.getAttribute('data-username');
+                if (profileName) {
+                    window.location.href = "profile/" + encodeURIComponent(profileName) + ".php";
+                }
+            }
+        });
+    });
+    </script>
+</head>
 <body>
 <?php if (!isset($_SESSION['email'])): ?>
 <h2>Register</h2>
 <form method="POST">
+    First Name: <input type="text" name="first" required><br>
+    Last Name: <input type="text" name="last" required><br>
     Email: <input type="email" name="email" required><br>
     Password: <input type="password" name="password" required><br>
     <button name="register">Register</button>
@@ -108,7 +143,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
     <button name="login">Login</button>
 </form>
 <?php else: ?>
-    <h2>Welcome, <?php echo htmlspecialchars($_SESSION['email']); ?>!</h2>
+    <h2>Welcome, <?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?>!</h2>
     <a href="?logout=1">Logout</a>
     
     <!-- Image upload form -->
@@ -120,7 +155,9 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
     </form>
     <?php
     // Display uploaded image if exists
-    $user_dir = "/var/www/html/pusers/" . preg_replace('/[^a-zA-Z0-9_\-\.@]/', '_', $_SESSION['email']);
+    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+    $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
     if (is_dir($user_dir)) {
         // Look for most recent image
         $images = glob($user_dir . "/profile_image_*.*");
@@ -145,9 +182,13 @@ if (is_dir($baseDir)) {
         if (file_exists($profilePath)) {
             $profileData = json_decode(file_get_contents($profilePath), true);
             if ($profileData) {
-                echo '<div class="user-profile" style="border:1px solid #ccc; margin:10px; padding:10px;">';
+                // Compose the username for linking (first_last)
+                $safe_first = isset($profileData['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['first']) : '';
+                $safe_last = isset($profileData['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['last']) : '';
+                $profile_username = $safe_first . "_" . $safe_last;
+                echo '<div class="user-profile" data-username="' . htmlspecialchars($profile_username) . '" style="border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer;">';
                 foreach ($profileData as $key => $value) {
-                    echo "<strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br>";
+                    echo "<span class='profile-data'><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br></span>";
                 }
                 echo '</div>';
             }
