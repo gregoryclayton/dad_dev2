@@ -61,6 +61,33 @@ if (isset($_GET['logout'])) {
     header("Location: register_login.php");
     exit();
 }
+
+// Handle image upload (if logged in)
+$image_upload_msg = "";
+if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        $user_dir = "/var/www/html/pusers/" . preg_replace('/[^a-zA-Z0-9_\-\.@]/', '_', $_SESSION['email']);
+        if (!is_dir($user_dir)) {
+            mkdir($user_dir, 0755, true);
+        }
+
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        $file_type = mime_content_type($_FILES['image']['tmp_name']);
+        if (!in_array($file_type, $allowed_types)) {
+            $image_upload_msg = "Only JPG, PNG, and GIF files are allowed.";
+        } else {
+            $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+            $target_file = $user_dir . "/profile_image_" . time() . "." . $ext;
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+                $image_upload_msg = "Image uploaded successfully!";
+            } else {
+                $image_upload_msg = "Failed to upload image.";
+            }
+        }
+    } else {
+        $image_upload_msg = "No file uploaded or upload error.";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -83,6 +110,28 @@ if (isset($_GET['logout'])) {
 <?php else: ?>
     <h2>Welcome, <?php echo htmlspecialchars($_SESSION['email']); ?>!</h2>
     <a href="?logout=1">Logout</a>
+    
+    <!-- Image upload form -->
+    <h3>Upload Profile Image</h3>
+    <?php if (!empty($image_upload_msg)) { echo '<p>' . htmlspecialchars($image_upload_msg) . '</p>'; } ?>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit" name="upload_image">Upload Image</button>
+    </form>
+    <?php
+    // Display uploaded image if exists
+    $user_dir = "/var/www/html/pusers/" . preg_replace('/[^a-zA-Z0-9_\-\.@]/', '_', $_SESSION['email']);
+    if (is_dir($user_dir)) {
+        // Look for most recent image
+        $images = glob($user_dir . "/profile_image_*.*");
+        if ($images && count($images) > 0) {
+            $latest_image = $images[array_search(max(array_map('filemtime', $images)), array_map('filemtime', $images))];
+            // For web display, convert server path to web-accessible path if needed
+            $web_path = str_replace("/var/www/html", "", $latest_image);
+            echo '<div><img src="' . htmlspecialchars($web_path) . '" alt="Profile Image" style="max-width:200px; max-height:200px;"></div>';
+        }
+    }
+    ?>
 <?php endif; ?>
 
 <?php    
