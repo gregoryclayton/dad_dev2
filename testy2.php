@@ -39,6 +39,7 @@ if (isset($_POST['register'])) {
     if ($check->num_rows > 0) {
         echo "Email already registered!";
     } else {
+        // Make sure your users table has first and last columns!
         $conn->query("INSERT INTO users (first,last,email,password) VALUES ('$first','$last','$email','$pass')");
         $user_dir = create_user_profile($first, $last, $email);
         echo "Registration successful! Please log in.";
@@ -189,7 +190,6 @@ if (is_dir($baseDir)) {
         if (file_exists($profilePath)) {
             $profileData = json_decode(file_get_contents($profilePath), true);
             if ($profileData) {
-                // Compose the username for linking (first_last)
                 $safe_first = isset($profileData['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['first']) : '';
                 $safe_last = isset($profileData['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['last']) : '';
                 $profile_username = $safe_first . "_" . $safe_last;
@@ -205,6 +205,6 @@ if (is_dir($baseDir)) {
     echo "User profiles directory not found.";
 }
 echo '</div>';
-    ?>
+?>
 </body>
 </html>
