@@ -214,9 +214,10 @@ if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
 <?php endif; ?>
 
 <?php    
-$baseDir = "/var/www/html/pusers2";
+$baseDir = "/var/www/html/pusers";
 
-echo '<div id="user-profiles">';
+// Collect all profile data into array
+$userProfiles = [];
 if (is_dir($baseDir)) {
     $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
     foreach ($dirs as $dir) {
@@ -224,19 +225,24 @@ if (is_dir($baseDir)) {
         if (file_exists($profilePath)) {
             $profileData = json_decode(file_get_contents($profilePath), true);
             if ($profileData) {
-                $safe_first = isset($profileData['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['first']) : '';
-                $safe_last = isset($profileData['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['last']) : '';
-                $profile_username = $safe_first . "_" . $safe_last;
-                echo '<div class="user-profile" data-username="' . htmlspecialchars($profile_username) . '" style="border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer;">';
-                foreach ($profileData as $key => $value) {
-                    echo "<span class='profile-data'><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br></span>";
-                }
-                echo '</div>';
+                $userProfiles[] = $profileData;
             }
         }
     }
 } else {
     echo "User profiles directory not found.";
+}
+
+echo '<div id="user-profiles">';
+foreach ($userProfiles as $profileData) {
+    $safe_first = isset($profileData['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['first']) : '';
+    $safe_last = isset($profileData['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['last']) : '';
+    $profile_username = $safe_first . "_" . $safe_last;
+    echo '<div class="user-profile" data-username="' . htmlspecialchars($profile_username) . '" style="border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer;">';
+    foreach ($profileData as $key => $value) {
+        echo "<span class='profile-data'><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br></span>";
+    }
+    echo '</div>';
 }
 echo '</div>';
 ?>
