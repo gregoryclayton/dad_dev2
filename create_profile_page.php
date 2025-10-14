@@ -1,7 +1,7 @@
 <?php
 // This script receives POST "username" (first_last)
 // Checks pusers/first_last/profile.json
-// If exists, generates profile/first_last.php with formatted user info
+// If exists, generates pusers/first_last.php with formatted user info
 
 if (!isset($_POST['username'])) {
     http_response_code(400);
@@ -22,12 +22,59 @@ if (!file_exists($profile_json_path)) {
 
 $profile = json_decode(file_get_contents($profile_json_path), true);
 
+// Find profile image (latest profile_image_*)
+$profile_image_html = "";
+$user_dir = "/var/www/html/pusers/" . $username;
+$profile_images = [];
+if (is_dir($user_dir)) {
+    $imgs = glob($user_dir . "/profile_image_*.*");
+    if ($imgs && count($imgs) > 0) {
+        usort($imgs, function($a, $b) { return filemtime($b) - filemtime($a); });
+        $latest_img = $imgs[0];
+        $web_path = str_replace("/var/www/html", "", $latest_img);
+        $profile_image_html = '<div class="profile-img-div"><img src="' . htmlspecialchars($web_path) . '" alt="Profile Image" style="max-width:200px; max-height:200px;"></div>';
+    }
+}
+
+// Build work HTML if work exists
+$work_html = "";
+if (!empty($profile['work']) && is_array($profile['work'])) {
+    $work_html .= '<div class="work-div"><h2>Work</h2><ul>';
+    foreach ($profile['work'] as $work_item) {
+        $work_html .= "<li>";
+        if (!empty($work_item['image'])) {
+            $work_web_path = str_replace("/var/www/html", "", $work_item['image']);
+            $work_html .= '<img src="' . htmlspecialchars($work_web_path) . '" alt="Work Image" style="max-width:100px; max-height:100px;"><br>';
+        }
+        if (!empty($work_item['desc'])) {
+            $work_html .= "<strong>Description:</strong> " . htmlspecialchars($work_item['desc']) . "<br>";
+        }
+        if (!empty($work_item['date'])) {
+            $work_html .= "<strong>Date:</strong> " . htmlspecialchars($work_item['date']) . "<br>";
+        }
+        $work_html .= "</li>";
+    }
+    $work_html .= '</ul></div>';
+}
+
 // Create the PHP file
 $php = "<?php\n";
 $php .= "/* Dynamically generated profile page */\n";
 $php .= "?>\n";
-$php .= "<!DOCTYPE html>\n<html><head><title>User Profile: " . htmlspecialchars($username) . "</title></head><body>\n";
+$php .= "<!DOCTYPE html>\n<html><head><title>User Profile: " . htmlspecialchars($username) . "</title>
+<style>
+.profile-img-div { margin: 10px 0; }
+.work-div { margin: 20px 0; }
+.work-div ul { list-style: none; padding: 0; }
+.work-div li { margin-bottom: 10px; }
+</style>
+</head><body>\n";
 $php .= "<h1>User Profile: " . htmlspecialchars($profile['first'] . " " . $profile['last']) . "</h1>\n";
+
+// Display profile image if exists
+$php .= $profile_image_html;
+
+// Display main user info
 $php .= "<ul>\n";
 $php .= "<li><strong>First Name:</strong> " . htmlspecialchars($profile['first']) . "</li>\n";
 $php .= "<li><strong>Last Name:</strong> " . htmlspecialchars($profile['last']) . "</li>\n";
@@ -45,14 +92,11 @@ if (!empty($profile['country'])) {
 }
 $php .= "</ul>\n";
 
+// Display work section if exists
+$php .= $work_html;
 
-
-
-
-<?php    
+// Display user-profiles array at the bottom (as before)
 $baseDir = "/var/www/html/pusers";
-
-// Collect all profile data into array
 $userProfiles = [];
 if (is_dir($baseDir)) {
     $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
@@ -66,43 +110,40 @@ if (is_dir($baseDir)) {
         }
     }
 } else {
-    echo "User profiles directory not found.";
+    $php .= "User profiles directory not found.";
 }
 
-echo '<div id="user-profiles">';
+$php .= '<div id="user-profiles">';
 foreach ($userProfiles as $profileData) {
     $safe_first = isset($profileData['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['first']) : '';
     $safe_last = isset($profileData['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['last']) : '';
     $profile_username = $safe_first . "_" . $safe_last;
-    echo '<div class="user-profile" data-username="' . htmlspecialchars($profile_username) . '" style="border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer;">';
+    $php .= '<div class="user-profile" data-username="' . htmlspecialchars($profile_username) . '" style="border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer;">';
     foreach ($profileData as $key => $value) {
         if ($key === 'work' && is_array($value)) {
-            echo "<strong>Work:</strong><ul>";
+            $php .= "<strong>Work:</strong><ul>";
             foreach ($value as $work_item) {
-                echo "<li>";
+                $php .= "<li>";
                 if (!empty($work_item['image'])) {
                     $web_path = str_replace("/var/www/html", "", $work_item['image']);
-                    echo '<img src="' . htmlspecialchars($web_path) . '" alt="Work Image" style="max-width:100px; max-height:100px;"><br>';
+                    $php .= '<img src="' . htmlspecialchars($web_path) . '" alt="Work Image" style="max-width:100px; max-height:100px;"><br>';
                 }
                 if (!empty($work_item['desc'])) {
-                    echo "<strong>Description:</strong> " . htmlspecialchars($work_item['desc']) . "<br>";
+                    $php .= "<strong>Description:</strong> " . htmlspecialchars($work_item['desc']) . "<br>";
                 }
                 if (!empty($work_item['date'])) {
-                    echo "<strong>Date:</strong> " . htmlspecialchars($work_item['date']) . "<br>";
+                    $php .= "<strong>Date:</strong> " . htmlspecialchars($work_item['date']) . "<br>";
                 }
-                echo "</li>";
+                $php .= "</li>";
             }
-            echo "</ul>";
+            $php .= "</ul>";
         } else {
-            echo "<span class='profile-data'><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br></span>";
+            $php .= "<span class='profile-data'><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br></span>";
         }
     }
-    echo '</div>';
+    $php .= '</div>';
 }
-echo '</div>';
-?>
-
-
+$php .= '</div>';
 
 $php .= "</body></html>\n";
 
@@ -115,5 +156,3 @@ if (!is_dir($profile_dir)) {
 file_put_contents($profile_php_path, $php);
 
 echo "Profile page created";
-
-
