@@ -203,14 +203,12 @@ if (is_dir($baseDir)) {
     <title>Register/Login Example</title>
     <style>
         .user-profile { border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer; }
-        #profile-details { border:2px solid #444; margin:20px 0; padding:20px; background:#f6f6f6; }
         .profile-image { max-width:200px; max-height:200px; }
         .work-image { max-width:100px; max-height:100px; }
     </style>
     <script>
     var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
 
-    // Render user profiles for selection
     function renderProfiles(profiles) {
         var container = document.getElementById('user-profiles');
         container.innerHTML = '';
@@ -225,56 +223,51 @@ if (is_dir($baseDir)) {
             div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>" +
                 "<span>" + (profileData.email ? profileData.email : "") + "</span><br>";
             div.onclick = function() {
-                showProfile(idx);
+                openProfileInNewWindow(idx);
             };
             container.appendChild(div);
         });
     }
 
-    // Render a comprehensive profile view above the profiles array
-    function showProfile(idx) {
+    function openProfileInNewWindow(idx) {
         var profileData = userProfiles[idx];
-        var details = document.getElementById('profile-details');
-        if (!profileData) {
-            details.innerHTML = "<em>No profile data.</em>";
-            return;
-        }
-        var html = "<h2>" + (profileData.first ? profileData.first : "") + " " + (profileData.last ? profileData.last : "") + "</h2>";
+        var safe_first = profileData.first ? profileData.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
+        var safe_last = profileData.last ? profileData.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
+        var user_dir = "/pusers/" + safe_first + "_" + safe_last;
+
+        var profile_images_map = <?php
+            $profile_images_map = [];
+            foreach ($userProfiles as $profile) {
+                $safe_first = isset($profile['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profile['first']) : '';
+                $safe_last = isset($profile['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profile['last']) : '';
+                $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
+                $images = [];
+                if (is_dir($user_dir)) {
+                    $imgs = glob($user_dir . "/profile_image_*.*");
+                    if ($imgs && count($imgs) > 0) {
+                        foreach ($imgs as $img) {
+                            $images[] = str_replace("/var/www/html", "", $img);
+                        }
+                    }
+                }
+                $profile_images_map[$safe_first . "_" . $safe_last] = $images;
+            }
+            echo json_encode($profile_images_map);
+        ?>;
+
+        var html = "<!DOCTYPE html><html><head><title>User Profile</title><style>";
+        html += ".profile-image{max-width:200px;max-height:200px;} .work-image{max-width:100px;max-height:100px;} body{font-family:sans-serif;}";
+        html += "</style></head><body>";
+        html += "<h2>" + (profileData.first ? profileData.first : "") + " " + (profileData.last ? profileData.last : "") + "</h2>";
         if (profileData.email) html += "<strong>Email:</strong> " + profileData.email + "<br>";
         if (profileData.created_at) html += "<strong>Created At:</strong> " + profileData.created_at + "<br>";
         if (profileData.bio) html += "<strong>Bio:</strong> " + profileData.bio + "<br>";
         if (profileData.dob) html += "<strong>Date of Birth:</strong> " + profileData.dob + "<br>";
         if (profileData.country) html += "<strong>Country:</strong> " + profileData.country + "<br>";
-        // Try to display last uploaded profile image if possible
-        var safe_first = profileData.first ? profileData.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
-        var safe_last = profileData.last ? profileData.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
-        var user_dir = "/pusers/" + safe_first + "_" + safe_last;
-        var profile_img = "";
-        <?php
-        // Get all possible profile images for each user and pass them as a JS object
-        $profile_images_map = [];
-        foreach ($userProfiles as $profile) {
-            $safe_first = isset($profile['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profile['first']) : '';
-            $safe_last = isset($profile['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profile['last']) : '';
-            $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
-            $images = [];
-            if (is_dir($user_dir)) {
-                $imgs = glob($user_dir . "/profile_image_*.*");
-                if ($imgs && count($imgs) > 0) {
-                    foreach ($imgs as $img) {
-                        $images[] = str_replace("/var/www/html", "", $img);
-                    }
-                }
-            }
-            $profile_images_map[$safe_first . "_" . $safe_last] = $images;
-        }
-        ?>
-        var profile_images_map = <?php echo json_encode($profile_images_map); ?>;
         if (profile_images_map[user_dir] && profile_images_map[user_dir].length > 0) {
             var img_src = profile_images_map[user_dir][profile_images_map[user_dir].length - 1];
             html += '<img src="' + img_src + '" class="profile-image" alt="Profile Image"><br>';
         }
-        // Display work items
         if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
             html += "<strong>Work:</strong><ul>";
             profileData.work.forEach(function(work_item){
@@ -289,13 +282,15 @@ if (is_dir($baseDir)) {
             });
             html += "</ul>";
         }
-        details.innerHTML = html;
+        html += "</body></html>";
+
+        var win = window.open("", "_blank", "width=600,height=700");
+        win.document.write(html);
+        win.document.close();
     }
 
     document.addEventListener("DOMContentLoaded", function() {
         renderProfiles(userProfiles);
-        // Show the first profile by default if there are any
-        if (userProfiles.length > 0) showProfile(0);
     });
     </script>
 </head>
@@ -360,9 +355,6 @@ if (is_dir($baseDir)) {
         <button type="submit" name="upload_work">Upload Work</button>
     </form>
 <?php endif; ?>
-
-<!-- Comprehensive user profile display -->
-<div id="profile-details"></div>
 
 <!-- User profiles array selection at bottom -->
 <div id="user-profiles"></div>
