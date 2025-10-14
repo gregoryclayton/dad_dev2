@@ -209,6 +209,85 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         });
     });
     </script>
+
+    <script>
+    // Embed the user profiles as a JSON array for easy JS manipulation
+    var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Render user profiles from the JSON array
+        var container = document.getElementById('user-profiles');
+        if (container && Array.isArray(userProfiles)) {
+            userProfiles.forEach(function(profileData) {
+                var safe_first = profileData.first ? profileData.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
+                var safe_last = profileData.last ? profileData.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
+                var profile_username = safe_first + "_" + safe_last;
+                var div = document.createElement('div');
+                div.className = "user-profile";
+                div.setAttribute("data-username", profile_username);
+                div.style.border = "1px solid #ccc";
+                div.style.margin = "10px";
+                div.style.padding = "10px";
+                div.style.cursor = "pointer";
+
+                for (var key in profileData) {
+                    if (key === 'work' && Array.isArray(profileData.work)) {
+                        var workList = document.createElement('ul');
+                        workList.innerHTML = "<strong>Work:</strong>";
+                        profileData.work.forEach(function(work_item) {
+                            var li = document.createElement('li');
+                            if (work_item.image) {
+                                var img = document.createElement('img');
+                                img.src = work_item.image.replace("/var/www/html", "");
+                                img.alt = "Work Image";
+                                img.style.maxWidth = "100px";
+                                img.style.maxHeight = "100px";
+                                li.appendChild(img);
+                                li.appendChild(document.createElement('br'));
+                            }
+                            if (work_item.desc) {
+                                li.innerHTML += "<strong>Description:</strong> " + work_item.desc + "<br>";
+                            }
+                            if (work_item.date) {
+                                li.innerHTML += "<strong>Date:</strong> " + work_item.date + "<br>";
+                            }
+                            workList.appendChild(li);
+                        });
+                        div.appendChild(workList);
+                    } else {
+                        var span = document.createElement('span');
+                        span.className = "profile-data";
+                        span.innerHTML = "<strong>" + key + ":</strong> " + profileData[key] + "<br>";
+                        div.appendChild(span);
+                    }
+                }
+                container.appendChild(div);
+            });
+        }
+
+        // Click handler for profiles
+        document.getElementById('user-profiles').addEventListener('click', function(e) {
+            var target = e.target;
+            while (target && !target.classList.contains('user-profile')) {
+                target = target.parentElement;
+            }
+            if (target && target.classList.contains('user-profile')) {
+                var profileName = target.getAttribute('data-username');
+                if (profileName) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "create_profile_page.php", true);
+                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            window.location.href = "pusers/" + encodeURIComponent(profileName) + ".php";
+                        }
+                    };
+                    xhr.send("username=" + encodeURIComponent(profileName));
+                }
+            }
+        });
+    });
+    </script>
 </head>
 <body>
 <?php if (!isset($_SESSION['email'])): ?>
@@ -294,37 +373,7 @@ if (is_dir($baseDir)) {
     echo "User profiles directory not found.";
 }
 
-echo '<div id="user-profiles">';
-foreach ($userProfiles as $profileData) {
-    $safe_first = isset($profileData['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['first']) : '';
-    $safe_last = isset($profileData['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['last']) : '';
-    $profile_username = $safe_first . "_" . $safe_last;
-    echo '<div class="user-profile" data-username="' . htmlspecialchars($profile_username) . '" style="border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer;">';
-    foreach ($profileData as $key => $value) {
-        if ($key === 'work' && is_array($value)) {
-            echo "<strong>Work:</strong><ul>";
-            foreach ($value as $work_item) {
-                echo "<li>";
-                if (!empty($work_item['image'])) {
-                    $web_path = str_replace("/var/www/html", "", $work_item['image']);
-                    echo '<img src="' . htmlspecialchars($web_path) . '" alt="Work Image" style="max-width:100px; max-height:100px;"><br>';
-                }
-                if (!empty($work_item['desc'])) {
-                    echo "<strong>Description:</strong> " . htmlspecialchars($work_item['desc']) . "<br>";
-                }
-                if (!empty($work_item['date'])) {
-                    echo "<strong>Date:</strong> " . htmlspecialchars($work_item['date']) . "<br>";
-                }
-                echo "</li>";
-            }
-            echo "</ul>";
-        } else {
-            echo "<span class='profile-data'><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br></span>";
-        }
-    }
-    echo '</div>';
-}
-echo '</div>';
 ?>
+<div id="user-profiles"></div>
 </body>
 </html>
