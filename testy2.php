@@ -181,8 +181,6 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
 
 <?php    
 $baseDir = "/var/www/html/pusers";
-
-// Collect all profile data into array
 $userProfiles = [];
 if (is_dir($baseDir)) {
     $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
@@ -198,7 +196,6 @@ if (is_dir($baseDir)) {
 } else {
     echo "User profiles directory not found.";
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -206,38 +203,11 @@ if (is_dir($baseDir)) {
 <head>
     <title>Register/Login Example</title>
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        document.getElementById('user-profiles').addEventListener('click', function(e) {
-            var target = e.target;
-            while (target && !target.classList.contains('user-profile')) {
-                target = target.parentElement;
-            }
-            if (target && target.classList.contains('user-profile')) {
-                var profileName = target.getAttribute('data-username');
-                if (profileName) {
-                    // AJAX request to create the profile page
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "create_profile_page.php", true);
-                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4 && xhr.status === 200) {
-                            // After creation, redirect
-                            window.location.href = "pusers/" + encodeURIComponent(profileName) + ".php";
-                        }
-                    };
-                    xhr.send("username=" + encodeURIComponent(profileName));
-                }
-            }
-        });
-    });
-    </script>
-
-    <script>
     // Embed the user profiles as a JSON array for easy JS manipulation
     var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
 
+    // Renders user profiles and sets up click handling for opening profiles
     document.addEventListener("DOMContentLoaded", function() {
-        // Render user profiles from the JSON array
         var container = document.getElementById('user-profiles');
         if (container && Array.isArray(userProfiles)) {
             userProfiles.forEach(function(profileData) {
@@ -280,34 +250,35 @@ if (is_dir($baseDir)) {
                         var span = document.createElement('span');
                         span.className = "profile-data";
                         span.innerHTML = "<strong>" + key + ":</strong> " + profileData[key] + "<br>";
+                        // Make each data span clickable (for profile navigation)
+                        span.style.cursor = "pointer";
+                        span.addEventListener("click", function(event) {
+                            event.stopPropagation(); // Prevent bubbling to parent .user-profile
+                            openProfile(profile_username);
+                        });
                         div.appendChild(span);
                     }
                 }
+                // Also allow clicking anywhere in the card to open the profile
+                div.addEventListener("click", function() {
+                    openProfile(profile_username);
+                });
                 container.appendChild(div);
             });
         }
 
-        // Click handler for profiles
-        document.getElementById('user-profiles').addEventListener('click', function(e) {
-            var target = e.target;
-            while (target && !target.classList.contains('user-profile')) {
-                target = target.parentElement;
-            }
-            if (target && target.classList.contains('user-profile')) {
-                var profileName = target.getAttribute('data-username');
-                if (profileName) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "create_profile_page.php", true);
-                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4 && xhr.status === 200) {
-                            window.location.href = "pusers/" + encodeURIComponent(profileName) + ".php";
-                        }
-                    };
-                    xhr.send("username=" + encodeURIComponent(profileName));
+        // Profile opening handler
+        function openProfile(profileName) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "create_profile_page.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    window.location.href = "profile/" + encodeURIComponent(profileName) + ".php";
                 }
-            }
-        });
+            };
+            xhr.send("username=" + encodeURIComponent(profileName));
+        }
     });
     </script>
 </head>
