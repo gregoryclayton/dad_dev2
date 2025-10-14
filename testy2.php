@@ -274,7 +274,7 @@ if (is_dir($baseDir)) {
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4 && xhr.status === 200) {
-                    window.location.href = "profile/" + encodeURIComponent(profileName) + ".php";
+                    window.location.href = "pusers/" + encodeURIComponent(profileName) + ".php";
                 }
             };
             xhr.send("username=" + encodeURIComponent(profileName));
