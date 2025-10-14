@@ -206,7 +206,19 @@ if (is_dir($baseDir)) {
     // Embed the user profiles as a JSON array for easy JS manipulation
     var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
 
-    // Renders user profiles and sets up click handling for opening profiles
+    function openProfile(profileName) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "create_profile_page.php", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Redirect to pusers/[username].php as requested
+                window.location.href = "pusers/" + encodeURIComponent(profileName) + ".php";
+            }
+        };
+        xhr.send("username=" + encodeURIComponent(profileName));
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         var container = document.getElementById('user-profiles');
         if (container && Array.isArray(userProfiles)) {
@@ -250,10 +262,10 @@ if (is_dir($baseDir)) {
                         var span = document.createElement('span');
                         span.className = "profile-data";
                         span.innerHTML = "<strong>" + key + ":</strong> " + profileData[key] + "<br>";
-                        // Make each data span clickable (for profile navigation)
                         span.style.cursor = "pointer";
+                        // Use only span click to open profile, don't double trigger on parent
                         span.addEventListener("click", function(event) {
-                            event.stopPropagation(); // Prevent bubbling to parent .user-profile
+                            event.stopPropagation();
                             openProfile(profile_username);
                         });
                         div.appendChild(span);
@@ -265,19 +277,6 @@ if (is_dir($baseDir)) {
                 });
                 container.appendChild(div);
             });
-        }
-
-        // Profile opening handler
-        function openProfile(profileName) {
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "create_profile_page.php", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    window.location.href = "pusers/" + encodeURIComponent(profileName) + ".php";
-                }
-            };
-            xhr.send("username=" + encodeURIComponent(profileName));
         }
     });
     </script>
