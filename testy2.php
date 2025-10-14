@@ -179,6 +179,28 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
 }
 ?>
 
+<?php    
+$baseDir = "/var/www/html/pusers";
+
+// Collect all profile data into array
+$userProfiles = [];
+if (is_dir($baseDir)) {
+    $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
+    foreach ($dirs as $dir) {
+        $profilePath = $dir . "/profile.json";
+        if (file_exists($profilePath)) {
+            $profileData = json_decode(file_get_contents($profilePath), true);
+            if ($profileData) {
+                $userProfiles[] = $profileData;
+            }
+        }
+    }
+} else {
+    echo "User profiles directory not found.";
+}
+
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -353,27 +375,8 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     </form>
 <?php endif; ?>
 
-<?php    
-$baseDir = "/var/www/html/pusers";
 
-// Collect all profile data into array
-$userProfiles = [];
-if (is_dir($baseDir)) {
-    $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
-    foreach ($dirs as $dir) {
-        $profilePath = $dir . "/profile.json";
-        if (file_exists($profilePath)) {
-            $profileData = json_decode(file_get_contents($profilePath), true);
-            if ($profileData) {
-                $userProfiles[] = $profileData;
-            }
-        }
-    }
-} else {
-    echo "User profiles directory not found.";
-}
-
-?>
 <div id="user-profiles"></div>
 </body>
 </html>
+
