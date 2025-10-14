@@ -75,7 +75,6 @@ if (isset($_POST['register'])) {
     if ($check->num_rows > 0) {
         echo "Email already registered!";
     } else {
-        // Make sure your users table has first and last columns!
         $conn->query("INSERT INTO users (first,last,email,password) VALUES ('$first','$last','$email','$pass')");
         $user_dir = create_user_profile($first, $last, $email);
         echo "Registration successful! Please log in.";
@@ -119,7 +118,6 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
         if (!is_dir($user_dir)) {
             mkdir($user_dir, 0755, true);
         }
-
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
         $file_type = mime_content_type($_FILES['image']['tmp_name']);
         if (!in_array($file_type, $allowed_types)) {
@@ -177,36 +175,61 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         $work_upload_msg = "No work image uploaded or upload error.";
     }
 }
+
+// Collect all profile data into array
+$baseDir = "/var/www/html/pusers";
+$userProfiles = [];
+if (is_dir($baseDir)) {
+    $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
+    foreach ($dirs as $dir) {
+        $profilePath = $dir . "/profile.json";
+        if (file_exists($profilePath)) {
+            $profileData = json_decode(file_get_contents($profilePath), true);
+            if ($profileData) {
+                $userProfiles[] = $profileData;
+            }
+        }
+    }
+} else {
+    echo "User profiles directory not found.";
+}
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
     <title>Register/Login Example</title>
+    <style>
+        .user-profile { border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer; }
+        .profile-image { max-width:200px; max-height:200px; }
+        .work-image { max-width:100px; max-height:100px; }
+        #mainProfile { border:2px solid #444; margin:20px 0; padding:20px; background:#f6f6f6; }
+    </style>
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        document.getElementById('user-profiles').addEventListener('click', function(e) {
-            var target = e.target;
-            while (target && !target.classList.contains('user-profile')) {
-                target = target.parentElement;
-            }
-            if (target && target.classList.contains('user-profile')) {
-                var profileName = target.getAttribute('data-username');
-                if (profileName) {
-                    // AJAX request to create the profile page
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "create_profile_page.php", true);
-                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4 && xhr.status === 200) {
-                            // After creation, redirect
-                            window.location.href = "profile/" + encodeURIComponent(profileName) + ".php";
-                        }
-                    };
-                    xhr.send("username=" + encodeURIComponent(profileName));
-                }
-            }
+    var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
+
+    function renderProfiles(profiles) {
+        var container = document.getElementById('user-profiles');
+        container.innerHTML = '';
+        profiles.forEach(function(profileData, idx) {
+            var safe_first = profileData.first ? profileData.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
+            var safe_last = profileData.last ? profileData.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
+            var profile_username = safe_first + "_" + safe_last;
+            var div = document.createElement('div');
+            div.className = "user-profile";
+            div.setAttribute("data-username", profile_username);
+            div.setAttribute("data-idx", idx);
+            div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>" +
+                "<span>" + (profileData.email ? profileData.email : "") + "</span><br>";
+            div.onclick = function() {
+                window.location.href = "profile.php?user=" + encodeURIComponent(profile_username);
+            };
+            container.appendChild(div);
         });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        renderProfiles(userProfiles);
     });
     </script>
 </head>
@@ -238,16 +261,13 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         <button type="submit" name="upload_image">Upload Image</button>
     </form>
     <?php
-    // Display uploaded image if exists
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
     $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
     $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
     if (is_dir($user_dir)) {
-        // Look for most recent image
         $images = glob($user_dir . "/profile_image_*.*");
         if ($images && count($images) > 0) {
             $latest_image = $images[array_search(max(array_map('filemtime', $images)), array_map('filemtime', $images))];
-            // For web display, convert server path to web-accessible path if needed
             $web_path = str_replace("/var/www/html", "", $latest_image);
             echo '<div><img src="' . htmlspecialchars($web_path) . '" alt="Profile Image" style="max-width:200px; max-height:200px;"></div>';
         }
@@ -274,57 +294,10 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     </form>
 <?php endif; ?>
 
-<?php    
-$baseDir = "/var/www/html/pusers";
+<!-- Comprehensive user profile display -->
+<div id="mainProfile"></div>
 
-// Collect all profile data into array
-$userProfiles = [];
-if (is_dir($baseDir)) {
-    $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
-    foreach ($dirs as $dir) {
-        $profilePath = $dir . "/profile.json";
-        if (file_exists($profilePath)) {
-            $profileData = json_decode(file_get_contents($profilePath), true);
-            if ($profileData) {
-                $userProfiles[] = $profileData;
-            }
-        }
-    }
-} else {
-    echo "User profiles directory not found.";
-}
-
-echo '<div id="user-profiles">';
-foreach ($userProfiles as $profileData) {
-    $safe_first = isset($profileData['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['first']) : '';
-    $safe_last = isset($profileData['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['last']) : '';
-    $profile_username = $safe_first . "_" . $safe_last;
-    echo '<div class="user-profile" data-username="' . htmlspecialchars($profile_username) . '" style="border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer;">';
-    foreach ($profileData as $key => $value) {
-        if ($key === 'work' && is_array($value)) {
-            echo "<strong>Work:</strong><ul>";
-            foreach ($value as $work_item) {
-                echo "<li>";
-                if (!empty($work_item['image'])) {
-                    $web_path = str_replace("/var/www/html", "", $work_item['image']);
-                    echo '<img src="' . htmlspecialchars($web_path) . '" alt="Work Image" style="max-width:100px; max-height:100px;"><br>';
-                }
-                if (!empty($work_item['desc'])) {
-                    echo "<strong>Description:</strong> " . htmlspecialchars($work_item['desc']) . "<br>";
-                }
-                if (!empty($work_item['date'])) {
-                    echo "<strong>Date:</strong> " . htmlspecialchars($work_item['date']) . "<br>";
-                }
-                echo "</li>";
-            }
-            echo "</ul>";
-        } else {
-            echo "<span class='profile-data'><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br></span>";
-        }
-    }
-    echo '</div>';
-}
-echo '</div>';
-?>
+<!-- User profiles array selection at bottom -->
+<div id="user-profiles"></div>
 </body>
 </html>
