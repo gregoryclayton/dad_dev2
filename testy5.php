@@ -104,7 +104,7 @@ if (isset($_POST['login'])) {
 // Handle logout
 if (isset($_GET['logout'])) {
     session_destroy();
-    header("Location: register_login.php");
+    header("Location: home.php");
     exit();
 }
 
