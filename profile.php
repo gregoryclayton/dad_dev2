@@ -18,7 +18,7 @@ if (isset($_GET['api']) && $_GET['api'] === '1' && isset($_GET['user'])) {
 
 // Page mode: render the HTML, JS loads data to #mainProfile
 ?>
-
+<?php
 // Collect all profile data into a JSON array
 $baseDir = "/var/www/html/pusers";
 $userProfiles = [];
