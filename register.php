@@ -348,11 +348,12 @@ if (is_dir($baseDir)) {
 
 <div class="navbar">
     <div class="navbarbtns">
-        <div class="navbtn"><a>register</a></div>
-         <div class="navbtn"><a>studio</a></div>
-        <div class="navbtn"><a>database</a></div>
+        <div class="navbtn"><a href="register.php">register</a></div>
+         <div class="navbtn"><a href="studio3.php">studio</a></div>
+        <div class="navbtn"><a href="database.php">database</a></div>
     </div>
 </div>
+    
 <?php if (!isset($_SESSION['email'])): ?>
 <h2>Register</h2>
 <form method="POST">
