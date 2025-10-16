@@ -237,6 +237,13 @@ if (is_dir($baseDir)) {
     </script>
 </head>
 <body>
+    <div class="navbar">
+    <div class="navbarbtns">
+        <div class="navbtn"><a href="register.php">register</a></div>
+         <div class="navbtn"><a href="studio3.php">studio</a></div>
+        <div class="navbtn"><a href="database.php">database</a></div>
+    </div>
+</div>
 <div id="mainProfile"></div>
 
     <!-- User profiles array selection at bottom -->
