@@ -370,10 +370,6 @@ if (is_dir($baseDir)) {
     
 <?php endif; ?>
 
-<!-- Comprehensive user profile display -->
-<div id="mainProfile"></div>
 
-<!-- User profiles array selection at bottom -->
-<div id="user-profiles"></div>
 </body>
 </html>
