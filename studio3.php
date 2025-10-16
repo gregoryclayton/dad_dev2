@@ -214,7 +214,7 @@ if (is_dir($baseDir)) {
 </head>
 <body>
 
-
+<?php if (!isset($_SESSION['email'])): ?>
 <h2>Login</h2>
 <form method="POST">
     Email: <input type="email" name="email" required><br>
@@ -268,4 +268,5 @@ if (is_dir($baseDir)) {
 <?php endif; ?>
     
 </body>
+
 </html>
