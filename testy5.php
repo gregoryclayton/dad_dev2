@@ -348,20 +348,14 @@ if (is_dir($baseDir)) {
 
 <div class="navbar">
     <div class="navbarbtns">
-        <div class="navbtn"><a>register</a></div>
-         <div class="navbtn"><a>studio</a></div>
-        <div class="navbtn"><a>database</a></div>
+        <div class="navbtn"><a href="register.php">register</a></div>
+         <div class="navbtn"><a href="studio3.php">studio</a></div>
+        <div class="navbtn"><a href="database.php">database</a></div>
     </div>
 </div>
+    
 <?php if (!isset($_SESSION['email'])): ?>
-<h2>Register</h2>
-<form method="POST">
-    First Name: <input type="text" name="first" required><br>
-    Last Name: <input type="text" name="last" required><br>
-    Email: <input type="email" name="email" required><br>
-    Password: <input type="password" name="password" required><br>
-    <button name="register">Register</button>
-</form>
+
 <h2>Login</h2>
 <form method="POST">
     Email: <input type="email" name="email" required><br>
@@ -372,48 +366,11 @@ if (is_dir($baseDir)) {
     <h2>Welcome, <?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?>!</h2>
     <a href="?logout=1">Logout</a>
     
-    <!-- Image upload form -->
-    <h3>Upload Profile Image</h3>
-    <?php if (!empty($image_upload_msg)) { echo '<p>' . htmlspecialchars($image_upload_msg) . '</p>'; } ?>
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*" required>
-        <button type="submit" name="upload_image">Upload Image</button>
-    </form>
-    <?php
-    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
-    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
-    $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
-    $work_dir = $user_dir . "/work";
-    if (is_dir($work_dir)) {
-        $images = glob($work_dir . "/profile_image_*.*");
-        if ($images && count($images) > 0) {
-            $latest_image = $images[array_search(max(array_map('filemtime', $images)), array_map('filemtime', $images))];
-            $web_path = str_replace("/var/www/html", "", $latest_image);
-            echo '<div><img src="' . htmlspecialchars($web_path) . '" alt="Profile Image" style="max-width:200px; max-height:200px;"></div>';
-        }
-    }
-    ?>
-    <!-- Bio/DOB/Country form -->
-    <h3>Update Bio Information</h3>
-    <?php if (!empty($profile_extra_msg)) { echo '<p>' . htmlspecialchars($profile_extra_msg) . '</p>'; } ?>
-    <form method="POST">
-        Bio: <textarea name="bio" rows="3" cols="40"></textarea><br>
-        Date of Birth: <input type="date" name="dob"><br>
-        Country: <input type="text" name="country"><br>
-        <button type="submit" name="update_profile_extra">Save Info</button>
-    </form>
-
-    <!-- Work upload form -->
-    <h3>Upload Work</h3>
-    <?php if (!empty($work_upload_msg)) { echo '<p>' . htmlspecialchars($work_upload_msg) . '</p>'; } ?>
-    <form method="POST" enctype="multipart/form-data">
-        Description: <textarea name="work_desc" rows="2" cols="40" required></textarea><br>
-        Date of Work: <input type="date" name="work_date" required><br>
-        Work Image: <input type="file" name="work_image" accept="image/*" required><br>
-        <button type="submit" name="upload_work">Upload Work</button>
-    </form>
+    
 <?php endif; ?>
 
+<div id="slideshowContainer"></div>
+    
 <!-- Comprehensive user profile display -->
 <div id="mainProfile"></div>
 
