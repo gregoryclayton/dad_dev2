@@ -93,6 +93,7 @@ if (isset($_POST['login'])) {
             $_SESSION['first'] = $row['first'];
             $_SESSION['last'] = $row['last'];
             echo "Logged in!";
+            header("Location: home.php");
         } else {
             echo "Incorrect password!";
         }
