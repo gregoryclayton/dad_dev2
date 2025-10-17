@@ -210,39 +210,7 @@ if (is_dir($baseDir)) {
 <html>
 <head>
     <title>Register/Login Example</title>
-    <style>
-        .user-profile { border:1px solid #ccc; margin:10px; padding:10px; cursor:pointer; position:relative; }
-        .profile-image { max-width:200px; max-height:200px; }
-        .work-image { max-width:100px; max-height:100px; }
-        #mainProfile { border:2px solid #444; margin:20px 0; padding:20px; background:#f6f6f6; }
-        .profile-dropdown {
-            display: none;
-            position: absolute;
-            left: 0;
-            top: 100%;
-            z-index: 100;
-            background: #fff;
-            border: 1px solid #aaa;
-            box-shadow: 0 8px 24px #0002;
-            padding: 16px;
-            min-width: 260px;
-            max-width: 340px;
-        }
-        .profile-dropdown .profile-image,
-        .profile-dropdown .work-image {
-            display: block;
-            margin-bottom: 10px;
-        }
-        .profile-dropdown .profile-btn {
-            margin-top: 12px;
-            background: #e7e7e7;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 7px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-    </style>
+   <link rel="stylesheet" type="text/css" href="style.css">
     <script>
     var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
 
