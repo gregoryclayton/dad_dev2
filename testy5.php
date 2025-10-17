@@ -352,7 +352,7 @@ if (is_dir($pusersDir)) {
             $workFiles = scandir($workDir);
             foreach ($workFiles as $file) {
                 if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $file)) {
-                    $images[] = 'p-users/' . $userFolder . '/work/' . $file;
+                    $images[] = 'pusers/' . $userFolder . '/work/' . $file;
                 }
             }
         }
