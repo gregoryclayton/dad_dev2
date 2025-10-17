@@ -368,5 +368,57 @@ shuffle($images);
 
 <!-- User profiles array selection at bottom -->
 <div id="user-profiles"></div>
+
+<!-- Slide Modal (work card reveal) -->
+<div id="slideModal" style="display:none; position:fixed; top:0; left:0;right:0;bottom:0; z-index:9999; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+  <div id="slideCard" style="background:white; border-radius:14px; padding:24px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
+    <button id="closeSlideModal" style="position:absolute; top:12px; right:18px; font-size:1.3em; background:none; border:none; color:#333; cursor:pointer;">×</button>
+    <img id="modalImg" src="" alt="Image" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
+    <div id="modalInfo" style="text-align:center; width:100%;">
+      <h2 id="modalTitle" style="color:black; margin-bottom:8px; font-size:24px;"></h2>
+      <p id="modalDate" style="color:black; margin-bottom:12px; font-size:16px;"></p>
+      <p id="modalArtist" style="color:black; font-weight:bold; font-size:18px;"></p>
+    </div>
+
+    <div style="position: absolute; bottom:18px; right:32px; display: flex; align-items: center;">
+  <?php if (isset($_SESSION['user_id'])): ?>
+    <input type="radio" name="slideWorkSelect" id="slideWorkRadio" style="width:22px; height:22px; accent-color:#e27979;">
+  <?php else: ?>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <input type="radio" name="slideWorkSelect" id="slideWorkRadio" style="width:22px; height:22px; accent-color:#e27979; opacity:0.5; cursor:not-allowed;" disabled>
+      <span style="font-size:8px; color:#888; margin-top:3px;">sign in to like</span>
+    </div>
+  <?php endif; ?>
+</div>
+    
+    <button id="visitProfileBtn" style="margin-top:18px; background:#e8bebe; border:none; border-radius:7px; padding:0.7em 2em; font-family:monospace; font-size:1em; cursor:pointer;">visit profile</button>
+  </div>
+</div>
+
+<!-- Add this modal container for expanded work cards to the HTML part of the file, just before the closing body tag -->
+<div id="workModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.85); overflow:auto;">
+  <div style="position:relative; margin:5% auto; padding:20px; width:85%; max-width:900px; animation:modalFadeIn 0.3s;">
+    
+    <div style="position: absolute; bottom:18px; right:32px; display: flex; align-items: center;">
+  <?php if (isset($_SESSION['user_id'])): ?>
+    <input type="radio" name="slideWorkSelect" id="slideWorkRadio" style="width:22px; height:22px; accent-color:#e27979;">
+  <?php else: ?>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <input type="radio" name="slideWorkSelect" id="slideWorkRadio" style="width:22px; height:22px; accent-color:#e27979; opacity:0.5; cursor:not-allowed;" disabled>
+      <span style="font-size:8px; color:#888; margin-top:3px;">sign in to like</span>
+    </div>
+  <?php endif; ?>
+</div>
+  
+  <span id="closeModal" style="position:absolute; top:10px; right:20px; color:white; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+    <div id="modalContent" style="background:#333; padding:25px; border-radius:15px; color:white;"></div>
+  </div>
+</div>
+
+<!-- First, add this full-screen image container element before the closing body tag -->
+<div id="fullscreenImage" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.95); z-index:10000; cursor:zoom-out;">
+  <div style="position:absolute; top:15px; right:20px; color:white; font-size:30px; cursor:pointer;" id="closeFullscreen">&times;</div>
+  <img id="fullscreenImg" src="" alt="Fullscreen Image" style="position:absolute; top:0; left:0; right:0; bottom:0; margin:auto; max-width:95vw; max-height:95vh; object-fit:contain; transition:all 0.3s ease;">
+</div>    
 </body>
 </html>
