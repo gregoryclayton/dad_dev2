@@ -419,6 +419,90 @@ shuffle($images);
 <div id="fullscreenImage" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.95); z-index:10000; cursor:zoom-out;">
   <div style="position:absolute; top:15px; right:20px; color:white; font-size:30px; cursor:pointer;" id="closeFullscreen">&times;</div>
   <img id="fullscreenImg" src="" alt="Fullscreen Image" style="position:absolute; top:0; left:0; right:0; bottom:0; margin:auto; max-width:95vw; max-height:95vh; object-fit:contain; transition:all 0.3s ease;">
-</div>    
+</div>
+
+<script>
+  
+//slideshow variables, php so I left it here, then interval controls
+
+    var images = <?php echo json_encode($images, JSON_PRETTY_PRINT); ?>;
+    var current = 0;
+    var timer = null;
+    var imgElem = document.getElementById('slideshow-img');
+    //var captionElem = document.getElementById('slideshow-caption');
+    //var prevBtn = document.getElementById('prev-btn');
+   // var nextBtn = document.getElementById('next-btn');
+    var interval = 77000;
+
+    function showImage(idx) {
+      if (!images.length) {
+        imgElem.src = '';
+        imgElem.alt = 'No photos found';
+        captionElem.textContent = 'No photos found in folder.';
+        return;
+      }
+      current = (idx + images.length) % images.length;
+      imgElem.src = images[current];
+      imgElem.alt = 'Photo ' + (current + 1);
+      //captionElem.textContent = 'Photo ' + (current + 1) + ' of ' + images.length;
+    }
+
+    function nextImage() { showImage(current + 1); }
+    function prevImage() { showImage(current - 1); }
+
+    //prevBtn.onclick = function() { prevImage(); resetTimer(); }
+    //nextBtn.onclick = function() { nextImage(); resetTimer(); }
+
+    function startTimer() { if (timer) clearInterval(timer); timer = setInterval(nextImage, interval); }
+    function resetTimer() { startTimer(); }
+
+    showImage(0);
+    startTimer();
+
+    // Add this JS below your existing slideshow JS
+imgElem.onclick = function () {
+  showModal(current);
+};
+
+function getImageInfo(path) {
+  // Example: "p-users/username/work/image.jpg"
+  var info = {};
+  var parts = path.split('/');
+  if (parts.length >= 4) {
+    info.userFolder = parts[1]; // username or user folder
+    info.filename = parts[3];
+    info.relativePath = path;
+  } else {
+    info.filename = path.split('/').pop();
+    info.relativePath = path;
+  }
+  return info;
+}
+
+function showModal(idx) {
+  var modal = document.getElementById('slideModal');
+  var modalImg = document.getElementById('modalImg');
+  var modalInfo = document.getElementById('modalInfo');
+  var imgPath = images[idx];
+  modalImg.src = imgPath;
+  var info = getImageInfo(imgPath);
+  // You can expand this info if you have more data
+  modalInfo.innerHTML = `
+    <div style="font-weight:bold; font-size:1.1em;">${info.filename}</div>
+    <div style="color:#777; margin-top:2px;">User Folder: ${info.userFolder ? info.userFolder : 'Unknown'}</div>
+    <div style="font-size:0.95em; color:#aaa;">Path: ${info.relativePath}</div>
+  `;
+  modal.style.display = 'flex';
+}
+
+// Close modal on click of close button or background
+document.getElementById('closeSlideModal').onclick = function() {
+  document.getElementById('slideModal').style.display = 'none';
+};
+document.getElementById('slideModal').onclick = function(e) {
+  if (e.target === this) this.style.display = 'none';
+};
+
+</script>
 </body>
 </html>
