@@ -313,15 +313,15 @@ if (is_dir($baseDir)) {
     </script>
 </head>
 <body>
+    <div class="navbar">
+    <div class="navbarbtns">
+        <div class="navbtn"><a href="register.php">register</a></div>
+         <div class="navbtn"><a href="studio3.php">studio</a></div>
+        <div class="navbtn"><a href="database.php">database</a></div>
+    </div>
+</div>
 <?php if (!isset($_SESSION['email'])): ?>
-<h2>Register</h2>
-<form method="POST">
-    First Name: <input type="text" name="first" required><br>
-    Last Name: <input type="text" name="last" required><br>
-    Email: <input type="email" name="email" required><br>
-    Password: <input type="password" name="password" required><br>
-    <button name="register">Register</button>
-</form>
+
 <h2>Login</h2>
 <form method="POST">
     Email: <input type="email" name="email" required><br>
@@ -374,11 +374,11 @@ if (is_dir($baseDir)) {
     </form>
 <?php endif; ?>
 
-<!-- Comprehensive user profile display -->
-<div id="mainProfile"></div>
+
 
 <!-- User profiles array selection at bottom -->
 <div id="user-profiles"></div>
 </body>
 </html>
+
 
