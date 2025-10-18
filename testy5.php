@@ -1,7 +1,7 @@
 <?php
 // Database credentials
 include 'connection.php';
-include 'slidez.php;
+
 
 // Start session for login/logout
 session_start();
@@ -64,6 +64,28 @@ function add_user_work($first, $last, $desc, $date, $image_path) {
     }
 }
 
+
+// --- SLIDESHOW IMAGES FROM puserswork ---
+$images = [];
+$pusersDir = __DIR__ . '/pusers';
+
+if (is_dir($pusersDir)) {
+    $userFolders = scandir($pusersDir);
+    foreach ($userFolders as $userFolder) {
+        if ($userFolder === '.' || $userFolder === '..') continue;
+        $workDir = $pusersDir . '/' . $userFolder . '/work';
+        if (is_dir($workDir)) {
+            $workFiles = scandir($workDir);
+            foreach ($workFiles as $file) {
+                if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $file)) {
+                    $images[] = 'p-users/' . $userFolder . '/work/' . $file;
+                }
+            }
+        }
+    }
+}
+// Randomize the order of images
+shuffle($images);
 
 
 // Handle login
