@@ -43,12 +43,16 @@
             box-shadow: 0 8px 24px #0002;
             padding: 16px;
             width: 90vw;
+            height: 500px;
+            overflow-y: scroll;
         }
+
         .profile-dropdown .profile-image,
         .profile-dropdown .work-image {
             display: block;
             margin-bottom: 10px;
         }
+
         .profile-dropdown .profile-btn {
             margin-top: 12px;
             background: #e7e7e7;
