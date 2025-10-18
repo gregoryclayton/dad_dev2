@@ -78,7 +78,7 @@ if (is_dir($pusersDir)) {
             $workFiles = scandir($workDir);
             foreach ($workFiles as $file) {
                 if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $file)) {
-                    $images[] = 'p-users/' . $userFolder . '/work/' . $file;
+                    $images[] = 'pusers/' . $userFolder . '/work/' . $file;
                 }
             }
         }
@@ -317,11 +317,7 @@ if (is_dir($baseDir)) {
 
 
 
-  <!-- Slideshow container -->
-<div id="slideshow-container" style="position:relative;">
-  <img id="slideshow-img" src="" alt="Slideshow photo" style="object-fit: cover; width:100%; border-radius:7px; height:550px; transition:0.1s;">
- 
-</div>    
+
 
 
 <!-- User profiles array selection at bottom -->
