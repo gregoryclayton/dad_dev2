@@ -335,7 +335,7 @@ if (is_dir($baseDir)) {
 </form>
 
 <?php else: ?>
-    <h2>Welcome, <?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?>!</h2>
+    <h2>You're already logged in <?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?>.</h2>
     <a href="?logout=1">Logout</a>
     
     
