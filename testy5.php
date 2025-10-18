@@ -273,7 +273,7 @@ if (is_dir($baseDir)) {
       <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
     </div>
   </div>
-  <p style="color:black; font-size:15px; margin-left:10px; align-self:end;">[beta]</p>
+  
 </div>
 
 
