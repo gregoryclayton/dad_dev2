@@ -151,6 +151,22 @@ if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
     $profile_extra_msg = "Profile info updated!";
 }
 
+ // Generate a UUID for the work
+        function generateUUID() {
+            // Use random_bytes if available (PHP 7+) for better randomness
+            if (function_exists('random_bytes')) {
+                $data = random_bytes(16);
+                $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+                $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+                return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+            } else {
+                // Fallback to uniqid with more entropy
+                return md5(uniqid(mt_rand(), true));
+            }
+        }
+        
+        $uuid = generateUUID();
+
 // Handle work upload
 $work_upload_msg = "";
 if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
@@ -175,7 +191,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             $target_file = $work_dir . "/work_image_" . time() . "." . $ext;
             if (move_uploaded_file($_FILES['work_image']['tmp_name'], $target_file)) {
                 $image_path = $target_file;
-                add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $image_path);
+                add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $image_path, $uuid);
                 $work_upload_msg = "Work uploaded successfully!";
             } else {
                 $work_upload_msg = "Failed to upload work image.";
@@ -380,5 +396,6 @@ if (is_dir($baseDir)) {
 <div id="user-profiles"></div>
 </body>
 </html>
+
 
 
