@@ -60,7 +60,7 @@ function update_user_profile_extra($first, $last, $bio, $dob, $country) {
 }
 
 // Helper: add work to profile.json
-function add_user_work($first, $last, $uuid, $desc, $date, $image_path) {
+function add_user_work($first, $last, $desc, $date, $image_path, $uuid) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
     $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
     $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
@@ -71,10 +71,11 @@ function add_user_work($first, $last, $uuid, $desc, $date, $image_path) {
             $profile['work'] = [];
         }
         $profile['work'][] = [
-            "uuid" => $uuid,
+            
             "desc" => $desc,
             "date" => $date,
-            "image" => $image_path
+            "image" => $image_path,
+            "uuid" => $uuid
         ];
         file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
     }
@@ -399,6 +400,7 @@ if (is_dir($baseDir)) {
 <div id="user-profiles"></div>
 </body>
 </html>
+
 
 
 
