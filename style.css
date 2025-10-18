@@ -26,6 +26,47 @@
   cursor: default;
 }
 
+ #dot {
+  width: 19px;
+  height: 19px;
+  background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.936));
+  box-shadow: 0 4px 8px 0 rgba(57, 23, 23, 0.221);
+  border-radius: 50%;
+  transition: transform 0.5s cubic-bezier(.7,1.7,.5,.7), box-shadow 0.25s;
+  animation: spinDot 7s linear infinite;
+  cursor: pointer;
+  z-index: 1001;
+  position: relative;
+  color: black;
+}
+
+@keyframes spinDot {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg);}
+}
+
+#dot:hover {
+  animation-play-state: paused;
+}
+
+#dot.expanded {
+  transform: scale(3.2);
+  box-shadow: 0 0 0 10px #f2e9e9, 0 8px 32px #0002;
+  animation-play-state: paused;
+}
+
+#dotMenu {
+  transition: opacity 0.3s;
+  opacity: 1;
+  pointer-events: auto;
+  border-radius: 50%;
+}
+#dotMenu.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+    
+
 .navbarbtns {
   display: flex;
 }
