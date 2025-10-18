@@ -10,6 +10,10 @@
   cursor:pointer; 
   position:relative; 
   }
+
+.user-profile:hover {
+  background:#f6f6f6; 
+}
   
 .profile-image { 
   max-width:200px; 
@@ -38,8 +42,7 @@
             border: 1px solid #aaa;
             box-shadow: 0 8px 24px #0002;
             padding: 16px;
-            min-width: 260px;
-            max-width: 340px;
+            width: 90vw;
         }
         .profile-dropdown .profile-image,
         .profile-dropdown .work-image {
