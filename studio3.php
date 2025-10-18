@@ -28,6 +28,22 @@ function create_user_profile($first, $last, $email) {
     return $user_dir;
 }
 
+// Generate a UUID for the work
+        function generateUUID() {
+            // Use random_bytes if available (PHP 7+) for better randomness
+            if (function_exists('random_bytes')) {
+                $data = random_bytes(16);
+                $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+                $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+                return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+            } else {
+                // Fallback to uniqid with more entropy
+                return md5(uniqid(mt_rand(), true));
+            }
+        }
+        
+        $uuid = generateUUID();
+
 // Helper: update profile.json with bio, dob, country
 function update_user_profile_extra($first, $last, $bio, $dob, $country) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
@@ -44,7 +60,7 @@ function update_user_profile_extra($first, $last, $bio, $dob, $country) {
 }
 
 // Helper: add work to profile.json
-function add_user_work($first, $last, $desc, $date, $image_path) {
+function add_user_work($first, $last, $uuid, $desc, $date, $image_path) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
     $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
     $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
@@ -55,6 +71,7 @@ function add_user_work($first, $last, $desc, $date, $image_path) {
             $profile['work'] = [];
         }
         $profile['work'][] = [
+            "uuid" => $uuid,
             "desc" => $desc,
             "date" => $date,
             "image" => $image_path
@@ -151,21 +168,7 @@ if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
     $profile_extra_msg = "Profile info updated!";
 }
 
- // Generate a UUID for the work
-        function generateUUID() {
-            // Use random_bytes if available (PHP 7+) for better randomness
-            if (function_exists('random_bytes')) {
-                $data = random_bytes(16);
-                $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-                $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-                return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
-            } else {
-                // Fallback to uniqid with more entropy
-                return md5(uniqid(mt_rand(), true));
-            }
-        }
-        
-        $uuid = generateUUID();
+ 
 
 // Handle work upload
 $work_upload_msg = "";
@@ -396,6 +399,7 @@ if (is_dir($baseDir)) {
 <div id="user-profiles"></div>
 </body>
 </html>
+
 
 
 
