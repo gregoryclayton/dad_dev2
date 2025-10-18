@@ -246,6 +246,49 @@ if (is_dir($baseDir)) {
 </head>
 <body>
 
+<div style="display:flex;">
+  <div class="title-container" id="mainTitleContainer" style="background-image: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background-image 0.7s; ">
+    <br>
+    <a href="index.php" style="text-decoration:none; color: white;">digital <br>artist <br>database</a>
+  </div>
+  
+   <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
+    <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
+    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.936)); border-radius:50%; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:10px; z-index:0;">
+      <!-- Your menu content here -->
+     <!-- Add this play icon to the dot menu container -->
+<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+  <span style="color:#e27979;">▶</span>
+</div>
+      <!-- New buttons for changing color -->
+      <div style="position: relative;">
+  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle background music"></button>
+  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+    <span style="color:#e27979;">▶</span>
+  </div>
+</div>
+      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
+      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
+    </div>
+  </div>
+  <p style="color:black; font-size:15px; margin-left:10px; align-self:end;">[beta]</p>
+</div>
+
+
+<!-- Pop-out menu for quick nav, hidden by default -->
+<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:80px; font-family:monospace;">
+  <div style="display:flex; flex-direction:column; gap:0.5em;">
+    <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">home</a>
+    <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">about</a>
+    <a href="signup.php" style="color:#b44; text-decoration:none; font-size:1.1em;">sign up</a>
+    <a href="contribute.php" style="color:#a56; text-decoration:none; font-size:1.1em;">contribute</a>
+    <a href="database.php" style="color:#555; text-decoration:none; font-size:1.1em;">database</a>
+    <a href="studio.php" style="color:#777; text-decoration:none; font-size:1.1em;">studio</a>
+   
+  </div>
+</div>
+
+
 <div class="navbar">
     <div class="navbarbtns">
         <div class="navbtn"><a href="register.php">register</a></div>
@@ -622,6 +665,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ... rest of slideshow code (leave as is) ...
+</script>
+
+<script>
+
+// ...existing scripts...
+
+// --- Title-container popout menu functionality ---
+document.addEventListener('DOMContentLoaded', function() {
+  var titleContainer = document.getElementById('mainTitleContainer');
+  var menu = document.getElementById('titleMenuPopout');
+  var closeBtn = document.getElementById('closeTitleMenu');
+
+  function closeMenu() {
+    menu.style.display = 'none';
+  }
+
+  if (titleContainer && menu) {
+    titleContainer.style.cursor = "pointer";
+    titleContainer.addEventListener('click', function(e) {
+      // Position menu relative to the titleContainer (left, below)
+      var rect = titleContainer.getBoundingClientRect();
+      menu.style.left = (rect.left + window.scrollX + rect.width + 18) + "px";
+      menu.style.top = (rect.top + window.scrollY) + "px";
+      menu.style.display = 'block';
+    });
+  }
+
+  // Close button in menu
+  if (closeBtn) {
+    closeBtn.onclick = function(e) {
+      closeMenu();
+    };
+  }
+
+  // Clicking anywhere outside the menu closes it
+  document.addEventListener('mousedown', function(e) {
+    if (menu.style.display === 'block' && !menu.contains(e.target) && !titleContainer.contains(e.target)) {
+      closeMenu();
+    }
+  });
+
+  // Escape key closes menu
+  document.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") closeMenu();
+  });
+});
 </script>
    
 </body>
