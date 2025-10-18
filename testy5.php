@@ -140,7 +140,9 @@ if (is_dir($baseDir)) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register/Login Example</title>
+   <meta charset="UTF-8">
+  <title>digital artist database</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
    <link rel="stylesheet" type="text/css" href="style.css">
     <script>
     var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
