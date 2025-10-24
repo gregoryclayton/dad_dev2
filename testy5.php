@@ -320,8 +320,48 @@ if (is_dir($baseDir)) {
 
 
 
-<!-- User profiles array selection at bottom -->
+
+
+
+<div class="container-container-container" style="display:grid; align-items:center; justify-items: center;"> 
+<div class="container-container" style="border: double; border-radius:20px; padding-top:50px; width:90%; align-items:center; justify-items: center; display:grid;   background-color: #f2e9e9; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);">
+
+<div style="display:flex; justify-content: center; align-items:center;">
+  <div>
+    <input type="text" id="artistSearchBar" placeholder="Search artists..." style="width:60vw; padding:0.6em 1em; font-size:1em; border-radius:7px; border:1px solid #ccc;">
+  </div>
+</div>
+
+<!-- SORT BUTTONS AND SEARCH BAR ROW (MODIFIED) -->
+<div style="display:flex; justify-content:center; align-items:center; margin:1em 0 1em 0;">
+  <!-- SEARCH BAR MOVED TO THE LEFT -->
+  
+ 
+
+  <button id="sortAlphaBtn" style="padding:0.7em 1.3em; font-family: monospace; font-size:1em; color: black; background-color: rgba(255, 255, 255, 0); border:none; border-radius:8px; cursor:pointer;">
+    name
+  </button>
+  <button id="sortDateBtn" style="padding:0.7em 1.3em; font-family: monospace; font-size:1em; background-color: rgba(255, 255, 255, 0); color:black; border:none; border-radius:8px; cursor:pointer;">
+    date
+  </button>
+  <button id="sortCountryBtn" style="padding:0.7em 1.3em; font-family: monospace; font-size:1em; background-color: rgba(255, 255, 255, 0); color:black; border:none; border-radius:8px; cursor:pointer;">
+    country
+  </button>
+  <button id="sortGenreBtn" style="padding:0.7em 1.3em; font-family: monospace; font-size:1em; background-color: rgba(255, 255, 255, 0); color:black; border:none; border-radius:8px; cursor:pointer;">
+    genre
+  </button>
+</div>
+ 
+
+  <!-- User profiles array selection at bottom -->
 <div id="user-profiles"></div>
+
+  <br><br><br><br><br>
+
+</div>
+</div> 
+
+<br><br><br>
 
 
 
@@ -352,6 +392,9 @@ if (is_dir($baseDir)) {
     <button id="visitProfileBtn" style="margin-top:18px; background:#e8bebe; border:none; border-radius:7px; padding:0.7em 2em; font-family:monospace; font-size:1em; cursor:pointer;">visit profile</button>
   </div>
 </div>
+
+
+    
 
 <!-- Add this modal container for expanded work cards to the HTML part of the file, just before the closing body tag -->
 <div id="workModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.85); overflow:auto;">
