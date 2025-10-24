@@ -1,4 +1,7 @@
- // ----------- ALPHABETICAL SORT BUTTON FUNCTIONALITY ----------
+
+let filteredArtists = userProfiles.slice(); // Current filtered list (default: all)
+
+// ----------- ALPHABETICAL SORT BUTTON FUNCTIONALITY ----------
     document.getElementById('sortAlphaBtn').onclick = function() {
       filteredArtists.sort(function(a, b) {
         var lnameA = (a.lastname || '').toLowerCase();
@@ -69,9 +72,9 @@
     searchBar.addEventListener('input', function() {
       const query = searchBar.value.trim().toLowerCase();
       if (query === '') {
-        filteredArtists = ARTISTS.slice();
+        filteredArtists = userProfiles.slice();
       } else {
-        filteredArtists = ARTISTS.filter(function(artist) {
+        filteredArtists = userProfiles.filter(function(artist) {
           return (
             (artist.firstname && artist.firstname.toLowerCase().includes(query)) ||
             (artist.lastname && artist.lastname.toLowerCase().includes(query)) ||
