@@ -781,6 +781,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+<script src="sortButtons.js"></script>    
    
 </body>
 </html>
