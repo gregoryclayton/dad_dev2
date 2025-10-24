@@ -364,7 +364,35 @@ if (is_dir($baseDir)) {
 <br><br><br>
 
 
-
+<footer style="background:#222; color:#eee; padding:2em 0; text-align:center; font-size:0.95em;">
+  <div style="margin-bottom:1em;">
+    <nav>
+      <a href="/index.php" style="color:#eee; margin:0 15px; text-decoration:none;">home</a>
+      <a href="/about.php" style="color:#eee; margin:0 15px; text-decoration:none;">about</a>
+      <a href="/signup.php" style="color:#eee; margin:0 15px; text-decoration:none;">sign up</a>
+      <a href="/contribute.php" style="color:#eee; margin:0 15px; text-decoration:none;">contribute</a>
+      <a href="/database.php" style="color:#eee; margin:0 15px; text-decoration:none;">database</a>
+      
+    </nav>
+  </div>
+  <div style="margin-bottom:1em;">
+    <a href="https://discord.com/" target="_blank" rel="noopener" style="margin:0 8px;">
+      <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/discord.svg" alt="Twitter" height="22" style="vertical-align:middle; filter:invert(1);">
+    </a>
+    <a href="https://facebook.com/" target="_blank" rel="noopener" style="margin:0 8px;">
+      <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/facebook.svg" alt="Facebook" height="22" style="vertical-align:middle; filter:invert(1);">
+    </a>
+    <a href="https://instagram.com/" target="_blank" rel="noopener" style="margin:0 8px;">
+      <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/instagram.svg" alt="Instagram" height="22" style="vertical-align:middle; filter:invert(1);">
+    </a>
+    <a href="https://github.com/" target="_blank" rel="noopener" style="margin:0 8px;">
+      <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg" alt="GitHub" height="22" style="vertical-align:middle; filter:invert(1);">
+    </a>
+  </div>
+  <div>
+    &copy; 2025 Digital Artist Database. All Rights Reserved.
+  </div>
+</footer>
 
 
 <!-- Slide Modal (work card reveal) -->
