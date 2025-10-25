@@ -160,8 +160,8 @@ if (is_dir($baseDir)) {
             div.setAttribute("data-idx", idx);
 
             // Basic profile info
-            div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>" +
-                "<span>" + (profileData.email ? profileData.email : "") + "</span><br>";
+            div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>"; //+
+               // "<span>" + (profileData.email ? profileData.email : "") + "</span><br>";
 
             // Dropdown for profile info (hidden by default)
             var dropdown = document.createElement('div');
