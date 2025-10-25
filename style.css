@@ -109,7 +109,7 @@
 
 .workList {
   padding-left:0;
-  display: grid;
+  display: flex;
 }
 
 .work-image { 
