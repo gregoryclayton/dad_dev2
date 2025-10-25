@@ -160,8 +160,17 @@ if (is_dir($baseDir)) {
             div.setAttribute("data-idx", idx);
 
             // Basic profile info
+
+            var profile_images_map = <?php echo json_encode($profile_images_map, JSON_UNESCAPED_SLASHES); ?>;
+            
             div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>"; //+
                // "<span>" + (profileData.email ? profileData.email : "") + "</span><br>";
+            
+            
+            if (profile_images_map[profile_username] && profile_images_map[profile_username][0]) {
+                html += '<div><img src="' + profile_images_map[profile_username][0] + '" class="profile-image" alt="Profile Image"></div>';
+            }
+            
 
             // Dropdown for profile info (hidden by default)
             var dropdown = document.createElement('div');
@@ -359,10 +368,10 @@ if (is_dir($baseDir)) {
   <br><br><br><br><br>
 
 </div>
-    <br><br><br>
+    <br><br><br><br><br>
 </div> 
 
-<br><br><br>
+<br><br><br><br><br>
 
 
 <footer style="background:#222; color:#eee; padding:2em 0; text-align:center; font-size:0.95em;">
