@@ -167,9 +167,9 @@ if (is_dir($baseDir)) {
                // "<span>" + (profileData.email ? profileData.email : "") + "</span><br>";
             
             
-            if (profile_images_map[profile_username] && profile_images_map[profile_username][0]) {
-                html += '<div><img src="' + profile_images_map[profile_username][0] + '" class="profile-image" alt="Profile Image"></div>';
-            }
+            //if (profile_images_map[profile_username] && profile_images_map[profile_username][0]) {
+              //  html += '<div><img src="' + profile_images_map[profile_username][0] + '" class="profile-image" alt="Profile Image"></div>';
+            //}
             
 
             // Dropdown for profile info (hidden by default)
@@ -203,13 +203,13 @@ if (is_dir($baseDir)) {
             if (profile_images_map[profile_username] && profile_images_map[profile_username][0]) {
                 html += '<div><img src="' + profile_images_map[profile_username][0] + '" class="profile-image" alt="Profile Image"></div>';
             }
-            html += "<strong>Created At:</strong> " + (profileData.created_at ? profileData.created_at : "") + "<br>";
+            // html += "<strong>Created At:</strong> " + (profileData.created_at ? profileData.created_at : "") + "<br>";
             if (profileData.bio) html += "<strong>Bio:</strong> " + profileData.bio + "<br>";
             if (profileData.dob) html += "<strong>Date of Birth:</strong> " + profileData.dob + "<br>";
             if (profileData.country) html += "<strong>Country:</strong> " + profileData.country + "<br>";
             // Work images & info
             if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
-                html += "<strong>Work:</strong><ul style='padding-left:0;'>";
+                html += "<strong>Work:</strong><ul class='workList'>";
                 profileData.work.forEach(function(work_item){
                     html += "<li style='margin-bottom:8px;'>";
                     if (work_item.image) {
