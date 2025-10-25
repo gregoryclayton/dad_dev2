@@ -121,7 +121,7 @@
 
 .profile-dropdown {
             display: none;
-            position:;
+            position: relative;
             left: 0;
             top: 100%;
             z-index: 100;
