@@ -6,11 +6,11 @@
   transition:0.1s;
   
   font-family: monospace;
-  font-size: 40px;
+  font-size: 30px;
   background: #b44b64c3;
   margin: 50px;
-  margin-left: 50px;
-  margin-top: 50px;
+  margin-left: 40px;
+  margin-top: 40px;
   justify-content: end;
   align-content: end;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
@@ -79,7 +79,7 @@
       
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items:;
        scrollbar-width: none; /* Firefox */
     }
 
@@ -95,6 +95,7 @@
   padding:10px; 
   cursor:pointer; 
   position:relative; 
+  width:70%;
   }
 
 .user-profile:hover {
@@ -102,8 +103,8 @@
 }
   
 .profile-image { 
-  max-width:200px; 
-  max-height:200px; 
+  max-width:100px; 
+  max-height:100px; 
 }
 
 .work-image { 
@@ -120,7 +121,7 @@
 
 .profile-dropdown {
             display: none;
-            position: absolute;
+            position:;
             left: 0;
             top: 100%;
             z-index: 100;
@@ -129,7 +130,7 @@
             box-shadow: 0 8px 24px #0002;
             padding: 16px;
             width: 90vw;
-            height: 500px;
+            height: 400px;
             overflow-y: scroll;
         }
 
