@@ -116,7 +116,23 @@ if (isset($_GET['logout'])) {
     exit();
 }
 
+// Handle registration
+if (isset($_POST['register'])) {
+    $first = $conn->real_escape_string($_POST['first']);
+    $last = $conn->real_escape_string($_POST['last']);
+    $email = $conn->real_escape_string($_POST['email']);
+    $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
+    // Check if email already exists
+    $check = $conn->query("SELECT * FROM users WHERE email='$email'");
+    if ($check->num_rows > 0) {
+        echo "Email already registered!";
+    } else {
+        $conn->query("INSERT INTO users (first,last,email,password) VALUES ('$first','$last','$email','$pass')");
+        $user_dir = create_user_profile($first, $last, $email);
+        echo "Registration successful! Please log in.";
+    }
+}
 
 // Collect all profile data into a JSON array
 $baseDir = "/var/www/html/pusers";
@@ -370,6 +386,23 @@ if (is_dir($baseDir)) {
 </div>
     <br><br><br><br><br>
 </div> 
+
+<?php if (!isset($_SESSION['email'])): ?>
+<h2>Register</h2>
+<form method="POST">
+    First Name: <input type="text" name="first" required><br>
+    Last Name: <input type="text" name="last" required><br>
+    Email: <input type="email" name="email" required><br>
+    Password: <input type="password" name="password" required><br>
+    <button name="register">Register</button>
+</form>
+
+<?php else: ?>
+    <h2>You're already logged in <?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?>.</h2>
+    <a href="?logout=1">Logout</a>
+    
+    
+<?php endif; ?>
 
 <br><br><br><br><br>
 
