@@ -101,7 +101,7 @@
   padding:10px; 
   cursor:pointer; 
   position:relative; 
-  width:90%;
+  width:80%;
   }
 
 .user-profile:hover {
@@ -140,7 +140,7 @@
             border: 1px solid #aaa;
             box-shadow: 0 8px 24px #0002;
             padding: 16px;
-            width: 90vw;
+            width: 80%;
             height: 300px;
             overflow-y: scroll;
         }
