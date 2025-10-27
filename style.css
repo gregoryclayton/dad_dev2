@@ -71,9 +71,15 @@
   display: flex;
 }
 
+.navbtn {
+  text-decoration: none;
+  font-family: monospace;
+  color: black;
+}
+
 #user-profiles {
       width: 80%;
-      height: 100vh;
+      height: 1000px;
       overflow-y: auto;
       background-color: rgba(255, 255, 255, 0);
       
