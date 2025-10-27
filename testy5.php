@@ -303,15 +303,15 @@ if (is_dir($baseDir)) {
 <div class="navbar">
     <div class="navbarbtns">
         <div ><a class="navbtn" href="register.php">register</a></div>
-         <div class="navbtn"><a href="studio3.php">studio</a></div>
-        <div class="navbtn"><a href="database.php">database</a></div>
+         <div ><a class="navbtn" href="studio3.php">studio</a></div>
+        <div ><a class="navbtn" href="database.php">database</a></div>
     </div>
 </div>
     
 <?php if (!isset($_SESSION['email'])): ?>
 
 <h2>Login</h2>
-<form method="POST">
+<form method="POST" style="display:flex;">
     Email: <input type="email" name="email" required><br>
     Password: <input type="password" name="password" required><br>
     <button name="login">Login</button>
