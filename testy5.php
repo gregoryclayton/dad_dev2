@@ -287,14 +287,14 @@ if (is_dir($baseDir)) {
 
 
 <!-- Pop-out menu for quick nav, hidden by default -->
-<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:80px; font-family:monospace;">
+<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:50px; font-family:monospace;">
   <div style="display:flex; flex-direction:column; gap:0.5em;">
     <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">home</a>
     <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">about</a>
-    <a href="signup.php" style="color:#b44; text-decoration:none; font-size:1.1em;">sign up</a>
-    <a href="contribute.php" style="color:#a56; text-decoration:none; font-size:1.1em;">contribute</a>
+       <a href="studio.php" style="color:#777; text-decoration:none; font-size:1.1em;">studio</a>
+    <a href="signup.php" style="color:#b44; text-decoration:none; font-size:1.1em;">register</a>
     <a href="database.php" style="color:#555; text-decoration:none; font-size:1.1em;">database</a>
-    <a href="studio.php" style="color:#777; text-decoration:none; font-size:1.1em;">studio</a>
+   
    
   </div>
 </div>
@@ -302,9 +302,9 @@ if (is_dir($baseDir)) {
 
 <div class="navbar">
     <div class="navbarbtns">
-        <div ><a class="navbtn" href="register.php">register</a></div>
-         <div ><a class="navbtn" href="studio3.php">studio</a></div>
-        <div ><a class="navbtn" href="database.php">database</a></div>
+        <div ><a class="navbtn" href="register.php">[register]</a></div>
+         <div ><a class="navbtn" href="studio3.php">[studio]</a></div>
+        <div ><a class="navbtn" href="database.php">[database]</a></div>
     </div>
 </div>
     
