@@ -118,6 +118,8 @@
 .workList {
   padding-left:0;
   display: flex;
+  width: 80%;
+  overflow-x: scroll;
 }
 
 .work-image { 
