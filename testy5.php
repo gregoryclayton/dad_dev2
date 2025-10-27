@@ -310,7 +310,7 @@ if (is_dir($baseDir)) {
     
 <?php if (!isset($_SESSION['email'])): ?>
 
-<h2>Login</h2>
+
 <form method="POST" style="display:flex;">
     Email: <input type="email" name="email" required><br>
     Password: <input type="password" name="password" required><br>
