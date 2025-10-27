@@ -328,8 +328,8 @@ if (is_dir($baseDir)) {
 
 
 <form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end;">
-    Email: <input type="email" name="email" required><br>
-    Password: <input type="password" name="password" required><br>
+    <input style="width:30px" type="email" name="email" placeholder="email" required><br>
+    <input style="width:30px" type="password" name="password"  placeholder="password" required><br>
     <button name="login">Login</button>
 </form>
 <?php else: ?>
