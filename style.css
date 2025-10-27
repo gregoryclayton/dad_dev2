@@ -95,7 +95,7 @@
   padding:10px; 
   cursor:pointer; 
   position:relative; 
-  width:70%;
+  width:90%;
   }
 
 .user-profile:hover {
@@ -126,7 +126,7 @@
 
 .profile-dropdown {
             display: none;
-            position: relative;
+            position: ;
             left: 0;
             top: 100%;
             z-index: 100;
@@ -135,7 +135,7 @@
             box-shadow: 0 8px 24px #0002;
             padding: 16px;
             width: 90vw;
-            height: 400px;
+            height: 300px;
             overflow-y: scroll;
         }
 
