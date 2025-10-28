@@ -72,7 +72,7 @@ if (is_dir($baseDir)) {
 
         // Work section
         if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
-            html += '<div id="workDiv"><strong>Work:</strong><ul class='workList'>';
+            html += '<div id="workDiv"><strong>Work:</strong><ul>';
             profileData.work.forEach(function(work_item){
                 html += "<li>";
                 if (work_item.image) {
