@@ -316,18 +316,12 @@ if (is_dir($baseDir)) {
 </div>
 
 
-<div class="navbar">
-    <div class="navbarbtns">
-        <div ><a class="navbtn" href="register.php">[register]</a></div>
-         <div ><a class="navbtn" href="studio3.php">[studio]</a></div>
-        <div ><a class="navbtn" href="database.php">[database]</a></div>
-    </div>
-</div>
+
     
 <?php if (!isset($_SESSION['email'])): ?>
 
 
-<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; ">
+<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-right-radius:10px;">
     <input style="width:50px" type="email" name="email" placeholder="email" required><br>
     <input style="width:50px" type="password" name="password"  placeholder="password" required><br>
     <button name="login">Login</button>
@@ -341,7 +335,13 @@ if (is_dir($baseDir)) {
 
 
 
-
+<div class="navbar">
+    <div class="navbarbtns">
+        <div ><a class="navbtn" href="register.php">[register]</a></div>
+         <div ><a class="navbtn" href="studio3.php">[studio]</a></div>
+        <div ><a class="navbtn" href="database.php">[database]</a></div>
+    </div>
+</div>
 
 
 
