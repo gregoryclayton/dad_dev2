@@ -179,7 +179,14 @@ if (is_dir($baseDir)) {
 
             var profile_images_map = <?php echo json_encode($profile_images_map, JSON_UNESCAPED_SLASHES); ?>;
             
-            div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>"; //+
+           div.innerHTML = (
+    (profile_images_map[profile_username] && profile_images_map[profile_username][0]
+        ? '<img src="' + profile_images_map[profile_username][0] + '" class="mini-profile-image" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;">'
+        : ''
+    ) +
+    "<strong>" + profileData.first + " " + profileData.last + "</strong><br>"
+); 
+            //+
                // "<span>" + (profileData.email ? profileData.email : "") + "</span><br>";
             
             
