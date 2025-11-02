@@ -271,25 +271,76 @@ if (is_dir($baseDir)) {
         renderProfiles(userProfiles);
     });
 
-    document.addEventListener("DOMContentLoaded", function() {
-    renderProfiles(userProfiles);
+        document.addEventListener("DOMContentLoaded", function() {
+        renderProfiles(userProfiles);
 
-    // Sort by name button
-    var sortAlphaBtn = document.getElementById('sortAlphaBtn');
-    if (sortAlphaBtn) {
-        sortAlphaBtn.addEventListener('click', function() {
-            // Make a shallow copy of userProfiles to avoid mutating the original array
-            var sorted = userProfiles.slice().sort(function(a, b) {
-                var nameA = ((a.first || "") + " " + (a.last || "")).toLowerCase();
-                var nameB = ((b.first || "") + " " + (b.last || "")).toLowerCase();
-                if (nameA < nameB) return -1;
-                if (nameA > nameB) return 1;
-                return 0;
+        // Sort by name button
+        var sortAlphaBtn = document.getElementById('sortAlphaBtn');
+        if (sortAlphaBtn) {
+            sortAlphaBtn.addEventListener('click', function() {
+                var sorted = userProfiles.slice().sort(function(a, b) {
+                    var nameA = ((a.first || "") + " " + (a.last || "")).toLowerCase();
+                    var nameB = ((b.first || "") + " " + (b.last || "")).toLowerCase();
+                    if (nameA < nameB) return -1;
+                    if (nameA > nameB) return 1;
+                    return 0;
+                });
+                renderProfiles(sorted);
             });
-            renderProfiles(sorted);
-        });
-    }
-});
+        }
+
+        // Sort by date of birth button
+        var sortDateBtn = document.getElementById('sortDateBtn');
+        if (sortDateBtn) {
+            sortDateBtn.addEventListener('click', function() {
+                var sorted = userProfiles.slice().sort(function(a, b) {
+                    var dobA = a.dob ? new Date(a.dob) : null;
+                    var dobB = b.dob ? new Date(b.dob) : null;
+                    if (!dobA && !dobB) return 0;
+                    if (!dobA) return 1;
+                    if (!dobB) return -1;
+                    return dobA - dobB;
+                });
+                renderProfiles(sorted);
+            });
+        }
+
+        // Sort by country button
+        var sortCountryBtn = document.getElementById('sortCountryBtn');
+        if (sortCountryBtn) {
+            sortCountryBtn.addEventListener('click', function() {
+                var sorted = userProfiles.slice().sort(function(a, b) {
+                    var countryA = (a.country || "").toLowerCase();
+                    var countryB = (b.country || "").toLowerCase();
+                    if (!countryA && !countryB) return 0;
+                    if (!countryA) return 1;
+                    if (!countryB) return -1;
+                    if (countryA < countryB) return -1;
+                    if (countryA > countryB) return 1;
+                    return 0;
+                });
+                renderProfiles(sorted);
+            });
+        }
+
+        // Sort by genre button
+        var sortGenreBtn = document.getElementById('sortGenreBtn');
+        if (sortGenreBtn) {
+            sortGenreBtn.addEventListener('click', function() {
+                var sorted = userProfiles.slice().sort(function(a, b) {
+                    var genreA = (a.genre || "").toLowerCase();
+                    var genreB = (b.genre || "").toLowerCase();
+                    if (!genreA && !genreB) return 0;
+                    if (!genreA) return 1;
+                    if (!genreB) return -1;
+                    if (genreA < genreB) return -1;
+                    if (genreA > genreB) return 1;
+                    return 0;
+                });
+                renderProfiles(sorted);
+            });
+        }
+    });
     </script>
 </head>
 <body>
