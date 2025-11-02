@@ -415,7 +415,78 @@ if (is_dir($baseDir)) {
     </div>
 </div>
 
+<!-- Slideshow of random user work images -->
+<?php
+// Collect all images from pusers/*/work/*.{jpg,jpeg,png,gif}
+$slideshow_images = [];
+$pusers_dir = __DIR__ . '/pusers';
+if (is_dir($pusers_dir)) {
+    $user_folders = scandir($pusers_dir);
+    foreach ($user_folders as $user_folder) {
+        if ($user_folder === '.' || $user_folder === '..') continue;
+        $work_dir = $pusers_dir . '/' . $user_folder . '/work';
+        if (is_dir($work_dir)) {
+            $work_files = scandir($work_dir);
+            foreach ($work_files as $file) {
+                if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $file)) {
+                    // Path relative to web root
+                    $slideshow_images[] = 'pusers/' . $user_folder . '/work/' . $file;
+                }
+            }
+        }
+    }
+}
+shuffle($slideshow_images); // Randomize order
+?>
 
+<div id="user-slideshow" style="width:100%; display:flex; justify-content:center; align-items:center; margin: 2em 0;">
+    <div style="position:relative;">
+        <img id="slideshow-img" src="<?php echo count($slideshow_images) ? htmlspecialchars($slideshow_images[0]) : ''; ?>" alt="Artwork Slideshow" style="max-width:60vw; max-height:300px; border-radius:16px; box-shadow:0 6px 24px #0002; object-fit:contain; background:#f4f4f4;"/>
+        <?php if (count($slideshow_images) > 1): ?>
+        <button id="prev-btn" style="position:absolute; left:-48px; top:50%; transform:translateY(-50%); background:#fff; border:none; border-radius:50%; width:38px; height:38px; font-size:1.7em; cursor:pointer;">&#8678;</button>
+        <button id="next-btn" style="position:absolute; right:-48px; top:50%; transform:translateY(-50%); background:#fff; border:none; border-radius:50%; width:38px; height:38px; font-size:1.7em; cursor:pointer;">&#8680;</button>
+        <?php endif; ?>
+    </div>
+</div>
+
+<script>
+var slideshowImages = <?php echo json_encode($slideshow_images, JSON_UNESCAPED_SLASHES); ?>;
+var slideshowCurrent = 0;
+var slideshowImg = document.getElementById('slideshow-img');
+var slideshowTimer = null;
+var slideshowInterval = 7000; // 7 seconds
+
+function showSlideshowImage(idx) {
+    if (!slideshowImages.length) {
+        slideshowImg.src = '';
+        slideshowImg.alt = 'No artwork found';
+        return;
+    }
+    slideshowCurrent = (idx + slideshowImages.length) % slideshowImages.length;
+    slideshowImg.src = slideshowImages[slideshowCurrent];
+}
+
+function nextSlideshowImage() { showSlideshowImage(slideshowCurrent + 1); }
+function prevSlideshowImage() { showSlideshowImage(slideshowCurrent - 1); }
+function startSlideshowTimer() {
+    if (slideshowTimer) clearInterval(slideshowTimer);
+    slideshowTimer = setInterval(nextSlideshowImage, slideshowInterval);
+}
+
+if (document.getElementById('next-btn')) {
+    document.getElementById('next-btn').onclick = function() { nextSlideshowImage(); startSlideshowTimer(); };
+}
+if (document.getElementById('prev-btn')) {
+    document.getElementById('prev-btn').onclick = function() { prevSlideshowImage(); startSlideshowTimer(); };
+}
+
+if (slideshowImg) {
+    slideshowImg.onclick = function() { nextSlideshowImage(); startSlideshowTimer(); };
+}
+
+showSlideshowImage(0);
+startSlideshowTimer();
+</script>
 
 
 
