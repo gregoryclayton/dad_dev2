@@ -270,6 +270,26 @@ if (is_dir($baseDir)) {
     document.addEventListener("DOMContentLoaded", function() {
         renderProfiles(userProfiles);
     });
+
+    document.addEventListener("DOMContentLoaded", function() {
+    renderProfiles(userProfiles);
+
+    // Sort by name button
+    var sortAlphaBtn = document.getElementById('sortAlphaBtn');
+    if (sortAlphaBtn) {
+        sortAlphaBtn.addEventListener('click', function() {
+            // Make a shallow copy of userProfiles to avoid mutating the original array
+            var sorted = userProfiles.slice().sort(function(a, b) {
+                var nameA = ((a.first || "") + " " + (a.last || "")).toLowerCase();
+                var nameB = ((b.first || "") + " " + (b.last || "")).toLowerCase();
+                if (nameA < nameB) return -1;
+                if (nameA > nameB) return 1;
+                return 0;
+            });
+            renderProfiles(sorted);
+        });
+    }
+});
     </script>
 </head>
 <body>
