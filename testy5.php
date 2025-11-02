@@ -342,6 +342,38 @@ if (is_dir($baseDir)) {
         }
     });
     </script>
+
+    <script>
+var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
+
+// ... existing renderProfiles and sorting button code ...
+
+// --- SEARCH BAR FUNCTIONALITY ---
+document.addEventListener("DOMContentLoaded", function() {
+    var searchBar = document.getElementById('artistSearchBar');
+    if (searchBar) {
+        searchBar.addEventListener('input', function() {
+            var search = (searchBar.value || "").toLowerCase().trim();
+            if (!search) {
+                renderProfiles(userProfiles); // Show all if search is empty
+                return;
+            }
+            var filtered = userProfiles.filter(function(profile) {
+                // Search first, last, email, country, genre, bio
+                return (
+                    (profile.first && profile.first.toLowerCase().includes(search)) ||
+                    (profile.last && profile.last.toLowerCase().includes(search)) ||
+                    (profile.email && profile.email.toLowerCase().includes(search)) ||
+                    (profile.country && profile.country.toLowerCase().includes(search)) ||
+                    (profile.genre && profile.genre.toLowerCase().includes(search)) ||
+                    (profile.bio && profile.bio.toLowerCase().includes(search))
+                );
+            });
+            renderProfiles(filtered);
+        });
+    }
+});
+</script>
 </head>
 <body>
 
