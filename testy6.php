@@ -485,13 +485,14 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
+<script>
 // --- SLIDESHOW LOGIC & MODAL FIX ---
 var slideshowImages = <?php echo json_encode($slideshow_images, JSON_UNESCAPED_SLASHES); ?>;
 var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
 var slideshowCurrent = 0;
 var slideshowImg = document.getElementById('slideshow-img');
 var slideshowTimer = null;
-var slideshowInterval = 7000;
+var slideshowInterval = 3000; // Change this to 3000ms (3 seconds)
 
 // Helper to get user profile by folder name
 function getUserProfileFromImagePath(path) {
