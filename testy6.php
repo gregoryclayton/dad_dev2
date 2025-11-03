@@ -145,6 +145,18 @@ if (is_dir($baseDir)) {
     </div>
 </div>
 
+<!-- Login/Register Forms -->
+<?php if (!isset($_SESSION['email'])): ?>
+<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px;">
+    <input type="email" name="email" placeholder="email" required>
+    <input type="password" name="password"  placeholder="password" required>
+    <button name="login">Login</button>
+</form>
+<?php else: ?>
+    <h2>Welcome, <?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?>!</h2>
+    <a href="?logout=1">Logout</a>
+<?php endif; ?>
+
 <!-- Slideshow -->
 <div id="user-slideshow" style="width:100%; display:flex; justify-content:center; align-items:center; margin: 2em 0;">
     <div style="position:relative;">
@@ -171,17 +183,7 @@ if (is_dir($baseDir)) {
   </div>
 </div>
 
-<!-- Login/Register Forms -->
-<?php if (!isset($_SESSION['email'])): ?>
-<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px;">
-    <input type="email" name="email" placeholder="email" required>
-    <input type="password" name="password"  placeholder="password" required>
-    <button name="login">Login</button>
-</form>
-<?php else: ?>
-    <h2>Welcome, <?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?>!</h2>
-    <a href="?logout=1">Logout</a>
-<?php endif; ?>
+
 
 <!-- Content Section (Search, Sort, Profiles) -->
 <div class="container-container-container" style="display:grid; align-items:center; justify-items: center;">
