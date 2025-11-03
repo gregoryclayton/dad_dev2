@@ -264,6 +264,41 @@ function renderProfiles(profiles) {
         div.className = "user-profile";
         div.setAttribute("data-username", profile_username);
 
+         // Determine mini-profile image:
+        // prefer a profile_image in work entries, otherwise first work image, otherwise empty
+        var miniSrc = "";
+        if (Array.isArray(profileData.work) && profileData.work.length > 0) {
+            // try to find a work image that looks like a profile image first
+            var found = profileData.work.find(function(w){
+                if (!w.image) return false;
+                return /profile_image_/i.test(w.image);
+            });
+            if (!found) found = profileData.work[0];
+            if (found && found.image) miniSrc = found.image.replace("/var/www/html", "");
+        }
+
+        var row = document.createElement('div');
+        row.className = 'user-row';
+
+        // mini image element
+        var imgHTML = '';
+        if (miniSrc) {
+            var img = document.createElement('img');
+            img.className = 'mini-profile';
+            img.src = miniSrc;
+            img.alt = profile_username + ' photo';
+            row.appendChild(img);
+        } else {
+            // placeholder blank box for alignment (keeps rows aligned)
+            var placeholder = document.createElement('div');
+            placeholder.style.width = '42px';
+            placeholder.style.height = '42px';
+            placeholder.style.borderRadius = '6px';
+            placeholder.style.background = '#f0f0f0';
+            placeholder.style.marginRight = '10px';
+            row.appendChild(placeholder);
+        }
+
         div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>";
         var dropdown = document.createElement('div');
         dropdown.className = "profile-dropdown";
