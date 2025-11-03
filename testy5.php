@@ -670,87 +670,149 @@ startSlideshowTimer();
 
     
 <script>
-  
-//slideshow variables, php so I left it here, then interval controls
+// Existing variables for the slideshow
+var slideshowImages = <?php echo json_encode($slideshow_images, JSON_UNESCAPED_SLASHES); ?>;
+var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
+var slideshowCurrent = 0;
+var slideshowImg = document.getElementById('slideshow-img');
+var slideshowTimer = null;
+var slideshowInterval = 7000;
 
-    var images = <?php echo json_encode($images, JSON_PRETTY_PRINT); ?>;
-    var current = 0;
-    var timer = null;
-    var imgElem = document.getElementById('slideshow-img');
-    //var captionElem = document.getElementById('slideshow-caption');
-    //var prevBtn = document.getElementById('prev-btn');
-   // var nextBtn = document.getElementById('next-btn');
-    var interval = 77000;
+// --- Helper: Get user profile by folder name ---
+function getUserProfileFromImagePath(path) {
+    // path: "pusers/First_Last/work/file.jpg"
+    var match = path.match(/^pusers\/([^\/]+)\/work\//);
+    if (!match) return null;
+    var folder = match[1];
+    // folder: "First_Last"
+    var parts = folder.split('_');
+    var safeFirst = parts[0] || "";
+    var safeLast = parts.length > 1 ? parts.slice(1).join('_') : "";
+    // Find a user profile matching sanitized names
+    for (var i = 0; i < userProfiles.length; ++i) {
+        var up = userProfiles[i];
+        var pf = up.first ? up.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : "";
+        var pl = up.last ? up.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : "";
+        if (pf === safeFirst && pl === safeLast) {
+            return up;
+        }
+    }
+    return null;
+}
 
-    function showImage(idx) {
-      if (!images.length) {
-        imgElem.src = '';
-        imgElem.alt = 'No photos found';
-        captionElem.textContent = 'No photos found in folder.';
-        return;
-      }
-      current = (idx + images.length) % images.length;
-      imgElem.src = images[current];
-      imgElem.alt = 'Photo ' + (current + 1);
-      //captionElem.textContent = 'Photo ' + (current + 1) + ' of ' + images.length;
+// --- Show Modal on Slideshow Image Click ---
+function showSlideshowModal(idx) {
+    var modal = document.getElementById('slideModal');
+    var modalImg = document.getElementById('modalImg');
+    var modalInfo = document.getElementById('modalInfo');
+    var modalTitle = document.getElementById('modalTitle');
+    var modalDate = document.getElementById('modalDate');
+    var modalArtist = document.getElementById('modalArtist');
+    var visitProfileBtn = document.getElementById('visitProfileBtn');
+    var imgPath = slideshowImages[idx];
+
+    // Set image
+    if (modalImg) modalImg.src = imgPath;
+    // Get user profile
+    var userProfile = getUserProfileFromImagePath(imgPath);
+    if (userProfile) {
+        // Get a clean username for link
+        var safe_first = userProfile.first ? userProfile.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
+        var safe_last = userProfile.last ? userProfile.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
+        var profile_username = safe_first + "_" + safe_last;
+
+        // Optionally, try to find the work entry that matches this image
+        var workItem = null;
+        if (Array.isArray(userProfile.work)) {
+            workItem = userProfile.work.find(function(w) {
+                // Work image might be stored as absolute or relative path
+                if (!w.image) return false;
+                var justFile = imgPath.split('/').pop();
+                return w.image.endsWith(justFile) || w.image.indexOf(justFile) !== -1;
+            });
+        }
+
+        // Fill modal info
+        if (modalTitle) modalTitle.textContent = workItem && workItem.desc ? workItem.desc : 'Artwork';
+        if (modalDate) modalDate.textContent = workItem && workItem.date ? 'Date: ' + workItem.date : '';
+        if (modalArtist) modalArtist.textContent = (userProfile.first || '') + " " + (userProfile.last || '');
+
+        // Visit profile button
+        if (visitProfileBtn) {
+            visitProfileBtn.onclick = function() {
+                window.location.href = 'profile.php?user=' + encodeURIComponent(profile_username);
+            };
+        }
+        // (Optional) Fill modalInfo for fallback
+        if (modalInfo && !modalTitle && !modalDate && !modalArtist) {
+            modalInfo.innerHTML = '<strong>' + (userProfile.first || '') + ' ' + (userProfile.last || '') + '</strong>';
+        }
+    } else {
+        // Fallback if no user found
+        if (modalTitle) modalTitle.textContent = 'Artwork';
+        if (modalDate) modalDate.textContent = '';
+        if (modalArtist) modalArtist.textContent = '';
+        if (visitProfileBtn) visitProfileBtn.onclick = null;
+        if (modalInfo) modalInfo.innerHTML = "<strong>Unknown artist</strong>";
     }
 
-    function nextImage() { showImage(current + 1); }
-    function prevImage() { showImage(current - 1); }
-
-    //prevBtn.onclick = function() { prevImage(); resetTimer(); }
-    //nextBtn.onclick = function() { nextImage(); resetTimer(); }
-
-    function startTimer() { if (timer) clearInterval(timer); timer = setInterval(nextImage, interval); }
-    function resetTimer() { startTimer(); }
-
-    showImage(0);
-    startTimer();
-
-    // Add this JS below your existing slideshow JS
-imgElem.onclick = function () {
-  showModal(current);
-};
-
-function getImageInfo(path) {
-  // Example: "p-users/username/work/image.jpg"
-  var info = {};
-  var parts = path.split('/');
-  if (parts.length >= 4) {
-    info.userFolder = parts[1]; // username or user folder
-    info.filename = parts[3];
-    info.relativePath = path;
-  } else {
-    info.filename = path.split('/').pop();
-    info.relativePath = path;
-  }
-  return info;
+    if (modal) modal.style.display = 'flex';
 }
 
-function showModal(idx) {
-  var modal = document.getElementById('slideModal');
-  var modalImg = document.getElementById('modalImg');
-  var modalInfo = document.getElementById('modalInfo');
-  var imgPath = images[idx];
-  modalImg.src = imgPath;
-  var info = getImageInfo(imgPath);
-  // You can expand this info if you have more data
-  modalInfo.innerHTML = `
-    <div style="font-weight:bold; font-size:1.1em;">${info.filename}</div>
-    <div style="color:#777; margin-top:2px;">User Folder: ${info.userFolder ? info.userFolder : 'Unknown'}</div>
-    <div style="font-size:0.95em; color:#aaa;">Path: ${info.relativePath}</div>
-  `;
-  modal.style.display = 'flex';
+// --- Attach click to slideshow image ---
+if (slideshowImg) {
+    slideshowImg.onclick = function() {
+        showSlideshowModal(slideshowCurrent);
+    };
 }
 
-// Close modal on click of close button or background
-document.getElementById('closeSlideModal').onclick = function() {
-  document.getElementById('slideModal').style.display = 'none';
-};
-document.getElementById('slideModal').onclick = function(e) {
-  if (e.target === this) this.style.display = 'none';
-};
+// --- Next/Prev buttons also update modal ---
+if (document.getElementById('next-btn')) {
+    document.getElementById('next-btn').onclick = function() { 
+        nextSlideshowImage();
+        showSlideshowModal(slideshowCurrent);
+        startSlideshowTimer();
+    };
+}
+if (document.getElementById('prev-btn')) {
+    document.getElementById('prev-btn').onclick = function() { 
+        prevSlideshowImage();
+        showSlideshowModal(slideshowCurrent);
+        startSlideshowTimer();
+    };
+}
 
+function showSlideshowImage(idx) {
+    if (!slideshowImages.length) {
+        slideshowImg.src = '';
+        slideshowImg.alt = 'No artwork found';
+        return;
+    }
+    slideshowCurrent = (idx + slideshowImages.length) % slideshowImages.length;
+    slideshowImg.src = slideshowImages[slideshowCurrent];
+}
+
+function nextSlideshowImage() { showSlideshowImage(slideshowCurrent + 1); }
+function prevSlideshowImage() { showSlideshowImage(slideshowCurrent - 1); }
+function startSlideshowTimer() {
+    if (slideshowTimer) clearInterval(slideshowTimer);
+    slideshowTimer = setInterval(nextSlideshowImage, slideshowInterval);
+}
+
+showSlideshowImage(0);
+startSlideshowTimer();
+
+// Modal close logic (ensure this exists)
+var closeBtn = document.getElementById('closeSlideModal');
+var modal = document.getElementById('slideModal');
+if (closeBtn && modal) {
+    closeBtn.onclick = function() {
+        modal.style.display = 'none';
+    };
+    modal.onclick = function(e) {
+        if (e.target === modal) modal.style.display = 'none';
+    };
+}
 </script>
 
 <script>
