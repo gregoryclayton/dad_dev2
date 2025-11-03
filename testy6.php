@@ -206,17 +206,7 @@ if (is_dir($baseDir)) {
 </div>
 </div>
 
-<!-- Register Section -->
-<?php if (!isset($_SESSION['email'])): ?>
-<h2>Register</h2>
-<form method="POST">
-    First Name: <input type="text" name="first" required><br>
-    Last Name: <input type="text" name="last" required><br>
-    Email: <input type="email" name="email" required><br>
-    Password: <input type="password" name="password" required><br>
-    <button name="register">Register</button>
-</form>
-<?php endif; ?>
+
 
 <footer style="background:#222; color:#eee; padding:2em 0; text-align:center; font-size:0.95em;">
   <div>
