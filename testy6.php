@@ -254,124 +254,112 @@ if (is_dir($baseDir)) {
 <script>
 // --- Basic Gallery/Profiles Render and Search/Sort ---
 function renderProfiles(profiles) {
-   const container = document.getElementById('user-profiles');
-let filteredArtists = userProfiles.slice();
-let loadedCount = 0;
-const BATCH_SIZE = 8;
-let isLoading = false;
+   var container = document.getElementById('user-profiles');
+        container.innerHTML = '';
+        profiles.forEach(function(profileData, idx) {
+            var safe_first = profileData.first ? profileData.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
+            var safe_last = profileData.last ? profileData.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
+            var profile_username = safe_first + "_" + safe_last;
+            var div = document.createElement('div');
+            div.className = "user-profile";
+            div.setAttribute("data-username", profile_username);
+            div.setAttribute("data-idx", idx);
 
-// --- Helpers ---
-function getArtist(index) {
-  if (index < filteredArtists.length) return filteredArtists[index];
-  return filteredArtists[index % filteredArtists.length];
-}
+            // Basic profile info
 
-function getProfileFolderName(artist) {
-  let folder = (artist.first + '_' + artist.last).toLowerCase();
-  return folder.replace(/[^a-z0-9_\-]/g, '_');
-}
+            var profile_images_map = <?php echo json_encode($profile_images_map, JSON_UNESCAPED_SLASHES); ?>;
+            
+          div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>";
+            
+               // "<span>" + (profileData.email ? profileData.email : "") + "</span><br>";
+            
+            
+            //if (profile_images_map[profile_username] && profile_images_map[profile_username][0]) {
+              //  html += '<div><img src="' + profile_images_map[profile_username][0] + '" class="profile-image" alt="Profile Image"></div>';
+            //}
+            
 
-// --- Core rendering function ---
-function renderArtist(index) {
-  const artist = getArtist(index);
-  const entry = document.createElement('div');
-  entry.className = 'artist-entry';
-  entry.setAttribute('data-idx', index);
+            // Dropdown for profile info (hidden by default)
+            var dropdown = document.createElement('div');
+            dropdown.className = "profile-dropdown";
+            dropdown.setAttribute("id", "dropdown-" + profile_username);
 
-  // Fallbacks for missing fields
-  const first = artist.first || '';
-  const last = artist.last || '';
-  const fullName = first + ' ' + last;
-  const country = artist.country || '';
-  const genre = artist.genre || '';
-  const dob = artist.dob || '';
-  const bio = artist.bio || '';
-  const pp = artist.pp || 'images/default_pp.png'; // optional placeholder
+            // Fill dropdown with all extra info
+            var html = "";
+            // Profile image preview
+            var user_dir = "/var/www/html/pusers/" + profile_username + "/work";
+            <?php
+            // Prepare a PHP map of latest profile image for each user
+            $profile_images_map = [];
+            foreach ($userProfiles as $profile) {
+                $safe_first = isset($profile['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profile['first']) : '';
+                $safe_last = isset($profile['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profile['last']) : '';
+                $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last . "/work";
+                $images = [];
+                if (is_dir($user_dir)) {
+                    $imgs = glob($user_dir . "/profile_image_*.*");
+                    if ($imgs && count($imgs) > 0) {
+                        usort($imgs, function($a, $b) { return filemtime($b) - filemtime($a); });
+                        $images[] = str_replace("/var/www/html", "", $imgs[0]);
+                    }
+                }
+                $profile_images_map[$safe_first . "_" . $safe_last] = $images;
+            }
+            ?>
+            var profile_images_map = <?php echo json_encode($profile_images_map, JSON_UNESCAPED_SLASHES); ?>;
+            if (profile_images_map[profile_username] && profile_images_map[profile_username][0]) {
+                html += '<div><img src="' + profile_images_map[profile_username][0] + '" class="profile-image" alt="Profile Image"></div>';
+            }
+            // html += "<strong>Created At:</strong> " + (profileData.created_at ? profileData.created_at : "") + "<br>";
+            if (profileData.bio) html += "<strong>Bio:</strong> " + profileData.bio + "<br>";
+            if (profileData.dob) html += "<strong>Date of Birth:</strong> " + profileData.dob + "<br>";
+            if (profileData.country) html += "<strong>Country:</strong> " + profileData.country + "<br>";
+            // Work images & info
+            if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
+                html += "<strong>Work:</strong><ul class='workList'>";
+                profileData.work.forEach(function(work_item){
+                    html += "<li style='margin-bottom:8px;'>";
+                    if (work_item.image) {
+                        var work_img_src = work_item.image.replace("/var/www/html", "");
+                        html += '<img src="' + work_img_src + '" class="work-image" alt="Work Image">';
+                    }
+                    if (work_item.desc) html += "<br><strong>Description:</strong> " + work_item.desc;
+                    if (work_item.date) html += "<br><strong>Date:</strong> " + work_item.date;
+                    html += "</li>";
+                });
+                html += "</ul>";
+            }
+            // Profile page button
+            html += '<button class="profile-btn" onclick="window.location.href=\'profile.php?user=' + profile_username + '\'">Profile Page</button>';
 
-  // Build works list
-  let worksHTML = '';
-  if (Array.isArray(artist.work)) {
-    artist.work.forEach((w, i) => {
-      const imgSrc = (w.image || '').replace('/var/www/html', '');
-      worksHTML += `
-        <div class="work-card">
-          ${w.image ? `<img src="${imgSrc}" loading="lazy" alt="Work ${i+1}" />` : ''}
-          ${w.desc ? `<span>${w.desc}</span>` : ''}
-          ${w.date ? `<div style="font-size:0.9em; color:#888;">${w.date}</div>` : ''}
-        </div>
-      `;
+            dropdown.innerHTML = html;
+            div.appendChild(dropdown);
+
+            // Toggle dropdown on profile click (not on button click)
+            div.onclick = function(e) {
+                // If the button was clicked, let it work normally
+                if (e.target.classList.contains('profile-btn')) return;
+                // Show/hide dropdown
+                var allDropdowns = document.querySelectorAll('.profile-dropdown');
+                allDropdowns.forEach(function(d) { if (d !== dropdown) d.style.display = 'none'; });
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            };
+
+            container.appendChild(div);
+        });
+        // Click outside to close any open dropdown
+        document.addEventListener('click', function(e) {
+            if (!e.target.classList.contains('user-profile') && !e.target.classList.contains('profile-btn')) {
+                document.querySelectorAll('.profile-dropdown').forEach(function(d) {
+                    d.style.display = 'none';
+                });
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        renderProfiles(userProfiles);
     });
-  }
-
-  // Template
-  entry.innerHTML = `
-    <div class="artist-summary" style="display:flex; align-items:center; gap:1em; cursor:pointer;">
-      <img class="artist-pp" src="${pp}" alt="${fullName}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;"/>
-      <div>
-        <div style="font-weight:bold;">${fullName}</div>
-        <div style="font-size:0.9em; color:#666;">${country} ${genre ? ' · '+genre : ''}</div>
-        <div style="font-size:0.85em; color:#aaa;">${dob}</div>
-      </div>
-    </div>
-
-    <div class="dropdown" style="display:none; margin-top:1em; background:#f9f9f9; border-radius:12px; padding:1em 1.5em;">
-      <div style="font-family:sans-serif;">${bio}</div>
-      <div class="work-container" style="margin-top:1em;">
-        <div class="works-list" style="display:flex; flex-wrap:wrap; gap:1em;">
-          ${worksHTML}
-        </div>
-      </div>
-      <p style="padding:5px; cursor:pointer; color:#007bff; text-decoration:underline;"
-         onclick="window.location.href='profile.php?user=${getProfileFolderName(artist)}'">
-         visit profile
-      </p>
-    </div>
-  `;
-
-  // Toggle dropdown open/close
-  entry.addEventListener('click', function(e) {
-    if (e.target.tagName === 'IMG' || e.target.closest('.dropdown') || e.target.closest('a')) return;
-    const drop = entry.querySelector('.dropdown');
-    drop.style.display = (drop.style.display === 'block') ? 'none' : 'block';
-  });
-
-  return entry;
-}
-
-// --- Container control ---
-function clearContainer() {
-  container.innerHTML = '';
-  loadedCount = 0;
-}
-
-function loadMore() {
-  if (isLoading) return;
-  isLoading = true;
-  for (let i = loadedCount; i < loadedCount + BATCH_SIZE && i < filteredArtists.length; i++) {
-    container.appendChild(renderArtist(i));
-  }
-  loadedCount += BATCH_SIZE;
-  isLoading = false;
-}
-
-function fillToScreen() {
-  if (container.scrollHeight < window.innerHeight + 80 && loadedCount < filteredArtists.length) {
-    loadMore();
-    setTimeout(fillToScreen, 10);
-  }
-}
-
-// --- Scroll infinite load ---
-window.addEventListener('scroll', function() {
-  if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 100) {
-    loadMore();
-  }
-});
-
-// --- Initial render ---
-clearContainer();
-loadMore();
-setTimeout(fillToScreen, 10);
 
 // --- Hook up search ---
 document.getElementById('artistSearchBar').addEventListener('input', function() {
