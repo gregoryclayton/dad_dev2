@@ -361,7 +361,7 @@ function renderProfiles(profiles) {
         renderProfiles(userProfiles);
     });
 
-/var container = document.getElementById('user-profiles');
+var container = document.getElementById('user-profiles');
         container.innerHTML = '';
         profiles.forEach(function(profileData, idx) {
             var safe_first = profileData.first ? profileData.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
