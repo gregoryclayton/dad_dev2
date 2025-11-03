@@ -145,16 +145,19 @@ if (is_dir($baseDir)) {
     </div>
 </div>
 
-<!-- Login/Register Forms -->
 <?php if (!isset($_SESSION['email'])): ?>
-<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px;">
-    <input type="email" name="email" placeholder="email" required>
-    <input type="password" name="password"  placeholder="password" required>
+
+
+<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-right-radius:10px;">
+    <input style="width:80px" type="email" name="email" placeholder="email" required><br>
+    <input style="width:80px" type="password" name="password"  placeholder="password" required><br>
     <button name="login">Login</button>
 </form>
 <?php else: ?>
     <h2>Welcome, <?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?>!</h2>
     <a href="?logout=1">Logout</a>
+    
+    
 <?php endif; ?>
 
 <!-- Slideshow -->
