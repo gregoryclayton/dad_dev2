@@ -254,111 +254,141 @@ if (is_dir($baseDir)) {
 <script>
 // --- Basic Gallery/Profiles Render and Search/Sort ---
 function renderProfiles(profiles) {
-    var container = document.getElementById('user-profiles');
-    container.innerHTML = '';
-    profiles.forEach(function(profileData, idx) {
-        var safe_first = profileData.first ? profileData.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
-        var safe_last = profileData.last ? profileData.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
-        var profile_username = safe_first + "_" + safe_last;
-        var div = document.createElement('div');
-        div.className = "user-profile";
-        div.setAttribute("data-username", profile_username);
+   const container = document.getElementById('user-profiles');
+let filteredArtists = userProfiles.slice();
+let loadedCount = 0;
+const BATCH_SIZE = 8;
+let isLoading = false;
 
-
-
-        div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>";
-        var dropdown = document.createElement('div');
-        dropdown.className = "profile-dropdown";
-        var html = "";
-        if (profileData.bio) html += "<strong>Bio:</strong> " + profileData.bio + "<br>";
-        if (profileData.dob) html += "<strong>Date of Birth:</strong> " + profileData.dob + "<br>";
-        if (profileData.country) html += "<strong>Country:</strong> " + profileData.country + "<br>";
-        if (profileData.genre) html += "<strong>Genre:</strong> " + profileData.genre + "<br>";
-        if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
-            html += "<strong>Work:</strong><ul class='workList'>";
-            profileData.work.forEach(function(work_item){
-                html += "<li style='margin-bottom:8px;'>";
-                if (work_item.image) {
-                    var work_img_src = work_item.image.replace("/var/www/html", "");
-                    html += '<img src="' + work_img_src + '" class="work-image" alt="Work Image">';
-                }
-                if (work_item.desc) html += "<br><strong>Description:</strong> " + work_item.desc;
-                if (work_item.date) html += "<br><strong>Date:</strong> " + work_item.date;
-                html += "</li>";
-            });
-            html += "</ul>";
-        }
-        html += '<button class="profile-btn" onclick="window.location.href=\'profile.php?user=' + profile_username + '\'">Profile Page</button>';
-        dropdown.innerHTML = html;
-        div.appendChild(dropdown);
-
-        // Toggle dropdown on profile click (not on button click)
-        div.onclick = function(e) {
-            if (e.target.classList.contains('profile-btn')) return;
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        };
-        container.appendChild(div);
-    });
+// --- Helpers ---
+function getArtist(index) {
+  if (index < filteredArtists.length) return filteredArtists[index];
+  return filteredArtists[index % filteredArtists.length];
 }
-function searchProfiles() {
-    var search = (document.getElementById('artistSearchBar').value || "").toLowerCase();
-    if (!search) { renderProfiles(userProfiles); return; }
-    var filtered = userProfiles.filter(function(profile) {
-        return (
-            (profile.first && profile.first.toLowerCase().includes(search)) ||
-            (profile.last && profile.last.toLowerCase().includes(search)) ||
-            (profile.email && profile.email.toLowerCase().includes(search)) ||
-            (profile.country && profile.country.toLowerCase().includes(search)) ||
-            (profile.genre && profile.genre.toLowerCase().includes(search)) ||
-            (profile.bio && profile.bio.toLowerCase().includes(search))
-        );
-    });
-    renderProfiles(filtered);
-}
-document.getElementById('artistSearchBar').addEventListener('input', searchProfiles);
 
-document.getElementById('sortAlphaBtn').onclick = function() {
-    var sorted = userProfiles.slice().sort(function(a, b) {
-        var nameA = ((a.first || "") + " " + (a.last || "")).toLowerCase();
-        var nameB = ((b.first || "") + " " + (b.last || "")).toLowerCase();
-        return nameA.localeCompare(nameB);
+function getProfileFolderName(artist) {
+  let folder = (artist.first + '_' + artist.last).toLowerCase();
+  return folder.replace(/[^a-z0-9_\-]/g, '_');
+}
+
+// --- Core rendering function ---
+function renderArtist(index) {
+  const artist = getArtist(index);
+  const entry = document.createElement('div');
+  entry.className = 'artist-entry';
+  entry.setAttribute('data-idx', index);
+
+  // Fallbacks for missing fields
+  const first = artist.first || '';
+  const last = artist.last || '';
+  const fullName = first + ' ' + last;
+  const country = artist.country || '';
+  const genre = artist.genre || '';
+  const dob = artist.dob || '';
+  const bio = artist.bio || '';
+  const pp = artist.pp || 'images/default_pp.png'; // optional placeholder
+
+  // Build works list
+  let worksHTML = '';
+  if (Array.isArray(artist.work)) {
+    artist.work.forEach((w, i) => {
+      const imgSrc = (w.image || '').replace('/var/www/html', '');
+      worksHTML += `
+        <div class="work-card">
+          ${w.image ? `<img src="${imgSrc}" loading="lazy" alt="Work ${i+1}" />` : ''}
+          ${w.desc ? `<span>${w.desc}</span>` : ''}
+          ${w.date ? `<div style="font-size:0.9em; color:#888;">${w.date}</div>` : ''}
+        </div>
+      `;
     });
-    renderProfiles(sorted);
-};
-document.getElementById('sortDateBtn').onclick = function() {
-    var sorted = userProfiles.slice().sort(function(a, b) {
-        var dobA = a.dob ? new Date(a.dob) : null;
-        var dobB = b.dob ? new Date(b.dob) : null;
-        if (!dobA && !dobB) return 0;
-        if (!dobA) return 1;
-        if (!dobB) return -1;
-        return dobA - dobB;
-    });
-    renderProfiles(sorted);
-};
-document.getElementById('sortCountryBtn').onclick = function() {
-    var sorted = userProfiles.slice().sort(function(a, b) {
-        var countryA = (a.country || "").toLowerCase();
-        var countryB = (b.country || "").toLowerCase();
-        if (!countryA && !countryB) return 0;
-        if (!countryA) return 1;
-        if (!countryB) return -1;
-        return countryA.localeCompare(countryB);
-    });
-    renderProfiles(sorted);
-};
-document.getElementById('sortGenreBtn').onclick = function() {
-    var sorted = userProfiles.slice().sort(function(a, b) {
-        var genreA = (a.genre || "").toLowerCase();
-        var genreB = (b.genre || "").toLowerCase();
-        if (!genreA && !genreB) return 0;
-        if (!genreA) return 1;
-        if (!genreB) return -1;
-        return genreA.localeCompare(genreB);
-    });
-    renderProfiles(sorted);
-};
-renderProfiles(userProfiles);
+  }
+
+  // Template
+  entry.innerHTML = `
+    <div class="artist-summary" style="display:flex; align-items:center; gap:1em; cursor:pointer;">
+      <img class="artist-pp" src="${pp}" alt="${fullName}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;"/>
+      <div>
+        <div style="font-weight:bold;">${fullName}</div>
+        <div style="font-size:0.9em; color:#666;">${country} ${genre ? ' · '+genre : ''}</div>
+        <div style="font-size:0.85em; color:#aaa;">${dob}</div>
+      </div>
+    </div>
+
+    <div class="dropdown" style="display:none; margin-top:1em; background:#f9f9f9; border-radius:12px; padding:1em 1.5em;">
+      <div style="font-family:sans-serif;">${bio}</div>
+      <div class="work-container" style="margin-top:1em;">
+        <div class="works-list" style="display:flex; flex-wrap:wrap; gap:1em;">
+          ${worksHTML}
+        </div>
+      </div>
+      <p style="padding:5px; cursor:pointer; color:#007bff; text-decoration:underline;"
+         onclick="window.location.href='profile.php?user=${getProfileFolderName(artist)}'">
+         visit profile
+      </p>
+    </div>
+  `;
+
+  // Toggle dropdown open/close
+  entry.addEventListener('click', function(e) {
+    if (e.target.tagName === 'IMG' || e.target.closest('.dropdown') || e.target.closest('a')) return;
+    const drop = entry.querySelector('.dropdown');
+    drop.style.display = (drop.style.display === 'block') ? 'none' : 'block';
+  });
+
+  return entry;
+}
+
+// --- Container control ---
+function clearContainer() {
+  container.innerHTML = '';
+  loadedCount = 0;
+}
+
+function loadMore() {
+  if (isLoading) return;
+  isLoading = true;
+  for (let i = loadedCount; i < loadedCount + BATCH_SIZE && i < filteredArtists.length; i++) {
+    container.appendChild(renderArtist(i));
+  }
+  loadedCount += BATCH_SIZE;
+  isLoading = false;
+}
+
+function fillToScreen() {
+  if (container.scrollHeight < window.innerHeight + 80 && loadedCount < filteredArtists.length) {
+    loadMore();
+    setTimeout(fillToScreen, 10);
+  }
+}
+
+// --- Scroll infinite load ---
+window.addEventListener('scroll', function() {
+  if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 100) {
+    loadMore();
+  }
+});
+
+// --- Initial render ---
+clearContainer();
+loadMore();
+setTimeout(fillToScreen, 10);
+
+// --- Hook up search ---
+document.getElementById('artistSearchBar').addEventListener('input', function() {
+  const search = this.value.toLowerCase();
+  filteredArtists = userProfiles.filter(a => {
+    return (
+      (a.first && a.first.toLowerCase().includes(search)) ||
+      (a.last && a.last.toLowerCase().includes(search)) ||
+      (a.country && a.country.toLowerCase().includes(search)) ||
+      (a.genre && a.genre.toLowerCase().includes(search)) ||
+      (a.bio && a.bio.toLowerCase().includes(search))
+    );
+  });
+  clearContainer();
+  loadMore();
+  setTimeout(fillToScreen, 10);
+});
 
 // --- Slideshow JS & Modal (Simple, Clean) ---
 var ssImgs = slideshowImages, ssIdx = 0, ssInt = null;
