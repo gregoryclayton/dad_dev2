@@ -326,7 +326,7 @@ function renderProfiles(profiles) {
 
         // date div attempt
         var dateDiv = document.createElement('div');
-        dateDiv.style.flex = '3';
+        dateDiv.style.flex = '1';
         dateDiv.innerHTML = '<div class="user-name">' + (profileData.dob || '') + '</div>';
 
         // hidden dropdown content
