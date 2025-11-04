@@ -331,16 +331,20 @@ function renderProfiles(profiles) {
         if (profileData.dob) html += "<div><strong>DOB:</strong> " + profileData.dob + "</div>";
         if (profileData.country) html += "<div><strong>Country:</strong> " + profileData.country + "</div>";
         if (profileData.genre) html += "<div><strong>Genre:</strong> " + profileData.genre + "</div>";
-        if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
-            html += "<div style='margin-top:6px;'><strong>Work:</strong></div><ul class='workList'>";
-            profileData.work.forEach(function(work_item){
-                html += "<li style='margin-bottom:6px; list-style:disc;'>";
-                if (work_item.desc) html += "<div style='font-weight:600;'>" + work_item.desc + "</div>";
-                if (work_item.date) html += "<div style='color:#666; font-size:0.9em;'>"+work_item.date+"</div>";
-                html += "</li>";
-            });
-            html += "</ul>";
-        }
+         if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
+                html += "<strong>Work:</strong><ul class='workList'>";
+                profileData.work.forEach(function(work_item){
+                    html += "<li style='margin-bottom:8px;'>";
+                    if (work_item.image) {
+                        var work_img_src = work_item.image.replace("/var/www/html", "");
+                        html += '<img src="' + work_img_src + '" class="work-image" alt="Work Image">';
+                    }
+                    if (work_item.desc) html += "<br><strong>Description:</strong> " + work_item.desc;
+                    if (work_item.date) html += "<br><strong>Date:</strong> " + work_item.date;
+                    html += "</li>";
+                });
+                html += "</ul>";
+            }
         html += '<div style="margin-top:8px;"><button class="profile-btn" onclick="window.location.href=\'profile.php?user=' + profile_username + '\'">Profile Page</button></div>';
 
         details.innerHTML = html;
