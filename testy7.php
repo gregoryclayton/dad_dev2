@@ -272,7 +272,7 @@ if (is_dir($baseDir)) {
 
 <script>
 
-var profile_images_map = <?php echo json_encode($profile_images_map, JSON_UNESCAPED_SLASHES); ?>;
+
 // --- Basic Gallery/Profiles Render and Search/Sort ---
 function renderProfiles(profiles) {
     var container = document.getElementById('user-profiles');
@@ -323,43 +323,17 @@ function renderProfiles(profiles) {
         nameDiv.innerHTML = '<div class="user-name">' + (profileData.first || '') + ' ' + (profileData.last || '') + '</div>';
 
         // hidden dropdown content
-       // Dropdown for profile info (hidden by default)
-            var dropdown = document.createElement('div');
-            dropdown.className = "profile-dropdown";
-            dropdown.setAttribute("id", "dropdown-" + profile_username);
-
-            // Fill dropdown with all extra info
-            var html = "";
-            // Profile image preview
-            var user_dir = "/var/www/html/pusers/" + profile_username + "/work";
-            <?php
-            // Prepare a PHP map of latest profile image for each user
-            $profile_images_map = [];
-            foreach ($userProfiles as $profile) {
-                $safe_first = isset($profile['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profile['first']) : '';
-                $safe_last = isset($profile['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profile['last']) : '';
-                $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last . "/work";
-                $images = [];
-                if (is_dir($user_dir)) {
-                    $imgs = glob($user_dir . "/profile_image_*.*");
-                    if ($imgs && count($imgs) > 0) {
-                        usort($imgs, function($a, $b) { return filemtime($b) - filemtime($a); });
-                        $images[] = str_replace("/var/www/html", "", $imgs[0]);
-                    }
-                }
-                $profile_images_map[$safe_first . "_" . $safe_last] = $images;
-            }
-            ?>
-            var profile_images_map = <?php echo json_encode($profile_images_map, JSON_UNESCAPED_SLASHES); ?>;
-            if (profile_images_map[profile_username] && profile_images_map[profile_username][0]) {
-                html += '<div><img src="' + profile_images_map[profile_username][0] + '" class="profile-image" alt="Profile Image"></div>';
-            }
-            // html += "<strong>Created At:</strong> " + (profileData.created_at ? profileData.created_at : "") + "<br>";
-            if (profileData.bio) html += "<strong>Bio:</strong> " + profileData.bio + "<br>";
-            if (profileData.dob) html += "<strong>Date of Birth:</strong> " + profileData.dob + "<br>";
-            if (profileData.country) html += "<strong>Country:</strong> " + profileData.country + "<br>";
-            // Work images & info
-            if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
+          var details = document.createElement('div');
+        details.className = 'profile-dropdown';
+        details.style.display = 'none';
+        details.style.marginTop = '8px';
+        details.style.fontSize = '0.95em';
+        var html = '';
+        if (profileData.bio) html += "<div><strong>Bio:</strong> " + profileData.bio + "</div>";
+        if (profileData.dob) html += "<div><strong>DOB:</strong> " + profileData.dob + "</div>";
+        if (profileData.country) html += "<div><strong>Country:</strong> " + profileData.country + "</div>";
+        if (profileData.genre) html += "<div><strong>Genre:</strong> " + profileData.genre + "</div>";
+         if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
                 html += "<strong>Work:</strong><ul class='workList'>";
                 profileData.work.forEach(function(work_item){
                     html += "<li style='margin-bottom:8px;'>";
