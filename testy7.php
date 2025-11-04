@@ -147,7 +147,7 @@ if (is_dir($baseDir)) {
         cursor:pointer;
       }
       .user-row:hover { background:#fff; }
-      .user-name { font-weight:600; }
+      .user-name { font-weight:300; }
     </style>
 </head>
 <body>
@@ -331,7 +331,7 @@ function renderProfiles(profiles) {
         if (profileData.country) html += "<div><strong>Country:</strong> " + profileData.country + "</div>";
         if (profileData.genre) html += "<div><strong>Genre:</strong> " + profileData.genre + "</div>";
         if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
-            html += "<div style='margin-top:6px;'><strong>Work:</strong></div><ul style='margin:6px 0 0 16px; padding:0;'>";
+            html += "<div style='margin-top:6px;'><strong>Work:</strong></div><ul class='workList'>";
             profileData.work.forEach(function(work_item){
                 html += "<li style='margin-bottom:6px; list-style:disc;'>";
                 if (work_item.desc) html += "<div style='font-weight:600;'>" + work_item.desc + "</div>";
