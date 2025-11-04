@@ -127,6 +127,7 @@
   display: flex;
   width: 80%;
   overflow-x: scroll;
+  margin:6px 0 0 16px; 
 }
 
 .work-image { 
