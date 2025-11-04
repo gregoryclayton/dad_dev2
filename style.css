@@ -146,13 +146,13 @@
             display: none;
             position: ;
             left: 0;
-            top: 100%;
+            top: ;
             z-index: 100;
             background: #fff;
             border: 1px solid #aaa;
             box-shadow: 0 8px 24px #0002;
             padding: 16px;
-            width: 80%;
+            
             height: 300px;
             overflow-y: scroll;
         }
