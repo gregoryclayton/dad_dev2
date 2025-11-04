@@ -130,14 +130,15 @@ if (is_dir($baseDir)) {
     <style>
       /* small inline style for mini profile image used in the list */
       .mini-profile {
-        width:42px;
-        height:42px;
+        width:30px;
+        height:30px;
+        border-radius: 50%;
         object-fit:cover;
         border-radius:6px;
         margin-right:10px;
-        vertical-align:middle;
+        vertical-align:top;
         box-shadow:0 2px 8px rgba(0,0,0,0.12);
-        position:absolute;
+       
       }
       .user-row {
         display:flex;
@@ -148,7 +149,7 @@ if (is_dir($baseDir)) {
         cursor:pointer;
       }
       .user-row:hover { background:#fff; }
-      .user-name { font-weight:300; }
+      .user-name { font-size: 10; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -321,6 +322,12 @@ function renderProfiles(profiles) {
         var nameDiv = document.createElement('div');
         nameDiv.style.flex = '1';
         nameDiv.innerHTML = '<div class="user-name">' + (profileData.first || '') + ' ' + (profileData.last || '') + '</div>';
+
+
+        // date div attempt
+        var dateDiv = document.createElement('div');
+        dateDiv.style.flex = '3';
+        dateDiv.innerHTML = '<div class="user-name">' + (profileData.dob || '') + '</div>';
 
         // hidden dropdown content
           var details = document.createElement('div');
