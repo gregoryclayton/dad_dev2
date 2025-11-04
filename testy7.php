@@ -137,6 +137,7 @@ if (is_dir($baseDir)) {
         margin-right:10px;
         vertical-align:middle;
         box-shadow:0 2px 8px rgba(0,0,0,0.12);
+        position:absolute;
       }
       .user-row {
         display:flex;
