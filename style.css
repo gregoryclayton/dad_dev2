@@ -152,14 +152,14 @@
             border: 1px solid #aaa;
             box-shadow: 0 8px 24px #0002;
             padding: 16px;
-            max-width: 70%;
+            max-width: 60%;
             height: 300px;
             overflow-y: scroll;
         }
 
         .profile-dropdown .profile-image,
         .profile-dropdown .work-image {
-            display: block;
+            display: ;
             margin-bottom: 10px;
         }
 
