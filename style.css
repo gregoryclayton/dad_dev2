@@ -125,7 +125,7 @@
 .workList {
   padding-left:0;
   display: flex;
-  
+  max-width:70%;
   overflow-x: scroll;
   margin:6px 0 0 16px; 
 }
@@ -152,7 +152,7 @@
             border: 1px solid #aaa;
             box-shadow: 0 8px 24px #0002;
             padding: 16px;
-            
+            max-width: 70%;
             height: 300px;
             overflow-y: scroll;
         }
