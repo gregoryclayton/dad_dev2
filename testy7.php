@@ -116,6 +116,52 @@ if (is_dir($baseDir)) {
     }
 }
 ?>
+<?php
+// This PHP script finds the top 10 most frequently selected works
+// across all user profiles and displays them in a horizontally scrolling flexbox gallery
+// with modal pop-outs when cards are clicked and detailed info in the modal only.
+
+$baseDir = __DIR__ . '/pusers';
+$workCounts = [];
+$workDetails = [];
+
+// Get all subdirectories in "pusers"
+$subfolders = glob($baseDir . '/*', GLOB_ONLYDIR);
+
+foreach ($subfolders as $subfolder) {
+    $profilePath = $subfolder . '/profile.json';
+    if (file_exists($profilePath)) {
+        $jsonData = file_get_contents($profilePath);
+        $profile = json_decode($jsonData, true);
+
+        if (isset($profile['selected_works']) && is_array($profile['selected_works'])) {
+            foreach ($profile['selected_works'] as $work) {
+                $workKey = $work['path'];
+                if (!isset($workCounts[$workKey])) {
+                    $workCounts[$workKey] = 0;
+                    $workDetails[$workKey] = $work;
+                    $workDetails[$workKey]['user_folder'] = basename($subfolder);
+                }
+                $workCounts[$workKey]++;
+            }
+        }
+    }
+}
+
+// Sort works by count descending
+arsort($workCounts);
+
+// Get top 10 works
+$topWorks = array_slice(array_keys($workCounts), 0, 10);
+
+// Prepare works data for JS modal
+$topWorksData = [];
+foreach ($topWorks as $workPath) {
+    $work = $workDetails[$workPath];
+    $work['selected_count'] = $workCounts[$workPath];
+    $topWorksData[] = $work;
+}
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -247,62 +293,9 @@ if (is_dir($baseDir)) {
   </div>
 </div>
 
-<?php
-// This PHP script finds the top 10 most frequently selected works
-// across all user profiles and displays them in a horizontally scrolling flexbox gallery
-// with modal pop-outs when cards are clicked and detailed info in the modal only.
 
-$baseDir = __DIR__ . '/pusers';
-$workCounts = [];
-$workDetails = [];
 
-// Get all subdirectories in "pusers"
-$subfolders = glob($baseDir . '/*', GLOB_ONLYDIR);
 
-foreach ($subfolders as $subfolder) {
-    $profilePath = $subfolder . '/profile.json';
-    if (file_exists($profilePath)) {
-        $jsonData = file_get_contents($profilePath);
-        $profile = json_decode($jsonData, true);
-
-        if (isset($profile['selected_works']) && is_array($profile['selected_works'])) {
-            foreach ($profile['selected_works'] as $work) {
-                $workKey = $work['path'];
-                if (!isset($workCounts[$workKey])) {
-                    $workCounts[$workKey] = 0;
-                    $workDetails[$workKey] = $work;
-                    $workDetails[$workKey]['user_folder'] = basename($subfolder);
-                }
-                $workCounts[$workKey]++;
-            }
-        }
-    }
-}
-
-// Sort works by count descending
-arsort($workCounts);
-
-// Get top 10 works
-$topWorks = array_slice(array_keys($workCounts), 0, 10);
-
-// Prepare works data for JS modal
-$topWorksData = [];
-foreach ($topWorks as $workPath) {
-    $work = $workDetails[$workPath];
-    $work['selected_count'] = $workCounts[$workPath];
-    $topWorksData[] = $work;
-}
-?>
-
-<!-- Modal HTML, place near bottom of page or just below this gallery snippet -->
-<div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
-  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
-    <span id="closeSelectedWorksModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
-    <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
-    <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
-    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; border:none; border-radius:7px; padding:0.7em 2em; font-family:monospace; font-size:1em; color:black; text-decoration:none; cursor:pointer;">visit profile</a>
-  </div>
-</div>
 
 <!-- Place this div below the slideshow in your main HTML file (e.g., v4.5_Version2.php) -->
 <div id="selectedWorksGallery" style="
@@ -331,6 +324,16 @@ foreach ($topWorks as $workPath) {
         <!-- Only work name shown in gallery! -->
     </div>
 <?php endforeach; ?>
+</div>
+
+<!-- Modal HTML, place near bottom of page or just below this gallery snippet -->
+<div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
+  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
+    <span id="closeSelectedWorksModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+    <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
+    <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
+    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; border:none; border-radius:7px; padding:0.7em 2em; font-family:monospace; font-size:1em; color:black; text-decoration:none; cursor:pointer;">visit profile</a>
+  </div>
 </div>
 
 <script>
