@@ -194,7 +194,6 @@ foreach ($topWorks as $workPath) {
       }
       .user-row:hover { background:#fff; }
       .user-name { font-size: 14px; font-family: monospace; }
-      .user-submeta { color:#666; font-size:0.9em; margin-top:4px; }
       .profile-dropdown { margin-top:8px; display:none; }
       .work-image {
         max-width:120px;
@@ -217,7 +216,7 @@ foreach ($topWorks as $workPath) {
   
    <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
     <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
-    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237,[...]
+    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237,[...]);">
       <!-- menu omitted for brevity -->
     </div>
   </div>
@@ -250,22 +249,22 @@ foreach ($topWorks as $workPath) {
         <img id="slideshow-img" src="<?php echo count($slideshow_images) ? htmlspecialchars($slideshow_images[0]) : ''; ?>" 
              alt="Artwork Slideshow" style="max-width:60vw; max-height:300px; border-radius:16px; box-shadow:0 6px 24px #0002; object-fit:contain; background:#f4f4f4; cursor:pointer;"/>
         <?php if (count($slideshow_images) > 1): ?>
-            <button id="prev-btn" style="position:absolute; left:-48px; top:50%; transform:translateY(-50%); background:#fff; border:none; border-radius:50%; width:38px; height:38px; font-size:1.7em; [...]
-            <button id='next-btn' style="position:absolute; right:-48px; top:50%; transform:translateY(-50%); background:#fff; border:none; border-radius:50%; width:38px; height:38px; font-size:1.7em;[...]
+            <button id="prev-btn" style="position:absolute; left:-48px; top:50%; transform:translateY(-50%); background:#fff; border:none; border-radius:50%; width:38px; height:38px; font-size:1.7em; cursor:pointer;">&#8678;</button>
+            <button id='next-btn' style="position:absolute; right:-48px; top:50%; transform:translateY(-50%); background:#fff; border:none; border-radius:50%; width:38px; height:38px; font-size:1.7em; cursor:pointer;">&#8680;</button>
         <?php endif; ?>
     </div>
 </div>
 
 <!-- Slideshow Modal (Simple/Fixed) -->
 <div id="slideModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:10001; background:rgba(0,0,0,0.72); align-items:center; justify-content:center;">
-  <div style="background:white; border-radius:16px; padding:24px 32px; max-width:90vw; max-height:90vh; box-shadow:0 6px 32px #000a; position:relative; display:flex; flex-direction:column; align-items[...]
+  <div style="background:white; border-radius:16px; padding:24px 32px; max-width:90vw; max-height:90vh; box-shadow:0 6px 32px #000a; position:relative; display:flex; flex-direction:column; align-items:center;">
     <button id="closeSlideModal" style="position:absolute; top:10px; right:15px; font-size:1.3em; background:none; border:none; color:#333; cursor:pointer;">×</button>
     <img id="modalImage" src="" alt="Artwork" style="max-width:65vw; max-height:55vh; border-radius:10px; background:#f6f6f6; margin-bottom:18px;">
     <div>
         <div id="modalArtist" style="font-size:1.13em; font-weight:bold;"></div>
         <div id="modalTitle" style="margin:8px 0 0 0; color:#666;"></div>
         <div id="modalDate" style="margin:5px 0 0 0; color:#888; font-size:0.98em;"></div>
-        <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profi[...]
+        <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profile</button>
     </div>
   </div>
 </div>
@@ -275,8 +274,8 @@ foreach ($topWorks as $workPath) {
 <?php foreach ($topWorks as $i => $workPath):
     $work = $workDetails[$workPath];
     ?>
-    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #[...]
-        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-r[...]
+    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #0001; padding:20px; text-align:center; display:flex; flex-direction:column; align-items:center;">
+        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-radius:12px;">
         <div style="margin-top:12px;font-size:1.15em;font-weight:bold;"><?php echo htmlspecialchars($work['title']); ?></div>
     </div>
 <?php endforeach; ?>
@@ -284,11 +283,11 @@ foreach ($topWorks as $workPath) {
 
 <!-- Modal for selected works gallery -->
 <div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
-  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; [...]
+  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
     <span id="closeSelectedWorksModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
     <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
     <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
-    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit pro[...]
+    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit profile</a>
   </div>
 </div>
 
@@ -366,23 +365,7 @@ function renderProfiles(profiles) {
         // name + dropdown container
         var nameDiv = document.createElement('div');
         nameDiv.style.flex = '1';
-
-        // Build submeta (DOB, Country, Genre) if present
-        var dobText = profileData.dob ? escapeAttr(profileData.dob) : '';
-        var countryText = profileData.country ? escapeAttr(profileData.country) : '';
-        var genreText = profileData.genre ? escapeAttr(profileData.genre) : '';
-
-        var submetaParts = [];
-        if (dobText) submetaParts.push('DOB: ' + dobText);
-        if (countryText) submetaParts.push(countryText);
-        if (genreText) submetaParts.push(genreText);
-
-        var submetaHtml = '';
-        if (submetaParts.length) {
-            submetaHtml = '<div class="user-submeta">' + submetaParts.join(' • ') + '</div>';
-        }
-
-        nameDiv.innerHTML = '<div class="user-name">' + escapeAttr(profileData.first || '') + ' ' + escapeAttr(profileData.last || '') + '</div>' + submetaHtml;
+        nameDiv.innerHTML = '<div class="user-name">' + (profileData.first || '') + ' ' + (profileData.last || '') + '</div>';
 
         // hidden dropdown content
         var details = document.createElement('div');
@@ -715,6 +698,9 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+    
+</body>
+</html>
     
 </body>
 </html>
