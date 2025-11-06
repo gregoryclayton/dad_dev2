@@ -329,7 +329,16 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                 </form>
                 <p style="text-align:center; margin-top:20px;">Don't have an account? <a href="register.php">Register here</a>.</p>
             </div>
-        <?php else: ?>
+        <?php else: 
+            // --- Fetch current user's profile data to use as placeholders ---
+            $safe_first_session = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+            $safe_last_session = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+            $user_profile_path = "/var/www/html/pusers/" . $safe_first_session . "_" . $safe_last_session . "/profile.json";
+            $current_profile_data = [];
+            if (file_exists($user_profile_path)) {
+                $current_profile_data = json_decode(file_get_contents($user_profile_path), true);
+            }
+        ?>
             <div class="welcome-header">
                 <h2>Welcome to Your Studio, <?php echo htmlspecialchars($_SESSION['first']); ?>!</h2>
                 <p><a href="?logout=1">Logout</a></p>
@@ -342,35 +351,35 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                     <form method="POST">
                         <div class="form-row">
                             <label for="bio">Bio</label>
-                            <textarea id="bio" name="bio" rows="3"></textarea>
+                            <textarea id="bio" name="bio" rows="3"><?php echo htmlspecialchars($current_profile_data['bio'] ?? ''); ?></textarea>
                         </div>
                         <div class="form-row">
                              <label for="bio2">Bio 2</label>
-                            <textarea id="bio2" name="bio2" rows="3"></textarea>
+                            <textarea id="bio2" name="bio2" rows="3"><?php echo htmlspecialchars($current_profile_data['bio2'] ?? ''); ?></textarea>
                         </div>
                         <div class="form-row">
                             <label for="dob">Date of Birth</label>
-                            <input id="dob" type="date" name="dob">
+                            <input id="dob" type="date" name="dob" value="<?php echo htmlspecialchars($current_profile_data['dob'] ?? ''); ?>">
                         </div>
                         <div class="form-row">
                             <label for="country">Country</label>
-                            <input id="country" type="text" name="country">
+                            <input id="country" type="text" name="country" placeholder="e.g., USA" value="<?php echo htmlspecialchars($current_profile_data['country'] ?? ''); ?>">
                         </div>
                         <div class="form-row">
                             <label for="genre">Genre</label>
-                            <input id="genre" type="text" name="genre">
+                            <input id="genre" type="text" name="genre" placeholder="e.g., Digital Painting, 3D Art" value="<?php echo htmlspecialchars($current_profile_data['genre'] ?? ''); ?>">
                         </div>
                         <div class="form-row">
                             <label for="nickname">Nickname</label>
-                            <input id="nickname" type="text" name="nickname">
+                            <input id="nickname" type="text" name="nickname" placeholder="e.g., ArtMaster" value="<?php echo htmlspecialchars($current_profile_data['nickname'] ?? ''); ?>">
                         </div>
                         <div class="form-row">
                             <label for="fact1">Fact 1</label>
-                            <input id="fact1" type="text" name="fact1">
+                            <input id="fact1" type="text" name="fact1" placeholder="A fun fact about you" value="<?php echo htmlspecialchars($current_profile_data['fact1'] ?? ''); ?>">
                         </div>
                         <div class="form-row">
                             <label for="fact2">Fact 2</label>
-                            <input id="fact2" type="text" name="fact2">
+                            <input id="fact2" type="text" name="fact2" placeholder="Another interesting fact" value="<?php echo htmlspecialchars($current_profile_data['fact2'] ?? ''); ?>">
                         </div>
                         <button type="submit" name="update_profile_extra">Save Info</button>
                     </form>
@@ -429,8 +438,6 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     </div>
 </body>
 </html>
-
-
 
 
 
