@@ -133,11 +133,14 @@ if (is_dir($baseDir)) {
         line-height:1.5;
     }
     .profile-meta .label { font-weight:600; color:#333; margin-right:8px; }
-    .work-grid {
-        display:flex;
-        flex-wrap:wrap;
-        gap:12px;
-        margin-top:14px;
+    
+    /* NEW: Horizontal gallery styles */
+    .horizontal-gallery {
+        display: flex;
+        overflow-x: auto;
+        gap: 12px;
+        padding-bottom: 15px; /* For scrollbar */
+        margin-top: 10px;
     }
     .work-thumb {
         width: 140px;
@@ -147,7 +150,14 @@ if (is_dir($baseDir)) {
         background:#f6f6f6;
         box-shadow:0 4px 12px rgba(0,0,0,0.06);
         cursor:pointer;
+        flex-shrink: 0; /* Prevent images from shrinking */
     }
+    .gallery-title {
+        margin-top: 20px;
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
     @media (max-width: 760px) {
         .main-profile-inner { flex-direction: column; align-items: center; }
         .profile-left { flex-basis: auto; }
@@ -173,26 +183,22 @@ if (is_dir($baseDir)) {
         var profile_username = safe_first + "_" + safe_last;
         var user_dir = "/pusers/" + profile_username;
 
-        // Determine profile image (from server-side map) or fallback to first work image
         var imgUrl = "";
         if (profileImagesMap && profileImagesMap[profile_username] && profileImagesMap[profile_username].length) {
             imgUrl = profileImagesMap[profile_username][0];
         } else if (profileData.work && profileData.work.length) {
-            // Try the first work image (already stored as absolute or with /var/www/html)
             var firstWork = profileData.work.find(function(w){ return w.image; });
             if (firstWork && firstWork.image) {
                 imgUrl = firstWork.image.replace("/var/www/html", "");
             }
         }
 
-        // Build left (image) and right (info) columns
         var leftHtml = "";
         if (imgUrl) {
             leftHtml = '<div class="profile-left">' +
                        '<img src="' + imgUrl + '" alt="Profile image of ' + (profileData.first||'') + '" class="main-profile-image">' +
                        '</div>';
         } else {
-            // Placeholder with initials
             var initials = ((profileData.first||'').charAt(0) + (profileData.last||'').charAt(0)).toUpperCase();
             leftHtml = '<div class="profile-left">' +
                        '<div class="profile-placeholder">' + initials + '</div>' +
@@ -202,50 +208,65 @@ if (is_dir($baseDir)) {
         var rightHtml = '<div class="profile-right">';
         rightHtml += '<div class="profile-header"><h1 class="profile-name">' + (profileData.first ? profileData.first : '') + ' ' + (profileData.last ? profileData.last : '') + '</h1>';
         if (profileData.country) rightHtml += '<div style="margin-left:8px;color:#777;font-size:0.95em;">' + escapeHtml(profileData.country) + '</div>';
-        rightHtml += '</div>'; // header
+        rightHtml += '</div>';
 
-        // contact / meta
         rightHtml += '<div class="profile-meta">';
         if (profileData.bio) rightHtml += '<div><span class="label">Bio:</span> ' + escapeHtml(profileData.bio) + '</div>';
         if (profileData.dob) rightHtml += '<div><span class="label">DOB:</span> ' + escapeHtml(profileData.dob) + '</div>';
         if (profileData.email) rightHtml += '<div><span class="label">Email:</span> <a href="mailto:' + encodeURIComponent(profileData.email) + '">' + escapeHtml(profileData.email) + '</a></div>';
         rightHtml += '</div>';
 
-        // Work grid (thumbnails)
+        // User's own work gallery
         if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
-            rightHtml += '<div style="margin-top:14px;"><strong>Work</strong></div>';
-            rightHtml += '<div class="work-grid">';
+            rightHtml += '<div class="gallery-title">My Work</div>';
+            rightHtml += '<div class="horizontal-gallery">';
             profileData.work.forEach(function(work_item, i){
                 var work_img = work_item.image ? work_item.image.replace("/var/www/html", "") : '';
                 var desc = work_item.desc ? escapeHtml(work_item.desc) : '';
                 var date = work_item.date ? escapeHtml(work_item.date) : '';
                 if (work_img) {
-                    rightHtml += '<img src="' + work_img + '" class="work-thumb" data-desc="' + escapeAttr(desc) + '" data-date="' + escapeAttr(date) + '" data-artist="' + escapeAttr((profileData.first||'') + ' ' + (profileData.last||'')) + '" data-path="' + escapeAttr(work_img) + '">';
-                } else {
-                    rightHtml += '<div style="width:140px;height:140px;background:#f3f3f3;border-radius:8px;"></div>';
+                    rightHtml += '<img src="' + work_img + '" class="work-thumb" data-desc="' + escapeAttr(desc) + '" data-date="' + escapeAttr(date) + '" data-artist="' + escapeAttr((profileData.first||'') + ' ' + (profileData.last||'')) + '" data-path="' + escapeAttr(work_img) + '" data-profile="' + escapeAttr(profile_username) + '">';
+                }
+            });
+            rightHtml += '</div>';
+        }
+
+        // Selected works gallery
+        if (profileData.selected_works && Array.isArray(profileData.selected_works) && profileData.selected_works.length > 0) {
+            rightHtml += '<div class="gallery-title">Collection</div>';
+            rightHtml += '<div class="horizontal-gallery">';
+            profileData.selected_works.forEach(function(work_item, i){
+                var work_img = work_item.path || '';
+                var desc = work_item.title || '';
+                var date = work_item.date || '';
+                var artist = work_item.artist || '';
+                var user_folder = work_item.user_folder || '';
+                if (work_img) {
+                    rightHtml += '<img src="' + escapeAttr(work_img) + '" class="work-thumb" data-desc="' + escapeAttr(desc) + '" data-date="' + escapeAttr(date) + '" data-artist="' + escapeAttr(artist) + '" data-path="' + escapeAttr(work_img) + '" data-profile="' + escapeAttr(user_folder) + '">';
                 }
             });
             rightHtml += '</div>';
         }
 
         rightHtml += '</div>'; // profile-right
-
         details.innerHTML = '<div class="main-profile-inner">' + leftHtml + rightHtml + '</div>';
 
-        // Attach click handler for work thumbs to open modal (reuse selectedWorksModal if present)
+        // Attach click handler for ALL work thumbs to open modal
         document.querySelectorAll('#mainProfile .work-thumb').forEach(function(img) {
             img.addEventListener('click', function(e) {
                 e.stopPropagation();
-                var path = img.dataset.path || img.src || '';
-                var desc = img.dataset.desc || '';
-                var date = img.dataset.date || '';
-                var artist = img.dataset.artist || '';
-                openSelectedWorkModal({ path: path, title: desc || path.split('/').pop(), date: date, artist: artist, profile: profile_username });
+                var workData = {
+                    path: img.dataset.path || img.src,
+                    title: img.dataset.desc,
+                    date: img.dataset.date,
+                    artist: img.dataset.artist,
+                    profile: img.dataset.profile
+                };
+                openSelectedWorkModal(workData);
             });
         });
     }
 
-    // Small helpers
     function escapeHtml(s) {
         if (!s && s !== 0) return '';
         return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -255,11 +276,9 @@ if (is_dir($baseDir)) {
         return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,"&#39;").replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    // Modal opener used by other pages too (selectedWorksModal expected in page)
     function openSelectedWorkModal(work) {
         var modal = document.getElementById('selectedWorksModal');
         if (!modal) {
-            // create a lightweight modal if selectedWorksModal does not exist
             createQuickModal();
             modal = document.getElementById('selectedWorksModal');
         }
@@ -271,8 +290,7 @@ if (is_dir($baseDir)) {
         img.alt = work.title || '';
         var infoHtml = '<div style="font-weight:bold;font-size:1.1em;">' + escapeHtml(work.title || '') + '</div>' +
                        '<div style="color:#666;margin-top:6px;">' + escapeHtml(work.artist || '') + '</div>' +
-                       (work.date ? '<div style="color:#888;margin-top:6px;">' + escapeHtml(work.date) + '</div>' : '') +
-                       (work.path ? '<div style="color:#aaa;margin-top:6px;font-size:0.9em;">' + escapeHtml(work.path) + '</div>' : '');
+                       (work.date ? '<div style="color:#888;margin-top:6px;">' + escapeHtml(work.date) + '</div>' : '');
         info.innerHTML = infoHtml;
         if (profileBtn) profileBtn.href = 'profile.php?user=' + encodeURIComponent(work.profile || '');
         modal.style.display = 'flex';
@@ -281,7 +299,7 @@ if (is_dir($baseDir)) {
     function createQuickModal() {
         var modal = document.createElement('div');
         modal.id = 'selectedWorksModal';
-        modal.style = 'display:flex;position:fixed;z-index:10000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;';
+        modal.style = 'display:none;position:fixed;z-index:10000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;';
         modal.innerHTML = '<div style="background:#fff;border-radius:12px;padding:24px;max-width:90vw;max-height:90vh;position:relative;display:flex;flex-direction:column;align-items:center;">' +
                           '<span id="closeSelectedWorksModal" style="position:absolute;top:12px;right:16px;font-size:26px;cursor:pointer;">&times;</span>' +
                           '<img id="selectedWorksModalImg" src="" style="max-width:80vw;max-height:60vh;border-radius:8px;margin-bottom:12px;">' +
@@ -294,7 +312,6 @@ if (is_dir($baseDir)) {
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        // Get user from URL param
         var params = new URLSearchParams(window.location.search);
         var username = params.get('user');
         if (username) {
@@ -306,92 +323,12 @@ if (is_dir($baseDir)) {
         }
     });
     </script>
-
-    <script>
-    var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
-
-    function renderProfiles(profiles) {
-        var container = document.getElementById('user-profiles');
-        container.innerHTML = '';
-        profiles.forEach(function(profileData, idx) {
-            var safe_first = profileData.first ? profileData.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
-            var safe_last = profileData.last ? profileData.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
-            var profile_username = safe_first + "_" + safe_last;
-            var div = document.createElement('div');
-            div.className = "user-profile";
-            div.setAttribute("data-username", profile_username);
-            div.setAttribute("data-idx", idx);
-
-            // Basic profile info
-            div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>" +
-                "<span>" + (profileData.email ? profileData.email : "") + "</span><br>";
-
-            // Dropdown for profile info (hidden by default)
-            var dropdown = document.createElement('div');
-            dropdown.className = "profile-dropdown";
-            dropdown.setAttribute("id", "dropdown-" + profile_username);
-
-            // Fill dropdown with all extra info
-            var html = "";
-            var profile_images_map_js = <?php echo json_encode($profile_images_map, JSON_UNESCAPED_SLASHES); ?>;
-            if (profile_images_map_js[profile_username] && profile_images_map_js[profile_username][0]) {
-                html += '<div><img src="' + profile_images_map_js[profile_username][0] + '" class="profile-image" alt="Profile Image" style="max-width:120px;border-radius:8px;"></div>';
-            }
-            html += "<strong>Created At:</strong> " + (profileData.created_at ? profileData.created_at : "") + "<br>";
-            if (profileData.bio) html += "<strong>Bio:</strong> " + profileData.bio + "<br>";
-            if (profileData.dob) html += "<strong>Date of Birth:</strong> " + profileData.dob + "<br>";
-            if (profileData.country) html += "<strong>Country:</strong> " + profileData.country + "<br>";
-            // Work images & info
-            if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
-                html += "<strong>Work:</strong><ul style='padding-left:0;'>";
-                profileData.work.forEach(function(work_item){
-                    html += "<li style='margin-bottom:8px; list-style:none;'>";
-                    if (work_item.image) {
-                        var work_img_src = work_item.image.replace("/var/www/html", "");
-                        html += '<img src="' + work_img_src + '" class="work-image" alt="Work Image" style="max-width:120px;max-height:80px;object-fit:cover;border-radius:8px;margin:6px;cursor:pointer;" data-desc="' + (work_item.desc?work_item.desc:'') + '" data-date="' + (work_item.date?work_item.date:'') + '" data-artist="' + ((profileData.first||'')+' '+(profileData.last||'')) + '" data-path="' + work_img_src + '"><br>';
-                    }
-                    if (work_item.desc) html += "<strong>Description:</strong> " + work_item.desc + "<br>";
-                    if (work_item.date) html += "<strong>Date:</strong> " + work_item.date + "<br>";
-                    html += "</li>";
-                });
-                html += "</ul>";
-            }
-            // Profile page button
-            html += '<button class="profile-btn" onclick="window.location.href=\'profile.php?user=' + profile_username + '\'">Profile Page</button>';
-
-            dropdown.innerHTML = html;
-            div.appendChild(dropdown);
-
-            // Toggle dropdown on profile click (not on button click)
-            div.onclick = function(e) {
-                if (e.target.classList.contains('profile-btn')) return;
-                var allDropdowns = document.querySelectorAll('.profile-dropdown');
-                allDropdowns.forEach(function(d) { if (d !== dropdown) d.style.display = 'none'; });
-                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-            };
-
-            container.appendChild(div);
-        });
-        // Click outside to close any open dropdown
-        document.addEventListener('click', function(e) {
-            if (!e.target.classList.contains('user-profile') && !e.target.classList.contains('profile-btn')) {
-                document.querySelectorAll('.profile-dropdown').forEach(function(d) {
-                    d.style.display = 'none';
-                });
-            }
-        });
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        renderProfiles(userProfiles);
-    });
-    </script>
 </head>
 <body>
 
 <div id="mainProfile"></div>
 
-     <div class="navbar">
+<div class="navbar">
     <div class="navbarbtns">
          <div class="navbtn"><a href="home.php">home</a></div>
         <div class="navbtn"><a href="register.php">register</a></div>
@@ -400,8 +337,7 @@ if (is_dir($baseDir)) {
     </div>
 </div>
 
-    <!-- User profiles array selection at bottom -->
-<div id="user-profiles" style="max-width:1100px;margin:22px auto;"></div>
+<div id="selectedWorksModal"></div> 
 
 </body>
 </html>
