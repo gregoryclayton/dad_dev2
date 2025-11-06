@@ -194,6 +194,7 @@ foreach ($topWorks as $workPath) {
       }
       .user-row:hover { background:#fff; }
       .user-name { font-size: 14px; font-family: monospace; }
+      .user-submeta { color:#666; font-size:0.9em; margin-top:4px; }
       .profile-dropdown { margin-top:8px; display:none; }
       .work-image {
         max-width:120px;
@@ -216,7 +217,7 @@ foreach ($topWorks as $workPath) {
   
    <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
     <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
-    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237,[...]);">
+    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237,[...]
       <!-- menu omitted for brevity -->
     </div>
   </div>
@@ -365,8 +366,24 @@ function renderProfiles(profiles) {
         // name + dropdown container
         var nameDiv = document.createElement('div');
         nameDiv.style.flex = '1';
-        nameDiv.innerHTML = '<div class="user-name">' + (profileData.first || '') + ' ' + (profileData.last || '') + '</div>';
 
+        // Build submeta (DOB, Country, Genre) if present
+        var dobText = profileData.dob ? escapeAttr(profileData.dob) : '';
+        var countryText = profileData.country ? escapeAttr(profileData.country) : '';
+        var genreText = profileData.genre ? escapeAttr(profileData.genre) : '';
+
+        var submetaParts = [];
+        if (dobText) submetaParts.push('DOB: ' + dobText);
+        if (countryText) submetaParts.push(countryText);
+        if (genreText) submetaParts.push(genreText);
+
+        var submetaHtml = '';
+        if (submetaParts.length) {
+            submetaHtml = '<div class="user-submeta">' + submetaParts.join(' • ') + '</div>';
+        }
+
+        nameDiv.innerHTML = '<div class="user-name">' + escapeAttr(profileData.first || '') + ' ' + escapeAttr(profileData.last || '') + '</div>' + submetaHtml;
+        
         // hidden dropdown content
         var details = document.createElement('div');
         details.className = 'profile-dropdown';
@@ -379,21 +396,6 @@ function renderProfiles(profiles) {
             var bioDiv = document.createElement('div');
             bioDiv.innerHTML = '<strong>Bio:</strong> ' + (profileData.bio || '');
             details.appendChild(bioDiv);
-        }
-        if (profileData.dob) {
-            var dobDiv = document.createElement('div');
-            dobDiv.innerHTML = '<strong>DOB:</strong> ' + (profileData.dob || '');
-            details.appendChild(dobDiv);
-        }
-        if (profileData.country) {
-            var countryDiv = document.createElement('div');
-            countryDiv.innerHTML = '<strong>Country:</strong> ' + (profileData.country || '');
-            details.appendChild(countryDiv);
-        }
-        if (profileData.genre) {
-            var genreDiv = document.createElement('div');
-            genreDiv.innerHTML = '<strong>Genre:</strong> ' + (profileData.genre || '');
-            details.appendChild(genreDiv);
         }
 
         // Work thumbnails: create a container and append thumbnail images with dataset attributes
@@ -698,9 +700,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
-    
-</body>
-</html>
     
 </body>
 </html>
