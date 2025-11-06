@@ -267,7 +267,7 @@ foreach ($topWorks as $workPath) {
       .user-name { font-size: 14px; font-family: monospace; }
       .user-submeta { color:#666; font-size:0.9em; margin-top:4px; }
       
-      /* New Dropdown Styles */
+      /* Dropdown Styles */
       .profile-dropdown { 
         display:none;
         width: 100%;
@@ -300,6 +300,39 @@ foreach ($topWorks as $workPath) {
       .work-info { font-size:0.85em; padding-top:6px; }
       .work-info .desc { font-weight:600; color:#333; }
       .work-info .date { color:#777; }
+
+      /* Slideshow Styles */
+      #slideshow-container {
+        position: relative;
+        width: 80vw;
+        height: 450px;
+        max-width: 900px;
+        margin: 2em auto;
+        background-color: #f4f4f4;
+        border-radius: 16px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      #slideshow-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        cursor: pointer;
+      }
+      .slideshow-nav {
+        position: absolute;
+        top: 0;
+        width: 50%;
+        height: 100%;
+        z-index: 10;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+      }
+      #slideshow-prev-zone { left: 0; }
+      #slideshow-next-zone { right: 0; }
 
       /* Responsive changes for wider screens */
       @media (min-width: 600px) {
@@ -348,16 +381,14 @@ foreach ($topWorks as $workPath) {
 <?php endif; ?>
 
 <!-- Slideshow -->
-<div id="user-slideshow" style="width:100%; display:flex; justify-content:center; align-items:center; margin: 2em 0;">
-    <div style="position:relative;">
-        <img id="slideshow-img" src="<?php echo count($slideshow_images) ? htmlspecialchars($slideshow_images[0]) : ''; ?>" 
-             alt="Artwork Slideshow" style="max-width:60vw; max-height:300px; border-radius:16px; box-shadow:0 6px 24px #0002; object-fit:contain; background:#f4f4f4; cursor:pointer;"/>
-        <?php if (count($slideshow_images) > 1): ?>
-            <button id="prev-btn" style="position:absolute; left:-48px; top:50%; transform:translateY(-50%); background:#fff; border:none; border-radius:50%; width:38px; height:38px; font-size:1.7em; cursor:pointer;">&#8678;</button>
-            <button id='next-btn' style="position:absolute; right:-48px; top:50%; transform:translateY(-50%); background:#fff; border:none; border-radius:50%; width:38px; height:38px; font-size:1.7em; cursor:pointer;">&#8680;</button>
-        <?php endif; ?>
-    </div>
+<div id="slideshow-container">
+    <img id="slideshow-img" src="<?php echo count($slideshow_images) ? htmlspecialchars($slideshow_images[0]) : ''; ?>" alt="Artwork Slideshow" />
+    <?php if (count($slideshow_images) > 1): ?>
+        <div id="slideshow-prev-zone" class="slideshow-nav"></div>
+        <div id="slideshow-next-zone" class="slideshow-nav"></div>
+    <?php endif; ?>
 </div>
+
 
 <!-- Slideshow Modal (Simple/Fixed) -->
 <div id="slideModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:10001; background:rgba(0,0,0,0.72); align-items:center; justify-content:center;">
@@ -619,10 +650,18 @@ function showSS(idx) {
 function nextSS() { showSS(ssIdx+1);}
 function prevSS() { showSS(ssIdx-1);}
 function startSSAuto() { if (ssInt) clearInterval(ssInt); ssInt = setInterval(nextSS, 7000);}
-if (document.getElementById('next-btn')) document.getElementById('next-btn').onclick = function(){nextSS();startSSAuto();};
-if (document.getElementById('prev-btn')) document.getElementById('prev-btn').onclick = function(){prevSS();startSSAuto();};
-if (ssImgElem) ssImgElem.onclick = function() { openModalForSlideshow(ssIdx); };
-showSS(0); startSSAuto();
+
+if (document.getElementById('slideshow-next-zone')) {
+    document.getElementById('slideshow-next-zone').onclick = function(){ nextSS(); startSSAuto(); };
+}
+if (document.getElementById('slideshow-prev-zone')) {
+    document.getElementById('slideshow-prev-zone').onclick = function(){ prevSS(); startSSAuto(); };
+}
+if (ssImgElem) {
+    ssImgElem.onclick = function() { openModalForSlideshow(ssIdx); };
+}
+showSS(0); 
+startSSAuto();
 
 // --- NEW: Function to handle selecting a work ---
 function selectWork(workData) {
