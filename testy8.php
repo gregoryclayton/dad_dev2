@@ -194,6 +194,7 @@ foreach ($topWorks as $workPath) {
       }
       .user-row:hover { background:#fff; }
       .user-name { font-size: 14px; font-family: monospace; }
+      .user-submeta { color:#666; font-size:0.9em; margin-top:4px; }
       .profile-dropdown { margin-top:8px; display:none; }
       .work-image {
         max-width:120px;
@@ -266,6 +267,9 @@ foreach ($topWorks as $workPath) {
         <div id="modalDate" style="margin:5px 0 0 0; color:#888; font-size:0.98em;"></div>
         <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profile</button>
     </div>
+    <div style="position:absolute; bottom:24px; right:32px;">
+      <input type="radio" name="slideModalLike" id="slideModalLikeRadio" style="width:20px; height:20px; accent-color: #e27979;">
+    </div>
   </div>
 </div>
 
@@ -288,6 +292,9 @@ foreach ($topWorks as $workPath) {
     <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
     <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
     <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit profile</a>
+    <div style="position:absolute; bottom:36px; right:28px;">
+      <input type="radio" name="selectedWorkLike" id="selectedWorkLikeRadio" style="width:20px; height:20px; accent-color: #e27979;">
+    </div>
   </div>
 </div>
 
@@ -365,8 +372,24 @@ function renderProfiles(profiles) {
         // name + dropdown container
         var nameDiv = document.createElement('div');
         nameDiv.style.flex = '1';
-        nameDiv.innerHTML = '<div class="user-name">' + (profileData.first || '') + ' ' + (profileData.last || '') + '</div>';
 
+        // Build submeta (DOB, Country, Genre) if present
+        var dobText = profileData.dob ? escapeAttr(profileData.dob) : '';
+        var countryText = profileData.country ? escapeAttr(profileData.country) : '';
+        var genreText = profileData.genre ? escapeAttr(profileData.genre) : '';
+
+        var submetaParts = [];
+        if (dobText) submetaParts.push('DOB: ' + dobText);
+        if (countryText) submetaParts.push(countryText);
+        if (genreText) submetaParts.push(genreText);
+
+        var submetaHtml = '';
+        if (submetaParts.length) {
+            submetaHtml = '<div class="user-submeta">' + submetaParts.join(' • ') + '</div>';
+        }
+
+        nameDiv.innerHTML = '<div class="user-name">' + escapeAttr(profileData.first || '') + ' ' + escapeAttr(profileData.last || '') + '</div>' + submetaHtml;
+        
         // hidden dropdown content
         var details = document.createElement('div');
         details.className = 'profile-dropdown';
@@ -379,21 +402,6 @@ function renderProfiles(profiles) {
             var bioDiv = document.createElement('div');
             bioDiv.innerHTML = '<strong>Bio:</strong> ' + (profileData.bio || '');
             details.appendChild(bioDiv);
-        }
-        if (profileData.dob) {
-            var dobDiv = document.createElement('div');
-            dobDiv.innerHTML = '<strong>DOB:</strong> ' + (profileData.dob || '');
-            details.appendChild(dobDiv);
-        }
-        if (profileData.country) {
-            var countryDiv = document.createElement('div');
-            countryDiv.innerHTML = '<strong>Country:</strong> ' + (profileData.country || '');
-            details.appendChild(countryDiv);
-        }
-        if (profileData.genre) {
-            var genreDiv = document.createElement('div');
-            genreDiv.innerHTML = '<strong>Genre:</strong> ' + (profileData.genre || '');
-            details.appendChild(genreDiv);
         }
 
         // Work thumbnails: create a container and append thumbnail images with dataset attributes
@@ -701,7 +709,3 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
-    
-</body>
-</html>
-
