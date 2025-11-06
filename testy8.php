@@ -241,14 +241,14 @@ foreach ($topWorks as $workPath) {
     <style>
       .user-row {
         display:flex;
+        flex-direction: column;
         align-items:flex-start;
-        gap:10px;
-        padding:8px 10px;
+        padding:10px;
         border-bottom:1px solid #eee;
         cursor:pointer;
       }
       .user-row:hover { background:#f9f9f9; }
-      .user-row-main { display:flex; flex:1; align-items:center; }
+      .user-row-main { display:flex; width:100%; align-items:center; }
       .mini-profile {
         width:40px;
         height:40px;
@@ -264,12 +264,7 @@ foreach ($topWorks as $workPath) {
       .profile-dropdown { 
         display:none;
         width: 100%;
-        margin-top: 10px;
-        padding: 15px;
-        background-color: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.07);
-        border: 1px solid #eee;
+        padding-top: 15px; /* Spacing from the main user row info */
       }
       .dropdown-inner {
         display: flex;
@@ -284,7 +279,7 @@ foreach ($topWorks as $workPath) {
         object-fit: cover;
         background: #f4f4f4;
       }
-      .dropdown-right { flex: 1 1 auto; }
+      .dropdown-right { flex: 1 1 auto; min-width: 0; } /* Allow shrinking */
       .dropdown-name { font-size:1.4em; font-weight:700; margin:0; }
       .dropdown-meta { margin-top:8px; color:#555; line-height:1.5; font-size:0.9em; }
       .dropdown-work-gallery { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; margin-top: 15px; }
@@ -473,8 +468,17 @@ function renderProfiles(profiles) {
         
         row.querySelector('.user-row-main').addEventListener('click', function(e) {
             e.stopPropagation();
+            // Close other dropdowns
+            document.querySelectorAll('.profile-dropdown').forEach(d => {
+                if (d !== dropdownContainer) {
+                    d.style.display = 'none';
+                    d.innerHTML = ''; // Clear content to save memory
+                }
+            });
+
             if (dropdownContainer.style.display === 'block') {
                 dropdownContainer.style.display = 'none';
+                dropdownContainer.innerHTML = ''; // Clear on close
             } else {
                 buildDropdownContent(dropdownContainer, profileData, profile_username, miniSrc);
                 dropdownContainer.style.display = 'block';
