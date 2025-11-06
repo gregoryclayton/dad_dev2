@@ -29,23 +29,19 @@ function create_user_profile($first, $last, $email) {
 }
 
 // Generate a UUID for the work
-        function generateUUID() {
-            // Use random_bytes if available (PHP 7+) for better randomness
-            if (function_exists('random_bytes')) {
-                $data = random_bytes(16);
-                $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-                $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-                return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
-            } else {
-                // Fallback to uniqid with more entropy
-                return md5(uniqid(mt_rand(), true));
-            }
-        }
-        
-        $uuid = generateUUID();
+function generateUUID() {
+    if (function_exists('random_bytes')) {
+        $data = random_bytes(16);
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    } else {
+        return md5(uniqid(mt_rand(), true));
+    }
+}
 
-// Helper: update profile.json with bio, dob, country
-function update_user_profile_extra($first, $last, $bio, $dob, $country) {
+// Helper: update profile.json with extra info
+function update_user_profile_extra($first, $last, $bio, $dob, $country, $genre, $nickname, $bio2, $fact1, $fact2) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
     $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
     $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
@@ -55,6 +51,11 @@ function update_user_profile_extra($first, $last, $bio, $dob, $country) {
         $profile['bio'] = $bio;
         $profile['dob'] = $dob;
         $profile['country'] = $country;
+        $profile['genre'] = $genre;
+        $profile['nickname'] = $nickname;
+        $profile['bio2'] = $bio2;
+        $profile['fact1'] = $fact1;
+        $profile['fact2'] = $fact2;
         file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
     }
 }
@@ -71,7 +72,6 @@ function add_user_work($first, $last, $desc, $date, $image_path, $uuid) {
             $profile['work'] = [];
         }
         $profile['work'][] = [
-            
             "desc" => $desc,
             "date" => $date,
             "image" => $image_path,
@@ -88,7 +88,6 @@ if (isset($_POST['register'])) {
     $email = $conn->real_escape_string($_POST['email']);
     $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-    // Check if email already exists
     $check = $conn->query("SELECT * FROM users WHERE email='$email'");
     if ($check->num_rows > 0) {
         echo "Email already registered!";
@@ -136,7 +135,6 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
         if (!is_dir($user_dir)) {
             mkdir($user_dir, 0755, true);
         }
-        // Create a 'work' folder if it doesn't exist
         $work_dir = $user_dir . "/work";
         if (!is_dir($work_dir)) {
             mkdir($work_dir, 0755, true);
@@ -165,11 +163,14 @@ if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
     $bio = isset($_POST['bio']) ? $_POST['bio'] : "";
     $dob = isset($_POST['dob']) ? $_POST['dob'] : "";
     $country = isset($_POST['country']) ? $_POST['country'] : "";
-    update_user_profile_extra($_SESSION['first'], $_SESSION['last'], $bio, $dob, $country);
+    $genre = isset($_POST['genre']) ? $_POST['genre'] : "";
+    $nickname = isset($_POST['nickname']) ? $_POST['nickname'] : "";
+    $bio2 = isset($_POST['bio2']) ? $_POST['bio2'] : "";
+    $fact1 = isset($_POST['fact1']) ? $_POST['fact1'] : "";
+    $fact2 = isset($_POST['fact2']) ? $_POST['fact2'] : "";
+    update_user_profile_extra($_SESSION['first'], $_SESSION['last'], $bio, $dob, $country, $genre, $nickname, $bio2, $fact1, $fact2);
     $profile_extra_msg = "Profile info updated!";
 }
-
- 
 
 // Handle work upload
 $work_upload_msg = "";
@@ -179,7 +180,6 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
     $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
     $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
-    // Create a 'work' folder if it doesn't exist
     $work_dir = $user_dir . "/work";
     if (!is_dir($work_dir)) {
         mkdir($work_dir, 0755, true);
@@ -192,7 +192,8 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             $work_upload_msg = "Only JPG, PNG, and GIF files are allowed for work image.";
         } else {
             $ext = pathinfo($_FILES['work_image']['name'], PATHINFO_EXTENSION);
-            $target_file = $work_dir . "/work_image_" . time() . "." . $ext;
+            $uuid = generateUUID();
+            $target_file = $work_dir . "/work_image_" . $uuid . "." . $ext;
             if (move_uploaded_file($_FILES['work_image']['tmp_name'], $target_file)) {
                 $image_path = $target_file;
                 add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $image_path, $uuid);
@@ -205,201 +206,227 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         $work_upload_msg = "No work image uploaded or upload error.";
     }
 }
-
-// Collect all profile data into a JSON array
-$baseDir = "/var/www/html/pusers";
-$userProfiles = [];
-if (is_dir($baseDir)) {
-    $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
-    foreach ($dirs as $dir) {
-        $profilePath = $dir . "/profile.json";
-        if (file_exists($profilePath)) {
-            $profileData = json_decode(file_get_contents($profilePath), true);
-            if ($profileData) {
-                $userProfiles[] = $profileData;
-            }
-        }
-    }
-} else {
-    echo "User profiles directory not found.";
-}
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register/Login Example</title>
+    <title>Studio Management</title>
     <link rel="stylesheet" type="text/css" href="style.css">
-    <script>
-    var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
-
-    function renderProfiles(profiles) {
-        var container = document.getElementById('user-profiles');
-        container.innerHTML = '';
-        profiles.forEach(function(profileData, idx) {
-            var safe_first = profileData.first ? profileData.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
-            var safe_last = profileData.last ? profileData.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
-            var profile_username = safe_first + "_" + safe_last;
-            var div = document.createElement('div');
-            div.className = "user-profile";
-            div.setAttribute("data-username", profile_username);
-            div.setAttribute("data-idx", idx);
-
-            // Basic profile info
-            div.innerHTML = "<strong>" + profileData.first + " " + profileData.last + "</strong><br>" +
-                "<span>" + (profileData.email ? profileData.email : "") + "</span><br>";
-
-            // Dropdown for profile info (hidden by default)
-            var dropdown = document.createElement('div');
-            dropdown.className = "profile-dropdown";
-            dropdown.setAttribute("id", "dropdown-" + profile_username);
-
-            // Fill dropdown with all extra info
-            var html = "";
-            // Profile image preview
-            var user_dir = "/var/www/html/pusers/" + profile_username + "/work";
-            <?php
-            // Prepare a PHP map of latest profile image for each user
-            $profile_images_map = [];
-            foreach ($userProfiles as $profile) {
-                $safe_first = isset($profile['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profile['first']) : '';
-                $safe_last = isset($profile['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profile['last']) : '';
-                $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last . "/work";
-                $images = [];
-                if (is_dir($user_dir)) {
-                    $imgs = glob($user_dir . "/profile_image_*.*");
-                    if ($imgs && count($imgs) > 0) {
-                        usort($imgs, function($a, $b) { return filemtime($b) - filemtime($a); });
-                        $images[] = str_replace("/var/www/html", "", $imgs[0]);
-                    }
-                }
-                $profile_images_map[$safe_first . "_" . $safe_last] = $images;
-            }
-            ?>
-            var profile_images_map = <?php echo json_encode($profile_images_map, JSON_UNESCAPED_SLASHES); ?>;
-            if (profile_images_map[profile_username] && profile_images_map[profile_username][0]) {
-                html += '<div><img src="' + profile_images_map[profile_username][0] + '" class="profile-image" alt="Profile Image"></div>';
-            }
-            html += "<strong>Created At:</strong> " + (profileData.created_at ? profileData.created_at : "") + "<br>";
-            if (profileData.bio) html += "<strong>Bio:</strong> " + profileData.bio + "<br>";
-            if (profileData.dob) html += "<strong>Date of Birth:</strong> " + profileData.dob + "<br>";
-            if (profileData.country) html += "<strong>Country:</strong> " + profileData.country + "<br>";
-            // Work images & info
-            if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
-                html += "<strong>Work:</strong><ul style='padding-left:0;'>";
-                profileData.work.forEach(function(work_item){
-                    html += "<li style='margin-bottom:8px;'>";
-                    if (work_item.image) {
-                        var work_img_src = work_item.image.replace("/var/www/html", "");
-                        html += '<img src="' + work_img_src + '" class="work-image" alt="Work Image">';
-                    }
-                    if (work_item.desc) html += "<br><strong>Description:</strong> " + work_item.desc;
-                    if (work_item.date) html += "<br><strong>Date:</strong> " + work_item.date;
-                    html += "</li>";
-                });
-                html += "</ul>";
-            }
-            // Profile page button
-            html += '<button class="profile-btn" onclick="window.location.href=\'profile.php?user=' + profile_username + '\'">Profile Page</button>';
-
-            dropdown.innerHTML = html;
-            div.appendChild(dropdown);
-
-            // Toggle dropdown on profile click (not on button click)
-            div.onclick = function(e) {
-                // If the button was clicked, let it work normally
-                if (e.target.classList.contains('profile-btn')) return;
-                // Show/hide dropdown
-                var allDropdowns = document.querySelectorAll('.profile-dropdown');
-                allDropdowns.forEach(function(d) { if (d !== dropdown) d.style.display = 'none'; });
-                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-            };
-
-            container.appendChild(div);
-        });
-        // Click outside to close any open dropdown
-        document.addEventListener('click', function(e) {
-            if (!e.target.classList.contains('user-profile') && !e.target.classList.contains('profile-btn')) {
-                document.querySelectorAll('.profile-dropdown').forEach(function(d) {
-                    d.style.display = 'none';
-                });
-            }
-        });
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        renderProfiles(userProfiles);
-    });
-    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .studio-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .studio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+        .form-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-container h3 {
+            margin-top: 0;
+            font-size: 1.25em;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .form-row label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .form-row input[type="text"],
+        .form-row input[type="date"],
+        .form-row input[type="email"],
+        .form-row input[type="password"],
+        .form-row textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        .form-row input[type="file"] {
+            padding: 5px;
+        }
+        .form-row textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .form-container button {
+            background-color: #e27979;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            align-self: flex-start;
+        }
+        .form-container button:hover {
+            background-color: #d66a6a;
+        }
+        .form-message {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+        .login-form-container {
+            max-width: 400px;
+            margin: 40px auto;
+        }
+        .welcome-header {
+            text-align: center;
+        }
+        .welcome-header h2 { margin-bottom: 5px; }
+    </style>
 </head>
 <body>
     <div class="navbar">
-    <div class="navbarbtns">
-        <div class="navbtn"><a href="register.php">register</a></div>
-         <div class="navbtn"><a href="studio3.php">studio</a></div>
-        <div class="navbtn"><a href="database.php">database</a></div>
+        <div class="navbarbtns">
+            <div class="navbtn"><a href="home.php">home</a></div>
+            <div class="navbtn"><a href="studio3.php">studio</a></div>
+            <div class="navbtn"><a href="database.php">database</a></div>
+        </div>
     </div>
-</div>
 
-    <a href="editor.html" target="_blank">CREATE</a>
-<?php if (!isset($_SESSION['email'])): ?>
+    <div class="studio-container">
+        <?php if (!isset($_SESSION['email'])): ?>
+            <div class="form-container login-form-container">
+                <h3>Login to Your Studio</h3>
+                <form method="POST">
+                    <div class="form-row">
+                        <label for="login_email">Email</label>
+                        <input id="login_email" type="email" name="email" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="login_pass">Password</label>
+                        <input id="login_pass" type="password" name="password" required>
+                    </div>
+                    <button type="submit" name="login">Login</button>
+                </form>
+                <p style="text-align:center; margin-top:20px;">Don't have an account? <a href="register.php">Register here</a>.</p>
+            </div>
+        <?php else: ?>
+            <div class="welcome-header">
+                <h2>Welcome to Your Studio, <?php echo htmlspecialchars($_SESSION['first']); ?>!</h2>
+                <p><a href="?logout=1">Logout</a></p>
+            </div>
+            
+            <div class="studio-grid">
+                <div class="form-container">
+                    <h3>Update Bio Information</h3>
+                    <?php if (!empty($profile_extra_msg)) { echo '<p class="form-message">' . htmlspecialchars($profile_extra_msg) . '</p>'; } ?>
+                    <form method="POST">
+                        <div class="form-row">
+                            <label for="bio">Bio</label>
+                            <textarea id="bio" name="bio" rows="3"></textarea>
+                        </div>
+                        <div class="form-row">
+                             <label for="bio2">Bio 2</label>
+                            <textarea id="bio2" name="bio2" rows="3"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="dob">Date of Birth</label>
+                            <input id="dob" type="date" name="dob">
+                        </div>
+                        <div class="form-row">
+                            <label for="country">Country</label>
+                            <input id="country" type="text" name="country">
+                        </div>
+                        <div class="form-row">
+                            <label for="genre">Genre</label>
+                            <input id="genre" type="text" name="genre">
+                        </div>
+                        <div class="form-row">
+                            <label for="nickname">Nickname</label>
+                            <input id="nickname" type="text" name="nickname">
+                        </div>
+                        <div class="form-row">
+                            <label for="fact1">Fact 1</label>
+                            <input id="fact1" type="text" name="fact1">
+                        </div>
+                        <div class="form-row">
+                            <label for="fact2">Fact 2</label>
+                            <input id="fact2" type="text" name="fact2">
+                        </div>
+                        <button type="submit" name="update_profile_extra">Save Info</button>
+                    </form>
+                </div>
 
-<h2>Login</h2>
-<form method="POST">
-    Email: <input type="email" name="email" required><br>
-    Password: <input type="password" name="password" required><br>
-    <button name="login">Login</button>
-</form>
-<?php else: ?>
-    <h2>Welcome, <?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?>!</h2>
-    <a href="?logout=1">Logout</a>
-    
-    <!-- Image upload form -->
-    <h3>Upload Profile Image</h3>
-    <?php if (!empty($image_upload_msg)) { echo '<p>' . htmlspecialchars($image_upload_msg) . '</p>'; } ?>
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*" required>
-        <button type="submit" name="upload_image">Upload Image</button>
-    </form>
-    <?php
-    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
-    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
-    $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
-    $work_dir = $user_dir . "/work";
-    if (is_dir($work_dir)) {
-        $images = glob($work_dir . "/profile_image_*.*");
-        if ($images && count($images) > 0) {
-            $latest_image = $images[array_search(max(array_map('filemtime', $images)), array_map('filemtime', $images))];
-            $web_path = str_replace("/var/www/html", "", $latest_image);
-            echo '<div><img src="' . htmlspecialchars($web_path) . '" alt="Profile Image" style="max-width:200px; max-height:200px;"></div>';
-        }
-    }
-    ?>
-    <!-- Bio/DOB/Country form -->
-    <h3>Update Bio Information</h3>
-    <?php if (!empty($profile_extra_msg)) { echo '<p>' . htmlspecialchars($profile_extra_msg) . '</p>'; } ?>
-    <form method="POST">
-        Bio: <textarea name="bio" rows="3" cols="40"></textarea><br>
-        Date of Birth: <input type="date" name="dob"><br>
-        Country: <input type="text" name="country"><br>
-        <button type="submit" name="update_profile_extra">Save Info</button>
-    </form>
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="form-container">
+                        <h3>Upload Profile Image</h3>
+                        <?php if (!empty($image_upload_msg)) { echo '<p class="form-message">' . htmlspecialchars($image_upload_msg) . '</p>'; } ?>
+                        <form method="POST" enctype="multipart/form-data">
+                            <div class="form-row">
+                                <label for="image">Select Image</label>
+                                <input id="image" type="file" name="image" accept="image/*" required>
+                            </div>
+                            <button type="submit" name="upload_image">Upload Image</button>
+                        </form>
+                        <?php
+                        $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+                        $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+                        $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
+                        $work_dir = $user_dir . "/work";
+                        if (is_dir($work_dir)) {
+                            $images = glob($work_dir . "/profile_image_*.*");
+                            if ($images && count($images) > 0) {
+                                usort($images, function($a, $b) { return filemtime($b) - filemtime($a); });
+                                $latest_image = $images[0];
+                                $web_path = str_replace("/var/www/html", "", $latest_image);
+                                echo '<div style="margin-top:15px;"><img src="' . htmlspecialchars($web_path) . '" alt="Profile Image" style="max-width:150px; border-radius:8px;"></div>';
+                            }
+                        }
+                        ?>
+                    </div>
 
-    <!-- Work upload form -->
-    <h3>Upload Work</h3>
-    <?php if (!empty($work_upload_msg)) { echo '<p>' . htmlspecialchars($work_upload_msg) . '</p>'; } ?>
-    <form method="POST" enctype="multipart/form-data">
-        Description: <textarea name="work_desc" rows="2" cols="40" required></textarea><br>
-        Date of Work: <input type="date" name="work_date" required><br>
-        Work Image: <input type="file" name="work_image" accept="image/*" required><br>
-        <button type="submit" name="upload_work">Upload Work</button>
-    </form>
-<?php endif; ?>
-
-
-
-<!-- User profiles array selection at bottom -->
-<div id="user-profiles"></div>
+                    <div class="form-container">
+                        <h3>Upload New Work</h3>
+                        <?php if (!empty($work_upload_msg)) { echo '<p class="form-message">' . htmlspecialchars($work_upload_msg) . '</p>'; } ?>
+                        <form method="POST" enctype="multipart/form-data">
+                            <div class="form-row">
+                                <label for="work_desc">Description</label>
+                                <textarea id="work_desc" name="work_desc" rows="2" required></textarea>
+                            </div>
+                            <div class="form-row">
+                                <label for="work_date">Date of Work</label>
+                                <input id="work_date" type="date" name="work_date" required>
+                            </div>
+                            <div class="form-row">
+                                <label for="work_image">Work Image</label>
+                                <input id="work_image" type="file" name="work_image" accept="image/*" required>
+                            </div>
+                            <button type="submit" name="upload_work">Upload Work</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
 </body>
 </html>
 
