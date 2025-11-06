@@ -239,36 +239,64 @@ foreach ($topWorks as $workPath) {
     var loggedInUser_profile = <?php echo json_encode($loggedInUser_profile, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
     </script>
     <style>
-      /* small inline style for mini profile image used in the list */
-      .mini-profile {
-        width:30px;
-        height:30px;
-        object-fit:cover;
-        border-radius:6px;
-        margin-right:10px;
-        vertical-align:top;
-        box-shadow:0 2px 8px rgba(0,0,0,0.12);
-      }
       .user-row {
         display:flex;
-        align-items:center;
+        align-items:flex-start;
         gap:10px;
         padding:8px 10px;
         border-bottom:1px solid #eee;
         cursor:pointer;
       }
-      .user-row:hover { background:#fff; }
-      .user-name { font-size: 14px; font-family: monospace; }
-      .user-submeta { color:#666; font-size:0.9em; margin-top:4px; }
-      .profile-dropdown { margin-top:8px; display:none; }
-      .work-image {
-        max-width:120px;
-        max-height:80px;
+      .user-row:hover { background:#f9f9f9; }
+      .user-row-main { display:flex; flex:1; align-items:center; }
+      .mini-profile {
+        width:40px;
+        height:40px;
         object-fit:cover;
         border-radius:8px;
-        margin:6px;
+        margin-right:10px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.12);
+      }
+      .user-name { font-size: 14px; font-family: monospace; }
+      .user-submeta { color:#666; font-size:0.9em; margin-top:4px; }
+      
+      /* New Dropdown Styles */
+      .profile-dropdown { 
+        display:none;
+        width: 100%;
+        margin-top: 10px;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+        border: 1px solid #eee;
+      }
+      .dropdown-inner {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      .dropdown-left { flex: 0 0 120px; }
+      .dropdown-main-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 10px;
+        object-fit: cover;
+        background: #f4f4f4;
+      }
+      .dropdown-right { flex: 1 1 auto; }
+      .dropdown-name { font-size:1.4em; font-weight:700; margin:0; }
+      .dropdown-meta { margin-top:8px; color:#555; line-height:1.5; font-size:0.9em; }
+      .dropdown-work-gallery { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; margin-top: 15px; }
+      .dropdown-gallery-title { margin-top:15px; font-weight:600; font-size:1em; }
+      .work-image {
+        width:100px;
+        height:100px;
+        object-fit:cover;
+        border-radius:8px;
         cursor:pointer;
         box-shadow:0 2px 8px rgba(0,0,0,0.08);
+        flex-shrink: 0;
       }
     </style>
 </head>
@@ -282,7 +310,7 @@ foreach ($topWorks as $workPath) {
   
    <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
     <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
-    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237,[...]);">
+    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237,[...]));">
       <!-- menu omitted for brevity -->
     </div>
   </div>
@@ -417,147 +445,83 @@ function renderProfiles(profiles) {
         var safe_last = profileData.last ? profileData.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
         var profile_username = safe_first + "_" + safe_last;
 
-        // Determine mini-profile image:
         var miniSrc = "";
         if (Array.isArray(profileData.work) && profileData.work.length > 0) {
-            var found = profileData.work.find(function(w){
-                if (!w.image) return false;
-                return /profile_image_/i.test(w.image);
-            });
+            var found = profileData.work.find(w => /profile_image_/i.test(w.image));
             if (!found) found = profileData.work[0];
             if (found && found.image) miniSrc = found.image.replace("/var/www/html", "");
         }
 
         var row = document.createElement('div');
         row.className = 'user-row';
+        row.innerHTML = `
+            <div class="user-row-main">
+                ${miniSrc ? `<img src="${escapeAttr(miniSrc)}" alt="${escapeAttr(profile_username)} photo" class="mini-profile">` : '<div class="mini-profile" style="background:#e9eef6;"></div>'}
+                <div>
+                    <div class="user-name">${escapeAttr(profileData.first || '')} ${escapeAttr(profileData.last || '')}</div>
+                    <div class="user-submeta">
+                        ${profileData.dob ? `Born: ${profileData.dob.substring(0,4)}` : ''}
+                        ${profileData.country ? ` &bull; ${escapeAttr(profileData.country)}` : ''}
+                        ${profileData.genre ? ` &bull; ${escapeAttr(profileData.genre)}` : ''}
+                    </div>
+                </div>
+            </div>
+            <div class="profile-dropdown"></div>
+        `;
 
-        // mini image element
-        if (miniSrc) {
-            var img = document.createElement('img');
-            img.className = 'mini-profile';
-            img.src = miniSrc;
-            img.alt = profile_username + ' photo';
-            row.appendChild(img);
-        } else {
-            var placeholder = document.createElement('div');
-            placeholder.style.width = '30px';
-            placeholder.style.height = '30px';
-            placeholder.style.borderRadius = '6px';
-            placeholder.style.background = '#f0f0f0';
-            placeholder.style.marginRight = '10px';
-            row.appendChild(placeholder);
-        }
-
-        // name + dropdown container
-        var nameDiv = document.createElement('div');
-        nameDiv.style.flex = '1';
-
-        // Build submeta (DOB, Country, Genre) if present
-        var dobText = profileData.dob ? escapeAttr(profileData.dob) : '';
-        var countryText = profileData.country ? escapeAttr(profileData.country) : '';
-        var genreText = profileData.genre ? escapeAttr(profileData.genre) : '';
-
-        var submetaParts = [];
-        if (dobText) {
-            var year = dobText.substring(0, 4);
-            submetaParts.push('Born: ' + year);
-        }
-        if (countryText) submetaParts.push(countryText);
-        if (genreText) submetaParts.push(genreText);
-
-        var submetaHtml = '';
-        if (submetaParts.length) {
-            submetaHtml = '<div class="user-submeta">' + submetaParts.join(' • ') + '</div>';
-        }
-
-        nameDiv.innerHTML = '<div class="user-name">' + escapeAttr(profileData.first || '') + ' ' + escapeAttr(profileData.last || '') + '</div>' + submetaHtml;
+        var dropdownContainer = row.querySelector('.profile-dropdown');
         
-        // hidden dropdown content
-        var details = document.createElement('div');
-        details.className = 'profile-dropdown';
-        details.style.display = 'none';
-        details.style.marginTop = '8px';
-        details.style.fontSize = '0.95em';
-
-        // Build details content programmatically to attach data attributes on images
-        if (profileData.bio) {
-            var bioDiv = document.createElement('div');
-            bioDiv.innerHTML = '<strong>Bio:</strong> ' + (profileData.bio || '');
-            details.appendChild(bioDiv);
-        }
-
-        // Work thumbnails: create a container and append thumbnail images with dataset attributes
-        if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
-            var workWrapTitle = document.createElement('div');
-            workWrapTitle.style.marginTop = '8px';
-            workWrapTitle.innerHTML = '<strong>Work:</strong>';
-            details.appendChild(workWrapTitle);
-
-            var workList = document.createElement('div');
-            workList.style.display = 'flex';
-            workList.style.flexWrap = 'wrap';
-            workList.style.marginTop = '6px';
-
-            profileData.work.forEach(function(work_item){
-                var workBox = document.createElement('div');
-                workBox.style.display = 'flex';
-                workBox.style.flexDirection = 'column';
-                workBox.style.alignItems = 'center';
-                workBox.style.marginRight = '8px';
-                workBox.style.marginBottom = '8px';
-
-                if (work_item.image) {
-                    var workImgSrc = work_item.image.replace("/var/www/html", "");
-                    var wImg = document.createElement('img');
-                    wImg.className = 'work-image';
-                    wImg.src = workImgSrc;
-                    wImg.alt = work_item.desc ? work_item.desc : 'work';
-                    // attach data-* attributes so modal can read them
-                    wImg.dataset.desc = work_item.desc || '';
-                    wImg.dataset.date = work_item.date || '';
-                    wImg.dataset.artist = (profileData.first || '') + ' ' + (profileData.last || '');
-                    wImg.dataset.profile = profile_username;
-                    wImg.dataset.path = workImgSrc;
-                    // clicking a thumbnail will open the selectedWorksModal (handled by global click listener below)
-                    workBox.appendChild(wImg);
-                }
-                if (work_item.desc) {
-                    var caption = document.createElement('div');
-                    caption.style.fontSize = '0.9em';
-                    caption.style.color = '#333';
-                    caption.style.marginTop = '6px';
-                    caption.textContent = work_item.desc;
-                    workBox.appendChild(caption);
-                }
-                workList.appendChild(workBox);
-            });
-            details.appendChild(workList);
-        }
-
-        // profile page button
-        var profileBtnWrap = document.createElement('div');
-        profileBtnWrap.style.marginTop = '8px';
-        var profileBtn = document.createElement('button');
-        profileBtn.className = 'profile-btn';
-        profileBtn.textContent = 'Profile Page';
-        profileBtn.addEventListener('click', function(e){
+        row.querySelector('.user-row-main').addEventListener('click', function(e) {
             e.stopPropagation();
-            window.location.href = 'profile.php?user=' + encodeURIComponent(profile_username);
-        });
-        profileBtnWrap.appendChild(profileBtn);
-        details.appendChild(profileBtnWrap);
-
-        nameDiv.appendChild(details);
-
-        // toggle on row click (except when clicking the profile button or thumbnails)
-        row.addEventListener('click', function(e){
-            if (e.target && e.target.classList && (e.target.classList.contains('profile-btn') || e.target.classList.contains('work-image'))) return;
-            details.style.display = details.style.display === 'block' ? 'none' : 'block';
+            if (dropdownContainer.style.display === 'block') {
+                dropdownContainer.style.display = 'none';
+            } else {
+                buildDropdownContent(dropdownContainer, profileData, profile_username, miniSrc);
+                dropdownContainer.style.display = 'block';
+            }
         });
 
-        row.appendChild(nameDiv);
         container.appendChild(row);
     });
+}
+
+function buildDropdownContent(container, profileData, profile_username, imgSrc) {
+    let rightHtml = `
+        <div class="dropdown-name">${escapeAttr(profileData.first || '')} ${escapeAttr(profileData.last || '')}</div>
+        <div class="dropdown-meta">
+            ${profileData.bio ? `<div><strong>Bio:</strong> ${escapeAttr(profileData.bio)}</div>` : ''}
+        </div>
+    `;
+
+    let workHtml = '';
+    if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
+        workHtml += '<div class="dropdown-gallery-title">Work</div><div class="dropdown-work-gallery">';
+        profileData.work.forEach(function(work_item) {
+            var workImgSrc = work_item.image ? work_item.image.replace("/var/www/html", "") : '';
+            if(workImgSrc) {
+                workHtml += `<img src="${escapeAttr(workImgSrc)}" class="work-image" 
+                                data-desc="${escapeAttr(work_item.desc || '')}" 
+                                data-date="${escapeAttr(work_item.date || '')}" 
+                                data-artist="${escapeAttr((profileData.first || '') + ' ' + (profileData.last || ''))}" 
+                                data-profile="${escapeAttr(profile_username)}" 
+                                data-path="${escapeAttr(workImgSrc)}">`;
+            }
+        });
+        workHtml += '</div>';
+    }
+    
+    container.innerHTML = `
+        <div class="dropdown-inner">
+            <div class="dropdown-left">
+                <img src="${imgSrc || 'placeholder.png'}" class="dropdown-main-image">
+                <button class="profile-btn" style="width:100%; margin-top:10px;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(profile_username)}'">Profile</button>
+            </div>
+            <div class="dropdown-right">
+                ${rightHtml}
+                ${workHtml}
+            </div>
+        </div>
+    `;
 }
 
 // search and sort functions (unchanged logic)
