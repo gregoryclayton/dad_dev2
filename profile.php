@@ -56,8 +56,8 @@ if (is_dir($baseDir)) {
         var user_dir = "/pusers/" + safe_first + "_" + safe_last;
 
         var html = "<h2>" + (profileData.first ? profileData.first : "") + " " + (profileData.last ? profileData.last : "") + "</h2>";
-        if (profileData.email) html += "<strong>Email:</strong> " + profileData.email + "<br>";
-        if (profileData.created_at) html += "<strong>Created At:</strong> " + profileData.created_at + "<br>";
+        // if (profileData.email) html += "<strong>Email:</strong> " + profileData.email + "<br>";
+        // if (profileData.created_at) html += "<strong>Created At:</strong> " + profileData.created_at + "<br>";
         if (profileData.bio) html += "<strong>Bio:</strong> " + profileData.bio + "<br>";
         if (profileData.dob) html += "<strong>Date of Birth:</strong> " + profileData.dob + "<br>";
         if (profileData.country) html += "<strong>Country:</strong> " + profileData.country + "<br>";
@@ -72,7 +72,7 @@ if (is_dir($baseDir)) {
 
         // Work section
         if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
-            html += '<div id="workDiv"><strong>Work:</strong><ul>';
+            html += '<div id="workDiv"><strong>Work:</strong><ul class="workList">';
             profileData.work.forEach(function(work_item){
                 html += "<li>";
                 if (work_item.image) {
