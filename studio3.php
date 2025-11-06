@@ -340,6 +340,8 @@ if (is_dir($baseDir)) {
         <div class="navbtn"><a href="database.php">database</a></div>
     </div>
 </div>
+
+    <a href="editor.html" target="_blank">CREATE</a>
 <?php if (!isset($_SESSION['email'])): ?>
 
 <h2>Login</h2>
@@ -400,6 +402,7 @@ if (is_dir($baseDir)) {
 <div id="user-profiles"></div>
 </body>
 </html>
+
 
 
 
