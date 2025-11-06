@@ -458,7 +458,10 @@ function renderProfiles(profiles) {
         var genreText = profileData.genre ? escapeAttr(profileData.genre) : '';
 
         var submetaParts = [];
-        if (dobText) submetaParts.push('DOB: ' + dobText);
+        if (dobText) {
+            var year = dobText.substring(0, 4);
+            submetaParts.push('Born: ' + year);
+        }
         if (countryText) submetaParts.push(countryText);
         if (genreText) submetaParts.push(genreText);
 
