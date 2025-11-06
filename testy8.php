@@ -239,16 +239,22 @@ foreach ($topWorks as $workPath) {
     var loggedInUser_profile = <?php echo json_encode($loggedInUser_profile, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
     </script>
     <style>
+      * { box-sizing: border-box; }
       .user-row {
         display:flex;
         flex-direction: column;
         align-items:flex-start;
-        padding:10px;
+        padding: 10px 0;
         border-bottom:1px solid #eee;
         cursor:pointer;
       }
       .user-row:hover { background:#f9f9f9; }
-      .user-row-main { display:flex; width:100%; align-items:center; }
+      .user-row-main { 
+        display:flex; 
+        width:100%; 
+        align-items:center; 
+        padding: 0 10px;
+      }
       .mini-profile {
         width:40px;
         height:40px;
@@ -265,7 +271,7 @@ foreach ($topWorks as $workPath) {
       .profile-dropdown { 
         display:none;
         width: 100%;
-        padding-top: 15px; /* Spacing from the main user row info */
+        padding: 15px 10px 0 10px;
       }
       .dropdown-inner {
         display: flex;
@@ -280,7 +286,7 @@ foreach ($topWorks as $workPath) {
       .dropdown-meta { margin-top:8px; color:#555; line-height:1.5; font-size:0.9em; }
       
       .dropdown-gallery-title { margin-top:15px; font-weight:600; font-size:1em; }
-      .dropdown-work-gallery { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; margin-top: 10px; }
+      .dropdown-work-gallery { display: flex; overflow-x: auto; gap: 10px; padding: 5px 0 10px 0; }
       
       .dropdown-work-item { display:flex; flex-direction:column; flex-shrink:0; width:120px; }
       .work-image {
