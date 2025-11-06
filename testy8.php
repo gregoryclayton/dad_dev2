@@ -321,15 +321,19 @@ foreach ($topWorks as $workPath) {
         height: 100%;
         object-fit: contain;
         cursor: pointer;
+        position: relative;
+        z-index: 10; /* Higher z-index */
+        pointer-events: none; /* Let clicks pass through */
       }
       .slideshow-nav {
         position: absolute;
         top: 0;
         width: 50%;
         height: 100%;
-        z-index: 10;
+        z-index: 5; /* Lower z-index */
         cursor: pointer;
         -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        pointer-events: auto; /* Make nav zones clickable */
       }
       #slideshow-prev-zone { left: 0; }
       #slideshow-next-zone { right: 0; }
@@ -515,12 +519,6 @@ function renderProfiles(profiles) {
         
         row.querySelector('.user-row-main').addEventListener('click', function(e) {
             e.stopPropagation();
-            document.querySelectorAll('.profile-dropdown').forEach(d => {
-                if (d !== dropdownContainer) {
-                    d.style.display = 'none';
-                    d.innerHTML = ''; 
-                }
-            });
 
             if (dropdownContainer.style.display === 'block') {
                 dropdownContainer.style.display = 'none';
@@ -651,15 +649,26 @@ function nextSS() { showSS(ssIdx+1);}
 function prevSS() { showSS(ssIdx-1);}
 function startSSAuto() { if (ssInt) clearInterval(ssInt); ssInt = setInterval(nextSS, 7000);}
 
+// Correctly attach event listeners for slideshow navigation and modal
+var slideshowContainer = document.getElementById('slideshow-container');
+if (slideshowContainer) {
+    slideshowContainer.addEventListener('click', function(e) {
+        var rect = e.target.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        
+        // If the click is in the middle 60% of the container, open modal
+        if (x > rect.width * 0.2 && x < rect.width * 0.8) {
+            openModalForSlideshow(ssIdx);
+        }
+    });
+}
 if (document.getElementById('slideshow-next-zone')) {
     document.getElementById('slideshow-next-zone').onclick = function(){ nextSS(); startSSAuto(); };
 }
 if (document.getElementById('slideshow-prev-zone')) {
     document.getElementById('slideshow-prev-zone').onclick = function(){ prevSS(); startSSAuto(); };
 }
-if (ssImgElem) {
-    ssImgElem.onclick = function() { openModalForSlideshow(ssIdx); };
-}
+
 showSS(0); 
 startSSAuto();
 
