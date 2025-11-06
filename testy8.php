@@ -256,6 +256,7 @@ foreach ($topWorks as $workPath) {
         border-radius:8px;
         margin-right:10px;
         box-shadow:0 2px 8px rgba(0,0,0,0.12);
+        flex-shrink: 0;
       }
       .user-name { font-size: 14px; font-family: monospace; }
       .user-submeta { color:#666; font-size:0.9em; margin-top:4px; }
@@ -268,31 +269,39 @@ foreach ($topWorks as $workPath) {
       }
       .dropdown-inner {
         display: flex;
-        gap: 20px;
-        align-items: flex-start;
+        flex-direction: column; /* Mobile-first: stack columns */
+        gap: 15px;
       }
-      .dropdown-left { flex: 0 0 120px; }
+      .dropdown-header { display:flex; gap:15px; align-items:center; }
       .dropdown-main-image {
-        width: 120px;
-        height: 120px;
-        border-radius: 10px;
-        object-fit: cover;
-        background: #f4f4f4;
+        width: 80px; height: 80px; border-radius: 10px; object-fit: cover; background: #f4f4f4; flex-shrink: 0;
       }
-      .dropdown-right { flex: 1 1 auto; min-width: 0; } /* Allow shrinking */
       .dropdown-name { font-size:1.4em; font-weight:700; margin:0; }
       .dropdown-meta { margin-top:8px; color:#555; line-height:1.5; font-size:0.9em; }
-      .dropdown-work-gallery { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; margin-top: 15px; }
+      
       .dropdown-gallery-title { margin-top:15px; font-weight:600; font-size:1em; }
+      .dropdown-work-gallery { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; margin-top: 10px; }
+      
+      .dropdown-work-item { display:flex; flex-direction:column; flex-shrink:0; width:120px; }
       .work-image {
-        width:100px;
-        height:100px;
+        width:120px;
+        height:120px;
         object-fit:cover;
         border-radius:8px;
         cursor:pointer;
         box-shadow:0 2px 8px rgba(0,0,0,0.08);
-        flex-shrink: 0;
       }
+      .work-info { font-size:0.85em; padding-top:6px; }
+      .work-info .desc { font-weight:600; color:#333; }
+      .work-info .date { color:#777; }
+
+      /* Responsive changes for wider screens */
+      @media (min-width: 600px) {
+        .dropdown-inner { flex-direction: row; }
+        .dropdown-header { flex-direction: column; align-items:flex-start; gap:0; }
+        .dropdown-main-image { width: 120px; height: 120px; }
+      }
+
     </style>
 </head>
 <body>
@@ -447,6 +456,11 @@ function renderProfiles(profiles) {
             if (found && found.image) miniSrc = found.image.replace("/var/www/html", "");
         }
 
+        var submetaParts = [];
+        if (profileData.dob) submetaParts.push(`Born: ${profileData.dob.substring(0,4)}`);
+        if (profileData.country) submetaParts.push(escapeAttr(profileData.country));
+        if (profileData.genre) submetaParts.push(escapeAttr(profileData.genre));
+
         var row = document.createElement('div');
         row.className = 'user-row';
         row.innerHTML = `
@@ -454,11 +468,7 @@ function renderProfiles(profiles) {
                 ${miniSrc ? `<img src="${escapeAttr(miniSrc)}" alt="${escapeAttr(profile_username)} photo" class="mini-profile">` : '<div class="mini-profile" style="background:#e9eef6;"></div>'}
                 <div>
                     <div class="user-name">${escapeAttr(profileData.first || '')} ${escapeAttr(profileData.last || '')}</div>
-                    <div class="user-submeta">
-                        ${profileData.dob ? `Born: ${profileData.dob.substring(0,4)}` : ''}
-                        ${profileData.country ? ` &bull; ${escapeAttr(profileData.country)}` : ''}
-                        ${profileData.genre ? ` &bull; ${escapeAttr(profileData.genre)}` : ''}
-                    </div>
+                    <div class="user-submeta">${submetaParts.join(' &bull; ')}</div>
                 </div>
             </div>
             <div class="profile-dropdown"></div>
@@ -468,17 +478,16 @@ function renderProfiles(profiles) {
         
         row.querySelector('.user-row-main').addEventListener('click', function(e) {
             e.stopPropagation();
-            // Close other dropdowns
             document.querySelectorAll('.profile-dropdown').forEach(d => {
                 if (d !== dropdownContainer) {
                     d.style.display = 'none';
-                    d.innerHTML = ''; // Clear content to save memory
+                    d.innerHTML = ''; 
                 }
             });
 
             if (dropdownContainer.style.display === 'block') {
                 dropdownContainer.style.display = 'none';
-                dropdownContainer.innerHTML = ''; // Clear on close
+                dropdownContainer.innerHTML = '';
             } else {
                 buildDropdownContent(dropdownContainer, profileData, profile_username, miniSrc);
                 dropdownContainer.style.display = 'block';
@@ -490,25 +499,26 @@ function renderProfiles(profiles) {
 }
 
 function buildDropdownContent(container, profileData, profile_username, imgSrc) {
-    let rightHtml = `
-        <div class="dropdown-name">${escapeAttr(profileData.first || '')} ${escapeAttr(profileData.last || '')}</div>
-        <div class="dropdown-meta">
-            ${profileData.bio ? `<div><strong>Bio:</strong> ${escapeAttr(profileData.bio)}</div>` : ''}
-        </div>
-    `;
-
+    let bioHtml = profileData.bio ? `<div><strong>Bio:</strong> ${escapeAttr(profileData.bio)}</div>` : '';
+    
     let workHtml = '';
     if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
         workHtml += '<div class="dropdown-gallery-title">Work</div><div class="dropdown-work-gallery">';
         profileData.work.forEach(function(work_item) {
             var workImgSrc = work_item.image ? work_item.image.replace("/var/www/html", "") : '';
             if(workImgSrc) {
-                workHtml += `<img src="${escapeAttr(workImgSrc)}" class="work-image" 
-                                data-desc="${escapeAttr(work_item.desc || '')}" 
-                                data-date="${escapeAttr(work_item.date || '')}" 
-                                data-artist="${escapeAttr((profileData.first || '') + ' ' + (profileData.last || ''))}" 
-                                data-profile="${escapeAttr(profile_username)}" 
-                                data-path="${escapeAttr(workImgSrc)}">`;
+                workHtml += `<div class="dropdown-work-item">
+                                <img src="${escapeAttr(workImgSrc)}" class="work-image" 
+                                    data-desc="${escapeAttr(work_item.desc || '')}" 
+                                    data-date="${escapeAttr(work_item.date || '')}" 
+                                    data-artist="${escapeAttr((profileData.first || '') + ' ' + (profileData.last || ''))}" 
+                                    data-profile="${escapeAttr(profile_username)}" 
+                                    data-path="${escapeAttr(workImgSrc)}">
+                                <div class="work-info">
+                                    <div class="desc">${escapeAttr(work_item.desc || '')}</div>
+                                    <div class="date">${escapeAttr(work_item.date || '')}</div>
+                                </div>
+                             </div>`;
             }
         });
         workHtml += '</div>';
@@ -516,12 +526,15 @@ function buildDropdownContent(container, profileData, profile_username, imgSrc) 
     
     container.innerHTML = `
         <div class="dropdown-inner">
-            <div class="dropdown-left">
+            <div class="dropdown-header">
                 <img src="${imgSrc || 'placeholder.png'}" class="dropdown-main-image">
-                <button class="profile-btn" style="width:100%; margin-top:10px;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(profile_username)}'">Profile</button>
+                <div>
+                    <div class="dropdown-name">${escapeAttr(profileData.first || '')} ${escapeAttr(profileData.last || '')}</div>
+                    <button class="profile-btn" style="margin-top:10px;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(profile_username)}'">Visit Full Profile</button>
+                </div>
             </div>
-            <div class="dropdown-right">
-                ${rightHtml}
+            <div class="dropdown-body">
+                <div class="dropdown-meta">${bioHtml}</div>
                 ${workHtml}
             </div>
         </div>
