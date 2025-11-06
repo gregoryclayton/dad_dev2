@@ -7,6 +7,60 @@ session_start();
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
+// --- API endpoint for selecting a work ---
+if (isset($_POST['action']) && $_POST['action'] === 'select_work' && isset($_SESSION['first']) && isset($_SESSION['last'])) {
+    $workData = isset($_POST['work_data']) ? json_decode($_POST['work_data'], true) : null;
+    if (!$workData || !isset($workData['path'])) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Invalid work data.']);
+        exit;
+    }
+
+    // Get logged-in user's profile
+    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+    $userProfilePath = __DIR__ . '/pusers/' . $safe_first . '_' . $safe_last . '/profile.json';
+
+    if (file_exists($userProfilePath)) {
+        $profile = json_decode(file_get_contents($userProfilePath), true);
+        
+        if (!isset($profile['selected_works']) || !is_array($profile['selected_works'])) {
+            $profile['selected_works'] = [];
+        }
+
+        // Check if work is already selected by its path
+        $isAlreadySelected = false;
+        foreach ($profile['selected_works'] as $selected) {
+            if (isset($selected['path']) && $selected['path'] === $workData['path']) {
+                $isAlreadySelected = true;
+                break;
+            }
+        }
+
+        if (!$isAlreadySelected) {
+            $new_selection = [
+                'path' => $workData['path'],
+                'title' => $workData['title'] ?? '',
+                'date' => $workData['date'] ?? '',
+                'artist' => $workData['artist'] ?? '',
+                'user_folder' => $workData['user_folder'] ?? '',
+                'timestamp' => date('c') // ISO 8601 date
+            ];
+            $profile['selected_works'][] = $new_selection;
+            file_put_contents($userProfilePath, json_encode($profile, JSON_PRETTY_PRINT));
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'message' => 'Work selection updated.']);
+        exit;
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'User profile not found.']);
+        exit;
+    }
+}
+
+
 // ---- User Profile Functions ----
 function safe_name($val) { return preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $val); }
 function create_user_profile($first, $last, $email) {
@@ -17,7 +71,8 @@ function create_user_profile($first, $last, $email) {
         "last" => $last,
         "email" => $email,
         "created_at" => date("Y-m-d H:i:s"),
-        "work" => []
+        "work" => [],
+        "selected_works" => []
     ];
     file_put_contents($user_dir . "/profile.json", json_encode($profile, JSON_PRETTY_PRINT));
     return $user_dir;
@@ -106,12 +161,21 @@ if (isset($_POST['register'])) {
 // --- Gather User Profiles (for Listing/Search) ---
 $baseDir = "/var/www/html/pusers";
 $userProfiles = [];
+$loggedInUser_profile = null;
 if (is_dir($baseDir)) {
     foreach (glob($baseDir . '/*', GLOB_ONLYDIR) as $dir) {
         $profilePath = $dir . "/profile.json";
         if (file_exists($profilePath)) {
             $profileData = json_decode(file_get_contents($profilePath), true);
-            if ($profileData) $userProfiles[] = $profileData;
+            if ($profileData) {
+              $userProfiles[] = $profileData;
+              // If this profile belongs to the logged-in user, store it separately
+              if (isset($_SESSION['first']) && isset($_SESSION['last']) &&
+                  isset($profileData['first']) && isset($profileData['last']) &&
+                  $_SESSION['first'] === $profileData['first'] && $_SESSION['last'] === $profileData['last']) {
+                  $loggedInUser_profile = $profileData;
+              }
+            }
         }
     }
 }
@@ -172,6 +236,7 @@ foreach ($topWorks as $workPath) {
     <script>
     var userProfiles = <?php echo json_encode($userProfiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
     var slideshowImages = <?php echo json_encode($slideshow_images, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
+    var loggedInUser_profile = <?php echo json_encode($loggedInUser_profile, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>;
     </script>
     <style>
       /* small inline style for mini profile image used in the list */
@@ -268,7 +333,14 @@ foreach ($topWorks as $workPath) {
         <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profile</button>
     </div>
     <div style="position:absolute; bottom:24px; right:32px;">
-      <input type="radio" name="slideModalLike" id="slideModalLikeRadio" style="width:20px; height:20px; accent-color: #e27979;">
+      <?php if (isset($_SESSION['email'])): ?>
+        <input type="radio" name="slideModalLike" id="slideModalLikeRadio" style="width:20px; height:20px; accent-color: #e27979; cursor:pointer;">
+      <?php else: ?>
+        <div style="display: flex; flex-direction: column; align-items: center; opacity:0.6;">
+          <input type="radio" style="width:20px; height:20px; cursor:not-allowed;" disabled>
+          <span style="font-size:9px; color:#888; margin-top:4px;">login to select</span>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 </div>
@@ -293,7 +365,14 @@ foreach ($topWorks as $workPath) {
     <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
     <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit profile</a>
     <div style="position:absolute; bottom:36px; right:28px;">
-      <input type="radio" name="selectedWorkLike" id="selectedWorkLikeRadio" style="width:20px; height:20px; accent-color: #e27979;">
+      <?php if (isset($_SESSION['email'])): ?>
+        <input type="radio" name="selectedWorkLike" id="selectedWorkLikeRadio" style="width:20px; height:20px; accent-color: #e27979; cursor:pointer;">
+      <?php else: ?>
+        <div style="display: flex; flex-direction: column; align-items: center; opacity:0.6;">
+          <input type="radio" style="width:20px; height:20px; cursor:not-allowed;" disabled>
+          <span style="font-size:9px; color:#888; margin-top:4px;">login to select</span>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 </div>
@@ -555,6 +634,41 @@ if (document.getElementById('prev-btn')) document.getElementById('prev-btn').onc
 if (ssImgElem) ssImgElem.onclick = function() { openModalForSlideshow(ssIdx); };
 showSS(0); startSSAuto();
 
+// --- NEW: Function to handle selecting a work ---
+function selectWork(workData) {
+    if (!loggedInUser_profile) {
+        console.log("Not logged in, cannot select work.");
+        return;
+    }
+    
+    // Check if already selected to prevent duplicates
+    if (loggedInUser_profile.selected_works && loggedInUser_profile.selected_works.find(w => w.path === workData.path)) {
+      console.log("Work already selected.");
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('action', 'select_work');
+    formData.append('work_data', JSON.stringify(workData));
+
+    fetch('testy8.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Work selected successfully!");
+            // Update local profile data to reflect selection immediately
+            if (!loggedInUser_profile.selected_works) loggedInUser_profile.selected_works = [];
+            loggedInUser_profile.selected_works.push(workData);
+        } else {
+            console.error("Failed to select work:", data.message);
+        }
+    })
+    .catch(err => console.error("Error selecting work:", err));
+}
+
 // -- Modal Logic (Simple/Single Source of Truth) --
 function getProfileForImage(path) {
     var m = path.match(/^pusers\/([^\/]+)\/work\//); if (!m) return null;
@@ -573,28 +687,43 @@ function openModalForSlideshow(slideIdx) {
     var modalTitle = document.getElementById('modalTitle');
     var modalDate = document.getElementById('modalDate');
     var visitProfileBtn = document.getElementById('visitProfileBtn');
+    var radio = document.getElementById('slideModalLikeRadio');
+
     var path = ssImgs[slideIdx];
     if (modalImg) modalImg.src = path || '';
     var profile = getProfileForImage(path);
-    var desc = "", date = "";
+    var workData = { path: path, title: '', date: '', artist: '', user_folder: '' };
+
     if (profile) {
-        modalArtist.textContent = (profile.first || '') + " " + (profile.last || '');
+        workData.artist = (profile.first || '') + " " + (profile.last || '');
+        workData.user_folder = (profile.first ? safe_name(profile.first) : '') + '_' + (profile.last ? safe_name(profile.last) : '');
         if (Array.isArray(profile.work)) {
             var imgfile = path.split('/').pop();
             var w = profile.work.find(function(w) { if (!w.image) return false; return w.image.endsWith(imgfile) || w.image.indexOf(imgfile)!==-1; });
-            desc = w && w.desc ? w.desc : "";
-            date = w && w.date ? w.date : "";
+            workData.title = w && w.desc ? w.desc : "";
+            workData.date = w && w.date ? w.date : "";
         }
-        var safe_first = profile.first ? profile.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_'):"";
-        var safe_last = profile.last ? profile.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_'):"";
-        var profile_username = safe_first + "_" + safe_last;
-        if (visitProfileBtn) visitProfileBtn.onclick = function() { window.location.href = "profile.php?user="+encodeURIComponent(profile_username);};
+        modalArtist.textContent = workData.artist;
+        if (visitProfileBtn) visitProfileBtn.onclick = function() { window.location.href = "profile.php?user="+encodeURIComponent(workData.user_folder);};
     } else {
         if (modalArtist) modalArtist.textContent = "";
         if (visitProfileBtn) visitProfileBtn.onclick = function() { };
     }
-    if (modalTitle) modalTitle.textContent = desc || 'Artwork';
-    if (modalDate) modalDate.textContent = date ? 'Date: ' + date : '';
+    if (modalTitle) modalTitle.textContent = workData.title || 'Artwork';
+    if (modalDate) modalDate.textContent = workData.date ? 'Date: ' + workData.date : '';
+    
+    // Check if work is already selected by logged in user
+    if (radio) {
+        radio.checked = false; // reset
+        if (loggedInUser_profile && loggedInUser_profile.selected_works) {
+            if (loggedInUser_profile.selected_works.find(w => w.path === path)) {
+                radio.checked = true;
+            }
+        }
+        // Attach current work data to radio for selection
+        radio.onclick = function() { selectWork(workData); };
+    }
+
     modal.style.display = 'flex';
 }
 var closeBtn = document.getElementById('closeSlideModal');
@@ -617,11 +746,19 @@ document.querySelectorAll('.selected-work-card').forEach(card => {
             <div style="color:#e27979; margin-top:6px;">Selected ${work.selected_count} times</div>
             <div style="color:#555; font-size:1em; margin-top:8px;">${work.artist}</div>
             <div style="color:#888; margin-top:2px; font-size:0.95em;">${work.date ? work.date : (work.timestamp ? (new Date(work.timestamp)).toLocaleDateString() : '')}</div>
-            <div style="color:#aaa; font-size:0.92em; margin-top:8px;">${work.user_folder}</div>
-            <div style="color:#aaa; font-size:0.92em; margin-top:8px;">${work.path}</div>
         `;
         document.getElementById('selectedWorksModalInfo').innerHTML = infoHtml;
-        document.getElementById('selectedWorksModalProfileBtn').href = 'profile.php?artist=' + encodeURIComponent(work.user_folder);
+        document.getElementById('selectedWorksModalProfileBtn').href = 'profile.php?user=' + encodeURIComponent(work.user_folder);
+        
+        var radio = document.getElementById('selectedWorkLikeRadio');
+        if (radio) {
+            radio.checked = false; // reset
+            if (loggedInUser_profile && loggedInUser_profile.selected_works && loggedInUser_profile.selected_works.find(w => w.path === work.path)) {
+                radio.checked = true;
+            }
+            radio.onclick = function() { selectWork(work); };
+        }
+
         document.getElementById('selectedWorksModal').style.display = 'flex';
     });
 });
@@ -633,40 +770,42 @@ document.getElementById('selectedWorksModal').onclick = function(e) {
 };
 
 // --- New: attach modal behavior to profile work thumbnails using event delegation ---
-// When a .work-image inside a profile dropdown is clicked, open the selectedWorksModal and populate it
 document.addEventListener('click', function(e) {
     var t = e.target;
     if (t && t.classList && t.classList.contains('work-image')) {
         e.stopPropagation();
-        var path = t.dataset.path || t.src || '';
-        var desc = t.dataset.desc || '';
-        var date = t.dataset.date || '';
-        var artist = t.dataset.artist || '';
-        var profile = t.dataset.profile || '';
-
-        // Build info HTML similar to selectedWorksModal format
-        var infoHtml = `
-            <div style="font-weight:bold; font-size:1.2em;">${desc ? escapeAttr(desc) : (path.split('/').pop().replace(/\.[^/.]+$/,'').replace(/_/g,' '))}</div>
-            <div style="color:#555; font-size:1em; margin-top:8px;">${escapeAttr(artist)}</div>
-            <div style="color:#888; margin-top:6px; font-size:0.95em;">${escapeAttr(date)}</div>
-            <div style="color:#aaa; font-size:0.92em; margin-top:8px;">${escapeAttr(profile)}</div>
-            <div style="color:#aaa; font-size:0.82em; margin-top:8px;">${escapeAttr(path)}</div>
-        `;
+        var workData = {
+            path: t.dataset.path || t.src || '',
+            title: t.dataset.desc || '',
+            date: t.dataset.date || '',
+            artist: t.dataset.artist || '',
+            user_folder: t.dataset.profile || ''
+        };
+        
+        // Use selectedWorksModal
         var modal = document.getElementById('selectedWorksModal');
         if (!modal) return;
-        document.getElementById('selectedWorksModalImg').src = path;
-        document.getElementById('selectedWorksModalImg').alt = desc || '';
-        document.getElementById('selectedWorksModalInfo').innerHTML = infoHtml;
-        document.getElementById('selectedWorksModalProfileBtn').href = 'profile.php?user=' + encodeURIComponent(profile);
+        document.getElementById('selectedWorksModalImg').src = workData.path;
+        document.getElementById('selectedWorksModalImg').alt = workData.title || '';
+        document.getElementById('selectedWorksModalInfo').innerHTML = `
+            <div style="font-weight:bold; font-size:1.2em;">${escapeAttr(workData.title) || 'Artwork'}</div>
+            <div style="color:#555; font-size:1em; margin-top:8px;">${escapeAttr(workData.artist)}</div>
+            <div style="color:#888; margin-top:6px; font-size:0.95em;">${escapeAttr(workData.date)}</div>
+        `;
+        document.getElementById('selectedWorksModalProfileBtn').href = 'profile.php?user=' + encodeURIComponent(workData.user_folder);
+        
+        var radio = document.getElementById('selectedWorkLikeRadio');
+        if (radio) {
+            radio.checked = false; // reset
+            if (loggedInUser_profile && loggedInUser_profile.selected_works && loggedInUser_profile.selected_works.find(w => w.path === workData.path)) {
+                radio.checked = true;
+            }
+            radio.onclick = function() { selectWork(workData); };
+        }
+        
         modal.style.display = 'flex';
     }
 }, true);
-
-// small helper used above to escape values inserted into innerHTML
-function escapeAttr(s) {
-    if (!s && s !== 0) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
 
 </script>
 
