@@ -322,18 +322,18 @@ foreach ($topWorks as $workPath) {
         object-fit: contain;
         cursor: pointer;
         position: relative;
-        z-index: 10; /* Higher z-index */
-        pointer-events: none; /* Let clicks pass through */
+        z-index: 10;
+        pointer-events: auto;
       }
       .slideshow-nav {
         position: absolute;
         top: 0;
-        width: 50%;
+        width: 20%; /* Reduced width from 50% */
         height: 100%;
-        z-index: 5; /* Lower z-index */
+        z-index: 15; /* Higher z-index to be on top of the image */
         cursor: pointer;
-        -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
-        pointer-events: auto; /* Make nav zones clickable */
+        -webkit-tap-highlight-color: transparent;
+        pointer-events: auto;
       }
       #slideshow-prev-zone { left: 0; }
       #slideshow-next-zone { right: 0; }
@@ -357,21 +357,21 @@ foreach ($topWorks as $workPath) {
   
    <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
     <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
-    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.936)); border-radius:50%; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:10px; z-index:0;">
+    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237,[...]
       <!-- Your menu content here -->
      <!-- Add this play icon to the dot menu container -->
-<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-[...]
   <span style="color:#e27979;">▶</span>
 </div>
       <!-- New buttons for changing color -->
       <div style="position: relative;">
-  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle background music"></button>
-  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="To[...]
+  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; [...]
     <span style="color:#e27979;">▶</span>
   </div>
 </div>
-      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
-      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
+      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;[...]
+      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; disp[...]
     </div>
   </div>
   
@@ -379,7 +379,7 @@ foreach ($topWorks as $workPath) {
 
 
 <!-- Pop-out menu for quick nav, hidden by default -->
-<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:50px; font-family:monospace;">
+<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:50px[...]
   <div style="display:flex; flex-direction:column; gap:0.5em;">
     <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">home</a>
     <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">about</a>
@@ -403,7 +403,7 @@ foreach ($topWorks as $workPath) {
 <?php if (!isset($_SESSION['email'])): ?>
 
 
-<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-right-radius:10px;">
+<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-r[...]
     <input style="width:80px; margin-right:20px;" type="email" name="email" placeholder="email" required><br>
     <input style="width:80px; margin-right:20px;" type="password" name="password"  placeholder="password" required><br>
     <button name="login">Login</button>
@@ -427,14 +427,14 @@ foreach ($topWorks as $workPath) {
 
 <!-- Slideshow Modal (Simple/Fixed) -->
 <div id="slideModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:10001; background:rgba(0,0,0,0.72); align-items:center; justify-content:center;">
-  <div style="background:white; border-radius:16px; padding:24px 32px; max-width:90vw; max-height:90vh; box-shadow:0 6px 32px #000a; position:relative; display:flex; flex-direction:column; align-items:center;">
+  <div style="background:white; border-radius:16px; padding:24px 32px; max-width:90vw; max-height:90vh; box-shadow:0 6px 32px #000a; position:relative; display:flex; flex-direction:column; align-items[...]
     <button id="closeSlideModal" style="position:absolute; top:10px; right:15px; font-size:1.3em; background:none; border:none; color:#333; cursor:pointer;">×</button>
     <img id="modalImage" src="" alt="Artwork" style="max-width:65vw; max-height:55vh; border-radius:10px; background:#f6f6f6; margin-bottom:18px;">
     <div>
         <div id="modalArtist" style="font-size:1.13em; font-weight:bold;"></div>
         <div id="modalTitle" style="margin:8px 0 0 0; color:#666;"></div>
         <div id="modalDate" style="margin:5px 0 0 0; color:#888; font-size:0.98em;"></div>
-        <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profile</button>
+        <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profi[...]
     </div>
     <div style="position:absolute; bottom:24px; right:32px;">
       <?php if (isset($_SESSION['email'])): ?>
@@ -454,8 +454,8 @@ foreach ($topWorks as $workPath) {
 <?php foreach ($topWorks as $i => $workPath):
     $work = $workDetails[$workPath];
     ?>
-    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #0001; padding:20px; text-align:center; display:flex; flex-direction:column; align-items:center;">
-        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-radius:12px;">
+    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #[...]
+        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-r[...]
         <div style="margin-top:12px;font-size:1.15em;font-weight:bold;"><?php echo htmlspecialchars($work['title']); ?></div>
     </div>
 <?php endforeach; ?>
@@ -463,11 +463,11 @@ foreach ($topWorks as $workPath) {
 
 <!-- Modal for selected works gallery -->
 <div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
-  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
+  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; [...]
     <span id="closeSelectedWorksModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
     <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
     <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
-    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit profile</a>
+    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit pro[...]
     <div style="position:absolute; bottom:36px; right:28px;">
       <?php if (isset($_SESSION['email'])): ?>
         <input type="radio" name="selectedWorkLike" id="selectedWorkLikeRadio" style="width:20px; height:20px; accent-color: #e27979; cursor:pointer;">
@@ -510,6 +510,11 @@ foreach ($topWorks as $workPath) {
 function escapeAttr(s) {
     if (!s && s !== 0) return '';
     return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,"&#39;").replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function safe_name(val) {
+    if (!val) return '';
+    return val.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
 }
 
 // --- Basic Gallery/Profiles Render and Search/Sort ---
@@ -596,7 +601,7 @@ function buildDropdownContent(container, profileData, profile_username, imgSrc) 
                 <img src="${imgSrc || 'placeholder.png'}" class="dropdown-main-image">
                 <div>
                     <div class="dropdown-name">${escapeAttr(profileData.first || '')} ${escapeAttr(profileData.last || '')}</div>
-                    <button class="profile-btn" style="margin-top:10px;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(profile_username)}'">Visit Full Profile</button>
+                    <button class="profile-btn" style="margin-top:10px;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(profile_username)}'">Visit Full P[...]
                 </div>
             </div>
             <div class="dropdown-body">
@@ -684,20 +689,17 @@ function startSSAuto() { if (ssInt) clearInterval(ssInt); ssInt = setInterval(ne
 var slideshowContainer = document.getElementById('slideshow-container');
 if (slideshowContainer) {
     slideshowContainer.addEventListener('click', function(e) {
-        var rect = e.target.getBoundingClientRect();
-        var x = e.clientX - rect.left;
-        
-        // If the click is in the middle 60% of the container, open modal
-        if (x > rect.width * 0.2 && x < rect.width * 0.8) {
+        // Only open the modal if the click is not on the navigation zones
+        if (!e.target.classList.contains('slideshow-nav')) {
             openModalForSlideshow(ssIdx);
         }
     });
 }
 if (document.getElementById('slideshow-next-zone')) {
-    document.getElementById('slideshow-next-zone').onclick = function(){ nextSS(); startSSAuto(); };
+    document.getElementById('slideshow-next-zone').onclick = function(e) { e.stopPropagation(); nextSS(); startSSAuto(); };
 }
 if (document.getElementById('slideshow-prev-zone')) {
-    document.getElementById('slideshow-prev-zone').onclick = function(){ prevSS(); startSSAuto(); };
+    document.getElementById('slideshow-prev-zone').onclick = function(e) { e.stopPropagation(); prevSS(); startSSAuto(); };
 }
 
 showSS(0); 
@@ -741,13 +743,17 @@ function selectWork(workData) {
 // -- Modal Logic (Simple/Single Source of Truth) --
 function getProfileForImage(path) {
     var m = path.match(/^pusers\/([^\/]+)\/work\//); if (!m) return null;
-    var folder = m[1], parts = folder.split('_');
+    var folder = m[1];
     for (var i=0;i<userProfiles.length;++i) {
-        var pf = userProfiles[i].first ? userProfiles[i].first.replace(/[^a-zA-Z0-9_\-\.]/g, '_'):"", pl = userProfiles[i].last ? userProfiles[i].last.replace(/[^a-zA-Z0-9_\-\.]/g, '_'):"";
-        if (pf===parts[0] && pl===parts.slice(1).join('_')) return userProfiles[i];
+        var profile = userProfiles[i];
+        var profile_username = (profile.first ? safe_name(profile.first) : '') + "_" + (profile.last ? safe_name(profile.last) : '');
+        if (profile_username === folder) {
+            return profile;
+        }
     }
     return null;
 }
+
 function openModalForSlideshow(slideIdx) {
     var modal = document.getElementById('slideModal');
     if (!modal) return;
@@ -759,25 +765,41 @@ function openModalForSlideshow(slideIdx) {
     var radio = document.getElementById('slideModalLikeRadio');
 
     var path = ssImgs[slideIdx];
-    if (modalImg) modalImg.src = path || '';
+    modalImg.src = path || '';
+    
     var profile = getProfileForImage(path);
     var workData = { path: path, title: '', date: '', artist: '', user_folder: '' };
 
     if (profile) {
+        var profile_username = (profile.first ? safe_name(profile.first) : '') + '_' + (profile.last ? safe_name(profile.last) : '');
         workData.artist = (profile.first || '') + " " + (profile.last || '');
-        workData.user_folder = (profile.first ? safe_name(profile.first) : '') + '_' + (profile.last ? safe_name(profile.last) : '');
+        workData.user_folder = profile_username;
+        
         if (Array.isArray(profile.work)) {
             var imgfile = path.split('/').pop();
-            var w = profile.work.find(function(w) { if (!w.image) return false; return w.image.endsWith(imgfile) || w.image.indexOf(imgfile)!==-1; });
-            workData.title = w && w.desc ? w.desc : "";
-            workData.date = w && w.date ? w.date : "";
+            var work_item = profile.work.find(function(w) { 
+                if (!w.image) return false; 
+                return w.image.endsWith(imgfile);
+            });
+            if (work_item) {
+                workData.title = work_item.desc || "";
+                workData.date = work_item.date || "";
+            }
         }
+        
         modalArtist.textContent = workData.artist;
-        if (visitProfileBtn) visitProfileBtn.onclick = function() { window.location.href = "profile.php?user="+encodeURIComponent(workData.user_folder);};
+        visitProfileBtn.onclick = function() { 
+            window.location.href = "profile.php?user=" + encodeURIComponent(workData.user_folder);
+        };
+        visitProfileBtn.style.display = 'block';
+
     } else {
-        if (modalArtist) modalArtist.textContent = "";
-        if (visitProfileBtn) visitProfileBtn.onclick = function() { };
+        modalArtist.textContent = "Unknown Artist";
+        modalTitle.textContent = 'Artwork';
+        modalDate.textContent = '';
+        visitProfileBtn.style.display = 'none';
     }
+    
     if (modalTitle) modalTitle.textContent = workData.title || 'Artwork';
     if (modalDate) modalDate.textContent = workData.date ? 'Date: ' + workData.date : '';
     
@@ -798,7 +820,7 @@ function openModalForSlideshow(slideIdx) {
 var closeBtn = document.getElementById('closeSlideModal');
 if (closeBtn) closeBtn.onclick = function() { document.getElementById('slideModal').style.display = 'none'; };
 var slideModal = document.getElementById('slideModal');
-if (slideModal) slideModal.onclick = function(e) { if (e.target === this) this.style.display = 'none'; };
+if (slideModal) slideModal.onclick = function(e) { if (e.target.id === 'slideModal') this.style.display = 'none'; };
 
 // --- Selected works gallery modal logic ---
 const selectedWorksData = <?php echo json_encode($topWorksData, JSON_PRETTY_PRINT); ?>;
@@ -835,7 +857,7 @@ document.getElementById('closeSelectedWorksModal').onclick = function() {
     document.getElementById('selectedWorksModal').style.display = 'none';
 };
 document.getElementById('selectedWorksModal').onclick = function(e) {
-    if (e.target === this) this.style.display = 'none';
+    if (e.target.id === 'selectedWorksModal') this.style.display = 'none';
 };
 
 // --- New: attach modal behavior to profile work thumbnails using event delegation ---
