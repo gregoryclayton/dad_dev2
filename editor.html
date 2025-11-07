@@ -11,7 +11,7 @@
     --muted:#9aa6b2;
     --accent:#60a5fa;
   }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#e6eef6;background:linear-gradient(180deg,#071024 0%, #07121b 60%);-webkit-font-smoothing:antialiased}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,color-scheme:dark;color:#e6eef6;background:linear-gradient(180deg,#071024 0%, #07121b 60%);-webkit-font-smoothing:antialiased}
   /* Sign-in bar */
   .signin-bar {
     max-width:1150px;
@@ -66,7 +66,9 @@
   .row{display:flex;gap:8px;align-items:center}
   input[type=color]{height:36px;width:56px;padding:0;border-radius:6px;border:0;cursor:pointer}
   input[type=range]{width:100%}
-  select,button,input[type=file],input[type=text],input[type=number]{background:#071826;color:#dbe9f6;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px}
+  select,button,input[type=file],input[type=text],input[type=number],input[type=date],textarea {
+    background:#071826;color:#dbe9f6;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;
+  }
   button{cursor:pointer}
   .canvas-wrap{display:flex;flex-direction:column;gap:10px}
   .stage{background:#0a1724;border-radius:8px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center}
@@ -76,6 +78,13 @@
   .small{font-size:12px;padding:7px 10px}
   footer{grid-column:1/-1;margin-top:6px;font-size:12px;color:var(--muted);text-align:center}
   .file-drag{border:2px dashed rgba(255,255,255,0.02);padding:8px;border-radius:8px;text-align:center;color:var(--muted)}
+  .upload-status { font-size:13px; color:var(--muted); margin-top:8px; }
+  /* Profile gallery styles */
+  .profile-work-gallery { display: none; }
+  .profile-work-gallery.visible { display: block; }
+  .profile-work-thumbs { display: flex; overflow-x: auto; gap: 8px; padding: 4px; background: #071826; border-radius: 8px; }
+  .profile-work-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
+  .profile-work-thumb:hover { opacity: 1; }
   @media(max-width:980px){
     .wrap{grid-template-columns:1fr; padding:12px}
     .signin-bar { max-width: calc(100% - 24px); margin: 12px; flex-direction: column; gap:8px; align-items:stretch; }
@@ -85,35 +94,41 @@
 </head>
 <body>
 
-<!-- Sign-in bar: posts to testy8.php which handles login/logout/register -->
 <div class="signin-bar" role="navigation" aria-label="Sign in bar">
   <div class="signin-left">
     <div class="brand">digital artist database</div>
     <div style="font-size:13px;color:var(--muted)">Canvas Editor</div>
   </div>
 
-  <form class="signin-form" method="POST" action="testy8.php" style="margin-left:auto;">
-    <input type="email" name="email" placeholder="email" aria-label="email" required>
-    <input type="password" name="password" placeholder="password" aria-label="password" required>
-    <button type="submit" name="login">Login</button>
-  </form>
-
-  <div class="signin-actions">
-    <a href="register.php">Register</a>
-    <!-- Logout link (if the user is logged in clicking this will call testy8.php?logout=1) -->
-    <a href="testy8.php?logout=1" style="margin-left:6px;">Logout</a>
+  <div id="signin-container">
+    <form class="signin-form" method="POST" action="testy8.php" style="margin-left:auto;">
+      <input type="email" name="email" placeholder="email" aria-label="email" required>
+      <input type="password" name="password" placeholder="password" aria-label="password" required>
+      <button type="submit" name="login">Login</button>
+    </form>
   </div>
+  <div id="user-info" style="display:none;">
+    <span id="user-greeting"></span>
+    <a href="testy8.php?logout=1" style="margin-left:12px;font-size:13px;">Logout</a>
+  </div>
+  <a href="register.php" id="register-link">Register</a>
 </div>
 
 <div class="wrap">
   <div class="panel">
     <h1>Overlay Controls</h1>
     <div class="controls">
-      <!-- Image -->
-      <label>Image (choose file or drop onto canvas)</label>
+      <label>Image</label>
       <input id="fileInput" type="file" accept="image/*" />
+      
+      <!-- Profile Work Gallery -->
+      <div id="profileWorkGallery" class="profile-work-gallery">
+          <label>Load from Profile</label>
+          <div id="profileWorkThumbs" class="profile-work-thumbs">
+              <!-- Thumbnails will be injected here by JS -->
+          </div>
+      </div>
 
-      <!-- Gradient controls -->
       <label style="margin-top:14px">Gradient Overlay</label>
       <div class="row">
         <input id="startColor" type="color" value="#000000" />
@@ -141,7 +156,6 @@
         <button id="clearBtn" class="small">Clear Gradient</button>
       </div>
 
-      <!-- Text overlay controls -->
       <label style="margin-top:14px">Text Overlay</label>
       <input id="overlayText" type="text" placeholder="Enter overlay text" value="Sample Text" />
       <div class="row">
@@ -169,6 +183,20 @@
         ⬇ Click & drag on the image to set gradient direction.  
         ✍️ Drag the text to reposition it.
       </div>
+
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0;">
+      <h1 style="font-size:16px;">Save to Your Profile</h1>
+      <div id="upload-panel" style="display:none;">
+        <label>Description</label>
+        <input id="upload_desc" type="text" placeholder="Work description">
+        <label>Date of Work</label>
+        <input id="upload_date" type="date">
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button id="upload_work_btn" class="small">Save to Profile</button>
+        </div>
+        <div id="upload_status" class="upload-status"></div>
+      </div>
+      <div id="upload-login-prompt" class="hint">Log in to save your creations to your profile.</div>
     </div>
   </div>
 
@@ -193,7 +221,6 @@
   const fileInput = document.getElementById('fileInput');
   const status = document.getElementById('status');
   const dropHint = document.getElementById('dropHint');
-  // gradient controls
   const startColorInput = document.getElementById('startColor');
   const endColorInput = document.getElementById('endColor');
   const startAlphaInput = document.getElementById('startAlpha');
@@ -206,15 +233,21 @@
   const downloadBtn = document.getElementById('downloadBtn');
   const linearBtn = document.getElementById('linearBtn');
   const radialBtn = document.getElementById('radialBtn');
-  // text controls
   const overlayTextInput = document.getElementById('overlayText');
   const fontSizeInput = document.getElementById('fontSize');
   const textColorInput = document.getElementById('textColor');
   const textAlphaInput = document.getElementById('textAlpha');
   const textAlphaVal = document.getElementById('textAlphaVal');
   const textBlendSelect = document.getElementById('textBlend');
-
+  const uploadDesc = document.getElementById('upload_desc');
+  const uploadDate = document.getElementById('upload_date');
+  const uploadBtn = document.getElementById('upload_work_btn');
+  const uploadStatus = document.getElementById('upload_status');
+  const profileWorkGallery = document.getElementById('profileWorkGallery');
+  const profileWorkThumbs = document.getElementById('profileWorkThumbs');
+  
   let img = new Image();
+  img.crossOrigin = "anonymous"; // Allow loading from other origins if needed
   let imgLoaded = false;
   let drag = false;
   let start = null, end = null;
@@ -235,60 +268,48 @@
   function setStatus(s){ status.textContent = s; }
 
   function rgba(hex,a){
-    const r=parseInt(hex.slice(1,3),16),
-          g=parseInt(hex.slice(3,5),16),
-          b=parseInt(hex.slice(5,7),16);
+    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
     return `rgba(${r},${g},${b},${a})`;
   }
 
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(imgLoaded) ctx.drawImage(img,0,0,canvas.width,canvas.height);
-    else {
+    if(imgLoaded) {
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    } else {
       ctx.fillStyle="#0b1116"; ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle="#2c3e50"; ctx.font="14px system-ui";
-      ctx.fillText("No image loaded",20,30);
+      ctx.fillStyle="#2c3e50"; ctx.font="14px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("Load an image to begin", canvas.width/2, canvas.height/2);
     }
-
     if(start && end){
       ctx.save();
       ctx.globalCompositeOperation = currentComposite;
       const sc = rgba(startColorInput.value, startAlphaInput.value);
       const ec = rgba(endColorInput.value, endAlphaInput.value);
+      let g;
       if(mode==='linear'){
-        const g = ctx.createLinearGradient(start.x,start.y,end.x,end.y);
-        g.addColorStop(0,sc); g.addColorStop(1,ec);
-        ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+        g = ctx.createLinearGradient(start.x,start.y,end.x,end.y);
       } else {
         const r=Math.hypot(end.x-start.x,end.y-start.y);
-        const g=ctx.createRadialGradient(start.x,start.y,0,start.x,start.y,r);
-        g.addColorStop(0,sc); g.addColorStop(1,ec);
-        ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+        g=ctx.createRadialGradient(start.x,start.y,0,start.x,start.y,r);
       }
+      g.addColorStop(0,sc); g.addColorStop(1,ec);
+      ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.restore();
     }
-
-    // draw text overlay
     if(textLayer.text){
       ctx.save();
       ctx.globalCompositeOperation=textLayer.blend;
       ctx.font=`${textLayer.fontSize}px sans-serif`;
-      ctx.textAlign='center';
-      ctx.textBaseline='middle';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillStyle=rgba(textLayer.color,textLayer.alpha);
       ctx.fillText(textLayer.text,textLayer.x,textLayer.y);
       ctx.restore();
     }
-
-    // show gradient drag line
     if(drag && start && end){
       ctx.save();
-      ctx.strokeStyle='rgba(255,255,255,0.7)';
-      ctx.setLineDash([6,4]);
-      ctx.beginPath();
-      ctx.moveTo(start.x,start.y);
-      ctx.lineTo(end.x,end.y);
-      ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.setLineDash([6,4]);
+      ctx.beginPath(); ctx.moveTo(start.x,start.y); ctx.lineTo(end.x,end.y); ctx.stroke();
       ctx.restore();
     }
   }
@@ -297,61 +318,30 @@
     const rect=canvas.getBoundingClientRect();
     const clientX=e.touches?e.touches[0].clientX:e.clientX;
     const clientY=e.touches?e.touches[0].clientY:e.clientY;
-    return {x:(clientX-rect.left)*(canvas.width/rect.width),
-            y:(clientY-rect.top)*(canvas.height/rect.height)};
+    return {x:(clientX-rect.left)*(canvas.width/rect.width), y:(clientY-rect.top)*(canvas.height/rect.height)};
   }
 
-  // gradient drag
-  canvas.addEventListener('mousedown',e=>{
-    const pos=toCanvasCoords(e);
-    if(isOnText(pos)){ startTextMove(pos); return; }
-    drag=true; start=pos; end={...start};
-  });
-  canvas.addEventListener('mousemove',e=>{
-    const pos=toCanvasCoords(e);
-    if(movingText){ textLayer.x=pos.x-moveOffset.x; textLayer.y=pos.y-moveOffset.y; draw(); return;}
-    if(!drag)return; end=pos; draw();
-  });
-  canvas.addEventListener('mouseup',e=>{
-    if(movingText){ movingText=false; draw(); return;}
-    if(!drag)return; end=toCanvasCoords(e); drag=false; draw();
-  });
+  canvas.addEventListener('mousedown',e=>{ const pos=toCanvasCoords(e); if(isOnText(pos)){ startTextMove(pos); return; } drag=true; start=pos; end={...start}; });
+  canvas.addEventListener('mousemove',e=>{ const pos=toCanvasCoords(e); if(movingText){ textLayer.x=pos.x-moveOffset.x; textLayer.y=pos.y-moveOffset.y; draw(); return;} if(!drag)return; end=pos; draw(); });
+  canvas.addEventListener('mouseup',e=>{ if(movingText){ movingText=false; draw(); return;} if(!drag)return; end=toCanvasCoords(e); drag=false; draw(); });
   canvas.addEventListener('mouseleave',()=>{drag=false; movingText=false;});
 
-  function isOnText(p){
-    ctx.font=`${textLayer.fontSize}px sans-serif`;
-    const w=ctx.measureText(textLayer.text).width;
-    const h=textLayer.fontSize;
-    return (p.x>textLayer.x-w/2 && p.x<textLayer.x+w/2 &&
-            p.y>textLayer.y-h/2 && p.y<textLayer.y+h/2);
+  function isOnText(p){ ctx.font=`${textLayer.fontSize}px sans-serif`; const w=ctx.measureText(textLayer.text).width, h=textLayer.fontSize; return (p.x>textLayer.x-w/2 && p.x<textLayer.x+w/2 && p.y>textLayer.y-h/2 && p.y<textLayer.y+h/2); }
+  function startTextMove(p){ movingText=true; moveOffset.x=p.x-textLayer.x; moveOffset.y=p.y-textLayer.y; }
+
+  function loadImage(src) {
+    img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload=()=>{imgLoaded=true; canvas.width=img.width; canvas.height=img.height; textLayer.x = canvas.width/2; textLayer.y = canvas.height/2; draw(); setStatus(`Image loaded. (${img.width}x${img.height})`);};
+    img.onerror=()=>{setStatus('Error loading image.');};
+    img.src=src;
   }
 
-  function startTextMove(p){
-    movingText=true;
-    moveOffset.x=p.x-textLayer.x;
-    moveOffset.y=p.y-textLayer.y;
-  }
-
-  // file load
-  fileInput.addEventListener('change',e=>{
-    const f=e.target.files[0]; if(!f)return;
-    const r=new FileReader();
-    r.onload=ev=>{
-      img=new Image();
-      img.onload=()=>{imgLoaded=true; canvas.width=img.width>1000?1000:img.width; canvas.height=img.height*(canvas.width/img.width); draw(); setStatus('Image loaded');};
-      img.src=ev.target.result;
-    };
-    r.readAsDataURL(f);
-  });
-
-  // drag drop
+  fileInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; loadImage(URL.createObjectURL(f)); });
   ['dragenter','dragover'].forEach(ev=>canvas.addEventListener(ev,e=>{e.preventDefault();dropHint.style.borderColor="#3aa0ff"}));
   ['dragleave','drop'].forEach(ev=>canvas.addEventListener(ev,e=>{e.preventDefault();dropHint.style.borderColor=""}));
-  canvas.addEventListener('drop',e=>{
-    const f=e.dataTransfer.files[0]; if(f) fileInput.files=e.dataTransfer.files, fileInput.dispatchEvent(new Event('change'));
-  });
+  canvas.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) loadImage(URL.createObjectURL(f)); });
 
-  // controls
   startAlphaInput.addEventListener('input',()=>{startAlphaVal.textContent=Number(startAlphaInput.value).toFixed(2);draw();});
   endAlphaInput.addEventListener('input',()=>{endAlphaVal.textContent=Number(endAlphaInput.value).toFixed(2);draw();});
   startColorInput.addEventListener('input',draw);
@@ -360,24 +350,65 @@
   clearBtn.addEventListener('click',()=>{start=end=null;draw();});
   linearBtn.addEventListener('click',()=>{mode='linear';setStatus('Mode: linear');});
   radialBtn.addEventListener('click',()=>{mode='radial';setStatus('Mode: radial');});
-  resetBtn.addEventListener('click',()=>{
-    start=end=null;imgLoaded=false;img=new Image();
-    textLayer.x=canvas.width/2;textLayer.y=canvas.height/2;textLayer.text="Sample Text";
-    draw();
-  });
-
-  // text control events
+  resetBtn.addEventListener('click',()=>{ start=end=null;imgLoaded=false;img=new Image(); textLayer.x=canvas.width/2;textLayer.y=canvas.height/2;textLayer.text="Sample Text"; draw(); });
   overlayTextInput.addEventListener('input',()=>{textLayer.text=overlayTextInput.value;draw();});
   fontSizeInput.addEventListener('input',()=>{textLayer.fontSize=parseInt(fontSizeInput.value)||64;draw();});
   textColorInput.addEventListener('input',()=>{textLayer.color=textColorInput.value;draw();});
   textAlphaInput.addEventListener('input',()=>{textLayer.alpha=textAlphaInput.value;textAlphaVal.textContent=Number(textAlphaInput.value).toFixed(2);draw();});
   textBlendSelect.addEventListener('change',()=>{textLayer.blend=textBlendSelect.value;draw();});
+  downloadBtn.addEventListener('click',()=>{ const link=document.createElement('a'); link.download='canvas_overlay.png'; link.href=canvas.toDataURL('image/png'); link.click(); });
 
-  downloadBtn.addEventListener('click',()=>{
-    const link=document.createElement('a');
-    link.download='canvas_overlay.png';
-    link.href=canvas.toDataURL('image/png');
-    link.click();
+  uploadBtn.addEventListener('click', function(){
+    if (!imgLoaded) { uploadStatus.textContent = 'Please load an image first.'; return; }
+    uploadStatus.textContent = 'Uploading...';
+    
+    canvas.toBlob(function(blob){
+      const fd = new FormData();
+      fd.append('upload_work', '1');
+      fd.append('work_desc', uploadDesc.value || 'Created with Canvas Editor');
+      fd.append('work_date', uploadDate.value || new Date().toISOString().split('T')[0]);
+      fd.append('work_file', blob, 'canvas_image.png');
+
+      fetch('studio3.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(resp => {
+          uploadStatus.textContent = 'Upload complete! Check your profile.';
+          // The page reloads on success anyway, but good for feedback.
+          window.location.href = 'studio3.php'; // Or just let the form handler redirect
+      })
+      .catch(err => { uploadStatus.textContent = 'Upload error: ' + err.message; });
+    }, 'image/png');
+  });
+
+  // Check login status and load profile data
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch('get_session.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          document.getElementById('signin-container').style.display = 'none';
+          document.getElementById('register-link').style.display = 'none';
+          const userInfo = document.getElementById('user-info');
+          userInfo.style.display = 'flex';
+          document.getElementById('user-greeting').textContent = `Welcome, ${data.first}!`;
+
+          document.getElementById('upload-panel').style.display = 'block';
+          document.getElementById('upload-login-prompt').style.display = 'none';
+
+          if (data.profile && data.profile.work && data.profile.work.length > 0) {
+            profileWorkGallery.classList.add('visible');
+            profileWorkThumbs.innerHTML = '';
+            data.profile.work.forEach(work => {
+              if (work.type !== 'image' && !/\.(jpg|jpeg|png|gif)$/i.test(work.path)) return; // Only show images
+              const thumb = document.createElement('img');
+              thumb.src = work.path.replace(/^\/var\/www\/html\//, '');
+              thumb.className = 'profile-work-thumb';
+              thumb.title = work.desc;
+              thumb.onclick = () => loadImage(thumb.src);
+              profileWorkThumbs.appendChild(thumb);
+            });
+          }
+        }
+      });
   });
 
   draw();
