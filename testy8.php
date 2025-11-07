@@ -328,7 +328,7 @@ foreach ($topWorks as $workPath) {
       .slideshow-nav {
         position: absolute;
         top: 0;
-        width: 50%;
+        width: 20%;
         height: 100%;
         z-index: 5; /* Lower z-index */
         cursor: pointer;
@@ -357,21 +357,21 @@ foreach ($topWorks as $workPath) {
   
    <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
     <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
-    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.936)); border-radius:50%; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:10px; z-index:0;">
+    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.933)); border-radius:16px; box-shadow:0 4px 24px #0003; padding:1.2em 1.7em; z-index:10001; min-width:80px; display:none;">
       <!-- Your menu content here -->
      <!-- Add this play icon to the dot menu container -->
-<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow: 0 1px 4px #0003; cursor:pointer;">
   <span style="color:#e27979;">▶</span>
 </div>
       <!-- New buttons for changing color -->
       <div style="position: relative;">
-  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle background music"></button>
-  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle Music"></button>
+  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow: 0 1px 4px #0003; cursor:pointer;">
     <span style="color:#e27979;">▶</span>
   </div>
 </div>
-      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
-      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
+      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px; height:10px;" title="Change background"></button>
+      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px; height:10px;" title="B&W Theme"></button>
     </div>
   </div>
   
@@ -379,7 +379,7 @@ foreach ($topWorks as $workPath) {
 
 
 <!-- Pop-out menu for quick nav, hidden by default -->
-<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:50px; font-family:monospace;">
+<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:50px;">
   <div style="display:flex; flex-direction:column; gap:0.5em;">
     <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">home</a>
     <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">about</a>
@@ -403,7 +403,7 @@ foreach ($topWorks as $workPath) {
 <?php if (!isset($_SESSION['email'])): ?>
 
 
-<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-right-radius:10px;">
+<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-right-radius:10px; margin: 0 0 0 auto;">
     <input style="width:80px; margin-right:20px;" type="email" name="email" placeholder="email" required><br>
     <input style="width:80px; margin-right:20px;" type="password" name="password"  placeholder="password" required><br>
     <button name="login">Login</button>
@@ -454,8 +454,8 @@ foreach ($topWorks as $workPath) {
 <?php foreach ($topWorks as $i => $workPath):
     $work = $workDetails[$workPath];
     ?>
-    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #0001; padding:20px; text-align:center; display:flex; flex-direction:column; align-items:center;">
-        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-radius:12px;">
+    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #0001; padding:12px; display:flex; flex-direction:column; align-items:center;">
+        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-radius:8px;">
         <div style="margin-top:12px;font-size:1.15em;font-weight:bold;"><?php echo htmlspecialchars($work['title']); ?></div>
     </div>
 <?php endforeach; ?>
@@ -684,7 +684,7 @@ function startSSAuto() { if (ssInt) clearInterval(ssInt); ssInt = setInterval(ne
 var slideshowContainer = document.getElementById('slideshow-container');
 if (slideshowContainer) {
     slideshowContainer.addEventListener('click', function(e) {
-        var rect = e.target.getBoundingClientRect();
+        var rect = slideshowContainer.getBoundingClientRect(); // Use container's rect
         var x = e.clientX - rect.left;
         
         // If the click is in the middle 60% of the container, open modal
@@ -740,11 +740,14 @@ function selectWork(workData) {
 
 // -- Modal Logic (Simple/Single Source of Truth) --
 function getProfileForImage(path) {
+    if (!path) return null;
     var m = path.match(/^pusers\/([^\/]+)\/work\//); if (!m) return null;
-    var folder = m[1], parts = folder.split('_');
+    var folder = m[1];
     for (var i=0;i<userProfiles.length;++i) {
-        var pf = userProfiles[i].first ? userProfiles[i].first.replace(/[^a-zA-Z0-9_\-\.]/g, '_'):"", pl = userProfiles[i].last ? userProfiles[i].last.replace(/[^a-zA-Z0-9_\-\.]/g, '_'):"";
-        if (pf===parts[0] && pl===parts.slice(1).join('_')) return userProfiles[i];
+        var profile = userProfiles[i];
+        var safe_first = profile.first ? safe_name(profile.first) : "";
+        var safe_last = profile.last ? safe_name(profile.last) : "";
+        if (`${safe_first}_${safe_last}` === folder) return profile;
     }
     return null;
 }
@@ -768,15 +771,17 @@ function openModalForSlideshow(slideIdx) {
         workData.user_folder = (profile.first ? safe_name(profile.first) : '') + '_' + (profile.last ? safe_name(profile.last) : '');
         if (Array.isArray(profile.work)) {
             var imgfile = path.split('/').pop();
-            var w = profile.work.find(function(w) { if (!w.image) return false; return w.image.endsWith(imgfile) || w.image.indexOf(imgfile)!==-1; });
-            workData.title = w && w.desc ? w.desc : "";
-            workData.date = w && w.date ? w.date : "";
+            var w = profile.work.find(function(w) { if (!w.image) return false; return w.image.endsWith(imgfile); });
+            if (w) {
+                workData.title = w.desc || "";
+                workData.date = w.date || "";
+            }
         }
         modalArtist.textContent = workData.artist;
         if (visitProfileBtn) visitProfileBtn.onclick = function() { window.location.href = "profile.php?user="+encodeURIComponent(workData.user_folder);};
     } else {
-        if (modalArtist) modalArtist.textContent = "";
-        if (visitProfileBtn) visitProfileBtn.onclick = function() { };
+        if (modalArtist) modalArtist.textContent = "Unknown Artist";
+        if (visitProfileBtn) visitProfileBtn.onclick = null;
     }
     if (modalTitle) modalTitle.textContent = workData.title || 'Artwork';
     if (modalDate) modalDate.textContent = workData.date ? 'Date: ' + workData.date : '';
