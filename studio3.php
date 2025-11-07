@@ -2,12 +2,25 @@
 // Database credentials
 include 'connection.php';
 
-// Start session for login/logout
+// Start session for login/logout and flash messages
 session_start();
 
 // Connect to MySQL
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
+
+function set_flash_message($message, $type = 'success') {
+    $_SESSION['flash_message'] = ['message' => $message, 'type' => $type];
+}
+
+function display_flash_message() {
+    if (isset($_SESSION['flash_message'])) {
+        $message_data = $_SESSION['flash_message'];
+        $class = $message_data['type'] === 'error' ? 'form-message-error' : 'form-message';
+        echo '<p class="' . $class . '">' . htmlspecialchars($message_data['message']) . '</p>';
+        unset($_SESSION['flash_message']);
+    }
+}
 
 // Helper function to recursively delete a directory
 function delete_directory($dir) {
@@ -23,24 +36,20 @@ function delete_directory($dir) {
 
 // Handle profile deletion
 if (isset($_SESSION['email']) && isset($_POST['delete_profile'])) {
-    // Get user identifiers
     $email = $_SESSION['email'];
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
     $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
     $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
 
-    // 1. Delete user directory from filesystem
     if (is_dir($user_dir)) {
         delete_directory($user_dir);
     }
 
-    // 2. Delete user from database
     $stmt = $conn->prepare("DELETE FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->close();
 
-    // 3. Logout and redirect
     session_destroy();
     header("Location: home.php?profile_deleted=true");
     exit();
@@ -115,30 +124,15 @@ function add_user_work($first, $last, $desc, $date, $file_path, $uuid, $file_typ
         $profile['work'][] = [
             "desc" => $desc,
             "date" => $date,
-            "path" => $file_path, // Use generic "path"
-            "type" => $file_type, // "image" or "audio"
+            "path" => $file_path,
+            "type" => $file_type,
             "uuid" => $uuid
         ];
         file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
     }
 }
 
-// Handle registration
-if (isset($_POST['register'])) {
-    $first = $conn->real_escape_string($_POST['first']);
-    $last = $conn->real_escape_string($_POST['last']);
-    $email = $conn->real_escape_string($_POST['email']);
-    $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
-
-    $check = $conn->query("SELECT * FROM users WHERE email='$email'");
-    if ($check->num_rows > 0) {
-        echo "Email already registered!";
-    } else {
-        $conn->query("INSERT INTO users (first,last,email,password) VALUES ('$first','$last','$email','$pass')");
-        $user_dir = create_user_profile($first, $last, $email);
-        echo "Registration successful! Please log in.";
-    }
-}
+// --- FORM SUBMISSION HANDLING WITH PRG ---
 
 // Handle login
 if (isset($_POST['login'])) {
@@ -151,13 +145,15 @@ if (isset($_POST['login'])) {
             $_SESSION['email'] = $email;
             $_SESSION['first'] = $row['first'];
             $_SESSION['last'] = $row['last'];
-            echo "Logged in!";
+            set_flash_message("Logged in successfully!");
         } else {
-            echo "Incorrect password!";
+            set_flash_message("Incorrect password!", 'error');
         }
     } else {
-        echo "No account found!";
+        set_flash_message("No account found with that email.", 'error');
     }
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
 }
 
 // Handle logout
@@ -167,82 +163,65 @@ if (isset($_GET['logout'])) {
     exit();
 }
 
+// Handle bio/dob/country form submission
+if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
+    $bio = $_POST['bio'] ?? ""; $dob = $_POST['dob'] ?? ""; $country = $_POST['country'] ?? "";
+    $genre = $_POST['genre'] ?? ""; $nickname = $_POST['nickname'] ?? ""; $bio2 = $_POST['bio2'] ?? "";
+    $fact1 = $_POST['fact1'] ?? ""; $fact2 = $_POST['fact2'] ?? ""; $fact3 = $_POST['fact3'] ?? "";
+    $city = $_POST['city'] ?? ""; $subgenre = $_POST['subgenre'] ?? "";
+    update_user_profile_extra($_SESSION['first'], $_SESSION['last'], $bio, $dob, $country, $genre, $nickname, $bio2, $fact1, $fact2, $fact3, $city, $subgenre);
+    set_flash_message("Profile info updated!");
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
 // Handle image upload (if logged in)
-$image_upload_msg = "";
 if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
         $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
         $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
-        if (!is_dir($user_dir)) {
-            mkdir($user_dir, 0755, true);
-        }
         $work_dir = $user_dir . "/work";
-        if (!is_dir($work_dir)) {
-            mkdir($work_dir, 0755, true);
-        }
+        if (!is_dir($work_dir)) mkdir($work_dir, 0755, true);
+        
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-        $file_type = mime_content_type($_FILES['image']['tmp_name']);
-        if (!in_array($file_type, $allowed_types)) {
-            $image_upload_msg = "Only JPG, PNG, and GIF files are allowed.";
+        if (!in_array(mime_content_type($_FILES['image']['tmp_name']), $allowed_types)) {
+            set_flash_message("Only JPG, PNG, and GIF files are allowed.", 'error');
         } else {
             $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
             $target_file = $work_dir . "/profile_image_" . time() . "." . $ext;
             if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
-                $image_upload_msg = "Image uploaded successfully!";
+                set_flash_message("Image uploaded successfully!");
             } else {
-                $image_upload_msg = "Failed to upload image.";
+                set_flash_message("Failed to upload image.", 'error');
             }
         }
     } else {
-        $image_upload_msg = "No file uploaded or upload error.";
+        set_flash_message("No file uploaded or upload error.", 'error');
     }
-}
-
-// Handle bio/dob/country form submission
-$profile_extra_msg = "";
-if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
-    $bio = isset($_POST['bio']) ? $_POST['bio'] : "";
-    $dob = isset($_POST['dob']) ? $_POST['dob'] : "";
-    $country = isset($_POST['country']) ? $_POST['country'] : "";
-    $genre = isset($_POST['genre']) ? $_POST['genre'] : "";
-    $nickname = isset($_POST['nickname']) ? $_POST['nickname'] : "";
-    $bio2 = isset($_POST['bio2']) ? $_POST['bio2'] : "";
-    $fact1 = isset($_POST['fact1']) ? $_POST['fact1'] : "";
-    $fact2 = isset($_POST['fact2']) ? $_POST['fact2'] : "";
-    $fact3 = isset($_POST['fact3']) ? $_POST['fact3'] : "";
-    $city = isset($_POST['city']) ? $_POST['city'] : "";
-    $subgenre = isset($_POST['subgenre']) ? $_POST['subgenre'] : "";
-    update_user_profile_extra($_SESSION['first'], $_SESSION['last'], $bio, $dob, $country, $genre, $nickname, $bio2, $fact1, $fact2, $fact3, $city, $subgenre);
-    $profile_extra_msg = "Profile info updated!";
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
 }
 
 // Handle work upload
-$work_upload_msg = "";
 if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
-    $desc = isset($_POST['work_desc']) ? $_POST['work_desc'] : "";
-    $date = isset($_POST['work_date']) ? $_POST['work_date'] : "";
-    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
-    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
-    $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
-    $work_dir = $user_dir . "/work";
-    if (!is_dir($work_dir)) {
-        mkdir($work_dir, 0755, true);
-    }
+    $desc = $_POST['work_desc'] ?? "";
+    $date = $_POST['work_date'] ?? "";
     
     if (isset($_FILES['work_file']) && $_FILES['work_file']['error'] == 0) {
-        $allowed_mimes = [
-            'image/jpeg' => 'image', 
-            'image/png' => 'image', 
-            'image/gif' => 'image',
-            'audio/mpeg' => 'audio'
-        ];
+        $allowed_mimes = ['image/jpeg' => 'image', 'image/png' => 'image', 'image/gif' => 'image', 'audio/mpeg' => 'audio'];
         $mime_type = mime_content_type($_FILES['work_file']['tmp_name']);
         
         if (!array_key_exists($mime_type, $allowed_mimes)) {
-            $work_upload_msg = "Only JPG, PNG, GIF, and MP3 files are allowed.";
+            set_flash_message("Only JPG, PNG, GIF, and MP3 files are allowed.", 'error');
         } else {
-            $file_type = $allowed_mimes[$mime_type]; // 'image' or 'audio'
+            $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+            $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+            $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
+            $work_dir = $user_dir . "/work";
+            if (!is_dir($work_dir)) mkdir($work_dir, 0755, true);
+
+            $file_type = $allowed_mimes[$mime_type];
             $ext = pathinfo($_FILES['work_file']['name'], PATHINFO_EXTENSION);
             $uuid = generateUUID();
             $target_file = $work_dir . "/work_" . $uuid . "." . $ext;
@@ -250,14 +229,16 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             if (move_uploaded_file($_FILES['work_file']['tmp_name'], $target_file)) {
                 $web_path = str_replace("/var/www/html/", "", $target_file);
                 add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $web_path, $uuid, $file_type);
-                $work_upload_msg = "Work uploaded successfully!";
+                set_flash_message("Work uploaded successfully!");
             } else {
-                $work_upload_msg = "Failed to upload work file.";
+                set_flash_message("Failed to upload work file.", 'error');
             }
         }
     } else {
-        $work_upload_msg = "No work file uploaded or upload error.";
+        set_flash_message("No work file uploaded or upload error.", 'error');
     }
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
 }
 ?>
 
@@ -343,11 +324,8 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         .form-container button:hover, .visit-profile-btn:hover {
             background-color: #d66a6a;
         }
-        .form-message {
-            margin-top: 10px;
-            font-style: italic;
-            color: #555;
-        }
+        .form-message { margin-top: 10px; font-style: italic; color: #27ae60; }
+        .form-message-error { margin-top: 10px; font-style: italic; color: #c0392b; }
         .login-form-container {
             max-width: 400px;
             margin: 40px auto;
@@ -379,6 +357,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         <?php if (!isset($_SESSION['email'])): ?>
             <div class="form-container login-form-container">
                 <h3>Login to Your Studio</h3>
+                 <?php display_flash_message(); ?>
                 <form method="POST">
                     <div class="form-row">
                         <label for="login_email">Email</label>
@@ -393,7 +372,6 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                 <p style="text-align:center; margin-top:20px;">Don't have an account? <a href="register.php">Register here</a>.</p>
             </div>
         <?php else: 
-            // --- Fetch current user's profile data to use as placeholders ---
             $safe_first_session = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
             $safe_last_session = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
             $profile_user_segment = $safe_first_session . "_" . $safe_last_session;
@@ -406,6 +384,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         ?>
             <div class="welcome-header">
                 <h2>Welcome to Your Studio, <?php echo htmlspecialchars($_SESSION['first']); ?>!</h2>
+                <?php display_flash_message(); ?>
                 <p><a href="?logout=1">Logout</a></p>
                 <a href="<?php echo $profile_url; ?>" class="visit-profile-btn" style="margin-top: 10px;">Visit Profile</a>
             </div>
@@ -413,7 +392,6 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             <div class="studio-grid">
                 <div class="form-container">
                     <h3>Update Bio Information</h3>
-                    <?php if (!empty($profile_extra_msg)) { echo '<p class="form-message">' . htmlspecialchars($profile_extra_msg) . '</p>'; } ?>
                     <form method="POST">
                         <div class="form-row">
                             <label for="bio">Bio</label>
@@ -466,7 +444,6 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                 <div style="display: flex; flex-direction: column; gap: 24px;">
                     <div class="form-container">
                         <h3>Upload Profile Image</h3>
-                        <?php if (!empty($image_upload_msg)) { echo '<p class="form-message">' . htmlspecialchars($image_upload_msg) . '</p>'; } ?>
                         <form method="POST" enctype="multipart/form-data">
                             <div class="form-row">
                                 <label for="image">Select Image</label>
@@ -475,16 +452,13 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                             <button type="submit" name="upload_image">Upload Image</button>
                         </form>
                         <?php
-                        $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
-                        $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
-                        $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
-                        $work_dir = $user_dir . "/work";
-                        if (is_dir($work_dir)) {
-                            $images = glob($work_dir . "/profile_image_*.*");
+                        $user_dir_path = "/var/www/html/pusers/" . $profile_user_segment;
+                        $work_dir_path = $user_dir_path . "/work";
+                        if (is_dir($work_dir_path)) {
+                            $images = glob($work_dir_path . "/profile_image_*.*");
                             if ($images && count($images) > 0) {
-                                usort($images, function($a, $b) { return filemtime($b) - filemtime($a); });
-                                $latest_image = $images[0];
-                                $web_path = str_replace("/var/www/html", "", $latest_image);
+                                usort($images, fn($a, $b) => filemtime($b) <=> filemtime($a));
+                                $web_path = str_replace("/var/www/html", "", $images[0]);
                                 echo '<div style="margin-top:15px;"><img src="' . htmlspecialchars($web_path) . '" alt="Profile Image" style="max-width:150px; border-radius:8px;"></div>';
                             }
                         }
@@ -493,7 +467,6 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
 
                     <div class="form-container">
                         <h3>Upload New Work</h3>
-                        <?php if (!empty($work_upload_msg)) { echo '<p class="form-message">' . htmlspecialchars($work_upload_msg) . '</p>'; } ?>
                         <form method="POST" enctype="multipart/form-data">
                             <div class="form-row">
                                 <label for="work_desc">Description</label>
