@@ -9,6 +9,25 @@ session_start();
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
+// Generate a UUID
+function generateUUID() {
+    if (function_exists('random_bytes')) {
+        $data = random_bytes(16);
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 4
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    }
+    // Fallback for older PHP versions
+    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
+}
+
+
 // Helper: create user folder and profile.json
 function create_user_profile($first, $last, $email) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
@@ -18,6 +37,7 @@ function create_user_profile($first, $last, $email) {
         mkdir($user_dir, 0755, true);
     }
     $profile = [
+        "uuid" => generateUUID(), // Add UUID for the user
         "first" => $first,
         "last" => $last,
         "email" => $email,
@@ -44,7 +64,7 @@ function update_user_profile_extra($first, $last, $bio, $dob, $country) {
 }
 
 // Helper: add work to profile.json
-function add_user_work($first, $last, $desc, $date, $image_path) {
+function add_user_work($first, $last, $desc, $date, $image_path, $uuid) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
     $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
     $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
@@ -55,6 +75,7 @@ function add_user_work($first, $last, $desc, $date, $image_path) {
             $profile['work'] = [];
         }
         $profile['work'][] = [
+            "uuid" => $uuid, // Add UUID for the work item
             "desc" => $desc,
             "date" => $date,
             "image" => $image_path
@@ -172,10 +193,11 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             $work_upload_msg = "Only JPG, PNG, and GIF files are allowed for work image.";
         } else {
             $ext = pathinfo($_FILES['work_image']['name'], PATHINFO_EXTENSION);
-            $target_file = $work_dir . "/work_image_" . time() . "." . $ext;
+            $uuid = generateUUID();
+            $target_file = $work_dir . "/work_image_" . $uuid . "." . $ext;
             if (move_uploaded_file($_FILES['work_image']['tmp_name'], $target_file)) {
                 $image_path = $target_file;
-                add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $image_path);
+                add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $image_path, $uuid);
                 $work_upload_msg = "Work uploaded successfully!";
             } else {
                 $work_upload_msg = "Failed to upload work image.";
