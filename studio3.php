@@ -312,6 +312,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         </div>
     </div>
 
+    <div class="createButton"><a href="editor.html" target="_blank">CREATE</a></div>
     <div class="studio-container">
         <?php if (!isset($_SESSION['email'])): ?>
             <div class="form-container login-form-container">
@@ -438,6 +439,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     </div>
 </body>
 </html>
+
 
 
 
