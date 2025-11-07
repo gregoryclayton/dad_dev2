@@ -279,7 +279,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             resize: vertical;
             min-height: 80px;
         }
-        .form-container button {
+        .form-container button, .visit-profile-btn {
             background-color: #e27979;
             color: white;
             border: none;
@@ -290,8 +290,10 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             cursor: pointer;
             transition: background-color 0.2s;
             align-self: flex-start;
+            text-decoration: none;
+            display: inline-block;
         }
-        .form-container button:hover {
+        .form-container button:hover, .visit-profile-btn:hover {
             background-color: #d66a6a;
         }
         .form-message {
@@ -305,6 +307,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         }
         .welcome-header {
             text-align: center;
+            margin-bottom: 20px;
         }
         .welcome-header h2 { margin-bottom: 5px; }
     </style>
@@ -340,15 +343,18 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             // --- Fetch current user's profile data to use as placeholders ---
             $safe_first_session = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
             $safe_last_session = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
-            $user_profile_path = "/var/www/html/pusers/" . $safe_first_session . "_" . $safe_last_session . "/profile.json";
+            $profile_user_segment = $safe_first_session . "_" . $safe_last_session;
+            $user_profile_path = "/var/www/html/pusers/" . $profile_user_segment . "/profile.json";
             $current_profile_data = [];
             if (file_exists($user_profile_path)) {
                 $current_profile_data = json_decode(file_get_contents($user_profile_path), true);
             }
+            $profile_url = "profile.php?user=" . urlencode($profile_user_segment);
         ?>
             <div class="welcome-header">
                 <h2>Welcome to Your Studio, <?php echo htmlspecialchars($_SESSION['first']); ?>!</h2>
                 <p><a href="?logout=1">Logout</a></p>
+                <a href="<?php echo $profile_url; ?>" class="visit-profile-btn" style="margin-top: 10px;">Visit Profile</a>
             </div>
             
             <div class="studio-grid">
