@@ -300,6 +300,7 @@ foreach ($topWorks as $workPath) {
       .work-info { font-size:0.85em; padding-top:6px; }
       .work-info .desc { font-weight:600; color:#333; }
       .work-info .date { color:#777; }
+      .dropdown-body { overflow: hidden; }
 
       /* Slideshow Styles */
       #slideshow-container {
