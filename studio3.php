@@ -41,7 +41,7 @@ function generateUUID() {
 }
 
 // Helper: update profile.json with extra info
-function update_user_profile_extra($first, $last, $bio, $dob, $country, $genre, $nickname, $bio2, $fact1, $fact2) {
+function update_user_profile_extra($first, $last, $bio, $dob, $country, $genre, $nickname, $bio2, $fact1, $fact2, $fact3, $city, $subgenre) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
     $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
     $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
@@ -56,6 +56,9 @@ function update_user_profile_extra($first, $last, $bio, $dob, $country, $genre, 
         $profile['bio2'] = $bio2;
         $profile['fact1'] = $fact1;
         $profile['fact2'] = $fact2;
+        $profile['fact3'] = $fact3;
+        $profile['city'] = $city;
+        $profile['subgenre'] = $subgenre;
         file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
     }
 }
@@ -168,7 +171,10 @@ if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
     $bio2 = isset($_POST['bio2']) ? $_POST['bio2'] : "";
     $fact1 = isset($_POST['fact1']) ? $_POST['fact1'] : "";
     $fact2 = isset($_POST['fact2']) ? $_POST['fact2'] : "";
-    update_user_profile_extra($_SESSION['first'], $_SESSION['last'], $bio, $dob, $country, $genre, $nickname, $bio2, $fact1, $fact2);
+    $fact3 = isset($_POST['fact3']) ? $_POST['fact3'] : "";
+    $city = isset($_POST['city']) ? $_POST['city'] : "";
+    $subgenre = isset($_POST['subgenre']) ? $_POST['subgenre'] : "";
+    update_user_profile_extra($_SESSION['first'], $_SESSION['last'], $bio, $dob, $country, $genre, $nickname, $bio2, $fact1, $fact2, $fact3, $city, $subgenre);
     $profile_extra_msg = "Profile info updated!";
 }
 
@@ -367,8 +373,16 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                             <input id="country" type="text" name="country" placeholder="e.g., USA" value="<?php echo htmlspecialchars($current_profile_data['country'] ?? ''); ?>">
                         </div>
                         <div class="form-row">
+                            <label for="city">City</label>
+                            <input id="city" type="text" name="city" placeholder="e.g., New York" value="<?php echo htmlspecialchars($current_profile_data['city'] ?? ''); ?>">
+                        </div>
+                        <div class="form-row">
                             <label for="genre">Genre</label>
                             <input id="genre" type="text" name="genre" placeholder="e.g., Digital Painting, 3D Art" value="<?php echo htmlspecialchars($current_profile_data['genre'] ?? ''); ?>">
+                        </div>
+                        <div class="form-row">
+                            <label for="subgenre">Subgenre</label>
+                            <input id="subgenre" type="text" name="subgenre" placeholder="e.g., Surrealism, Sci-Fi" value="<?php echo htmlspecialchars($current_profile_data['subgenre'] ?? ''); ?>">
                         </div>
                         <div class="form-row">
                             <label for="nickname">Nickname</label>
@@ -381,6 +395,10 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                         <div class="form-row">
                             <label for="fact2">Fact 2</label>
                             <input id="fact2" type="text" name="fact2" placeholder="Another interesting fact" value="<?php echo htmlspecialchars($current_profile_data['fact2'] ?? ''); ?>">
+                        </div>
+                        <div class="form-row">
+                            <label for="fact3">Fact 3</label>
+                            <input id="fact3" type="text" name="fact3" placeholder="One more fact" value="<?php echo htmlspecialchars($current_profile_data['fact3'] ?? ''); ?>">
                         </div>
                         <button type="submit" name="update_profile_extra">Save Info</button>
                     </form>
@@ -439,8 +457,5 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     </div>
 </body>
 </html>
-
-
-
 
 
