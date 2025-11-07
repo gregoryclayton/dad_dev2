@@ -9,6 +9,44 @@ session_start();
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
+// Helper function to recursively delete a directory
+function delete_directory($dir) {
+    if (!is_dir($dir)) {
+        return;
+    }
+    $files = array_diff(scandir($dir), array('.', '..'));
+    foreach ($files as $file) {
+        (is_dir("$dir/$file")) ? delete_directory("$dir/$file") : unlink("$dir/$file");
+    }
+    rmdir($dir);
+}
+
+// Handle profile deletion
+if (isset($_SESSION['email']) && isset($_POST['delete_profile'])) {
+    // Get user identifiers
+    $email = $_SESSION['email'];
+    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+    $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
+
+    // 1. Delete user directory from filesystem
+    if (is_dir($user_dir)) {
+        delete_directory($user_dir);
+    }
+
+    // 2. Delete user from database
+    $stmt = $conn->prepare("DELETE FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->close();
+
+    // 3. Logout and redirect
+    session_destroy();
+    header("Location: home.php?profile_deleted=true");
+    exit();
+}
+
+
 // Helper: create user folder and profile.json
 function create_user_profile($first, $last, $email) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
@@ -310,6 +348,12 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             margin-bottom: 20px;
         }
         .welcome-header h2 { margin-bottom: 5px; }
+        .delete-btn {
+            background-color: #c0392b;
+        }
+        .delete-btn:hover {
+            background-color: #a53125;
+        }
     </style>
 </head>
 <body>
@@ -459,9 +503,14 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                     </div>
                 </div>
             </div>
+             <div class="form-container" style="margin-top: 24px;">
+                <h3>Delete Profile</h3>
+                <p>Warning: This action is irreversible. It will permanently delete your profile, all uploaded work, and all associated data.</p>
+                <form method="POST" onsubmit="return confirm('Are you absolutely sure you want to delete your entire profile? This cannot be undone.');">
+                    <button type="submit" name="delete_profile" class="delete-btn">Delete My Profile Permanently</button>
+                </form>
+            </div>
         <?php endif; ?>
     </div>
 </body>
 </html>
-
-
