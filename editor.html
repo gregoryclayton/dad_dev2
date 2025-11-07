@@ -12,6 +12,47 @@
     --accent:#60a5fa;
   }
   html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#e6eef6;background:linear-gradient(180deg,#071024 0%, #07121b 60%);-webkit-font-smoothing:antialiased}
+  /* Sign-in bar */
+  .signin-bar {
+    max-width:1150px;
+    margin:18px auto 6px;
+    padding:10px 14px;
+    border-radius:10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .signin-left {
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .brand {
+    font-weight:700;
+    color:var(--accent);
+    font-size:16px;
+    margin-right:8px;
+  }
+  .signin-form { display:flex; align-items:center; gap:8px; }
+  .signin-form input[type="email"],
+  .signin-form input[type="password"] {
+    background:#071826;color:#dbe9f6;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;
+    font-size:13px;
+  }
+  .signin-form button {
+    background-color: #e27979;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .signin-actions { display:flex; gap:8px; align-items:center; }
+  .signin-actions a { color:var(--muted); text-decoration:none; font-size:13px; }
   .wrap{
     max-width:1150px;margin:28px auto;padding:18px;border-radius:12px;
     background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
@@ -37,10 +78,33 @@
   .file-drag{border:2px dashed rgba(255,255,255,0.02);padding:8px;border-radius:8px;text-align:center;color:var(--muted)}
   @media(max-width:980px){
     .wrap{grid-template-columns:1fr; padding:12px}
+    .signin-bar { max-width: calc(100% - 24px); margin: 12px; flex-direction: column; gap:8px; align-items:stretch; }
+    .signin-form { justify-content:space-between; }
   }
 </style>
 </head>
 <body>
+
+<!-- Sign-in bar: posts to testy8.php which handles login/logout/register -->
+<div class="signin-bar" role="navigation" aria-label="Sign in bar">
+  <div class="signin-left">
+    <div class="brand">digital artist database</div>
+    <div style="font-size:13px;color:var(--muted)">Canvas Editor</div>
+  </div>
+
+  <form class="signin-form" method="POST" action="testy8.php" style="margin-left:auto;">
+    <input type="email" name="email" placeholder="email" aria-label="email" required>
+    <input type="password" name="password" placeholder="password" aria-label="password" required>
+    <button type="submit" name="login">Login</button>
+  </form>
+
+  <div class="signin-actions">
+    <a href="register.php">Register</a>
+    <!-- Logout link (if the user is logged in clicking this will call testy8.php?logout=1) -->
+    <a href="testy8.php?logout=1" style="margin-left:6px;">Logout</a>
+  </div>
+</div>
+
 <div class="wrap">
   <div class="panel">
     <h1>Overlay Controls</h1>
