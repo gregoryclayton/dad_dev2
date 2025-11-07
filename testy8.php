@@ -317,19 +317,25 @@ foreach ($topWorks as $workPath) {
         justify-content: center;
         overflow: hidden;
       }
-      #slideshow-image-wrapper {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        cursor: pointer;
-      }
       #slideshow-img {
         width: 100%;
         height: 100%;
         object-fit: contain;
+        cursor: pointer;
+        position: relative;
+        z-index: 1; 
       }
+      .slideshow-nav {
+        position: absolute;
+        top: 0;
+        width: 20%;
+        height: 100%;
+        z-index: 5; 
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+      }
+      #slideshow-prev-zone { left: 0; }
+      #slideshow-next-zone { right: 0; }
 
       /* Responsive changes for wider screens */
       @media (min-width: 600px) {
@@ -350,21 +356,21 @@ foreach ($topWorks as $workPath) {
   
    <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
     <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
-    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237,[...]
+    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.933)); border-radius:16px; box-shadow:0 4px 24px #0003; padding:1.2em 1.7em; z-index:10001; min-width:80px; display:none;">
       <!-- Your menu content here -->
      <!-- Add this play icon to the dot menu container -->
-<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-[...]
+<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow: 0 1px 4px #0003; cursor:pointer;">
   <span style="color:#e27979;">▶</span>
 </div>
       <!-- New buttons for changing color -->
       <div style="position: relative;">
-  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="To[...]
-  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; [...]
+  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle Music"></button>
+  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow: 0 1px 4px #0003; cursor:pointer;">
     <span style="color:#e27979;">▶</span>
   </div>
 </div>
-      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;[...]
-      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; disp[...]
+      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px; height:10px;" title="Change background"></button>
+      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px; height:10px;" title="B&W Theme"></button>
     </div>
   </div>
   
@@ -372,7 +378,7 @@ foreach ($topWorks as $workPath) {
 
 
 <!-- Pop-out menu for quick nav, hidden by default -->
-<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:50px[...]
+<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:50px;">
   <div style="display:flex; flex-direction:column; gap:0.5em;">
     <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">home</a>
     <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">about</a>
@@ -396,7 +402,7 @@ foreach ($topWorks as $workPath) {
 <?php if (!isset($_SESSION['email'])): ?>
 
 
-<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-r[...]
+<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-right-radius:10px; margin: 0 0 0 auto;">
     <input style="width:80px; margin-right:20px;" type="email" name="email" placeholder="email" required><br>
     <input style="width:80px; margin-right:20px;" type="password" name="password"  placeholder="password" required><br>
     <button name="login">Login</button>
@@ -410,22 +416,24 @@ foreach ($topWorks as $workPath) {
 
 <!-- Slideshow -->
 <div id="slideshow-container">
-    <div id="slideshow-image-wrapper">
-        <img id="slideshow-img" src="<?php echo count($slideshow_images) ? htmlspecialchars($slideshow_images[0]) : ''; ?>" alt="Artwork Slideshow" />
-    </div>
+    <img id="slideshow-img" src="<?php echo count($slideshow_images) ? htmlspecialchars($slideshow_images[0]) : ''; ?>" alt="Artwork Slideshow" />
+    <?php if (count($slideshow_images) > 1): ?>
+        <div id="slideshow-prev-zone" class="slideshow-nav"></div>
+        <div id="slideshow-next-zone" class="slideshow-nav"></div>
+    <?php endif; ?>
 </div>
 
 
 <!-- Slideshow Modal (Simple/Fixed) -->
 <div id="slideModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:10001; background:rgba(0,0,0,0.72); align-items:center; justify-content:center;">
-  <div style="background:white; border-radius:16px; padding:24px 32px; max-width:90vw; max-height:90vh; box-shadow:0 6px 32px #000a; position:relative; display:flex; flex-direction:column; align-items[...]
+  <div style="background:white; border-radius:16px; padding:24px 32px; max-width:90vw; max-height:90vh; box-shadow:0 6px 32px #000a; position:relative; display:flex; flex-direction:column; align-items:center;">
     <button id="closeSlideModal" style="position:absolute; top:10px; right:15px; font-size:1.3em; background:none; border:none; color:#333; cursor:pointer;">×</button>
     <img id="modalImage" src="" alt="Artwork" style="max-width:65vw; max-height:55vh; border-radius:10px; background:#f6f6f6; margin-bottom:18px;">
     <div>
         <div id="modalArtist" style="font-size:1.13em; font-weight:bold;"></div>
         <div id="modalTitle" style="margin:8px 0 0 0; color:#666;"></div>
         <div id="modalDate" style="margin:5px 0 0 0; color:#888; font-size:0.98em;"></div>
-        <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profi[...]
+        <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profile</button>
     </div>
     <div style="position:absolute; bottom:24px; right:32px;">
       <?php if (isset($_SESSION['email'])): ?>
@@ -445,8 +453,8 @@ foreach ($topWorks as $workPath) {
 <?php foreach ($topWorks as $i => $workPath):
     $work = $workDetails[$workPath];
     ?>
-    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #[...]
-        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-r[...]
+    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #0001; padding:12px; display:flex; flex-direction:column; align-items:center;">
+        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-radius:8px;">
         <div style="margin-top:12px;font-size:1.15em;font-weight:bold;"><?php echo htmlspecialchars($work['title']); ?></div>
     </div>
 <?php endforeach; ?>
@@ -454,11 +462,11 @@ foreach ($topWorks as $workPath) {
 
 <!-- Modal for selected works gallery -->
 <div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
-  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; [...]
+  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
     <span id="closeSelectedWorksModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
     <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
     <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
-    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit pro[...]
+    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit profile</a>
     <div style="position:absolute; bottom:36px; right:28px;">
       <?php if (isset($_SESSION['email'])): ?>
         <input type="radio" name="selectedWorkLike" id="selectedWorkLikeRadio" style="width:20px; height:20px; accent-color: #e27979; cursor:pointer;">
@@ -587,7 +595,7 @@ function buildDropdownContent(container, profileData, profile_username, imgSrc) 
                 <img src="${imgSrc || 'placeholder.png'}" class="dropdown-main-image">
                 <div>
                     <div class="dropdown-name">${escapeAttr(profileData.first || '')} ${escapeAttr(profileData.last || '')}</div>
-                    <button class="profile-btn" style="margin-top:10px;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(profile_username)}'">Visit Full P[...]
+                    <button class="profile-btn" style="margin-top:10px;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(profile_username)}'">Visit Full Profile</button>
                 </div>
             </div>
             <div class="dropdown-body">
@@ -671,24 +679,25 @@ function nextSS() { showSS(ssIdx+1);}
 function prevSS() { showSS(ssIdx-1);}
 function startSSAuto() { if (ssInt) clearInterval(ssInt); ssInt = setInterval(nextSS, 7000);}
 
-// Slideshow click handler
-var slideshowWrapper = document.getElementById('slideshow-image-wrapper');
-if (slideshowWrapper) {
-    slideshowWrapper.addEventListener('click', function(e) {
-        var rect = e.currentTarget.getBoundingClientRect();
-        var clickX = e.clientX - rect.left;
-        var width = rect.width;
-
-        if (clickX < width * 0.2) { // Prev on left 20%
-            prevSS();
-            startSSAuto();
-        } else if (clickX > width * 0.8) { // Next on right 20%
-            nextSS();
-            startSSAuto();
-        } else { // Modal on middle 60%
-            openModalForSlideshow(ssIdx);
-        }
-    });
+// Correctly attach event listeners for slideshow navigation and modal
+if (ssImgElem) {
+    ssImgElem.onclick = function() {
+        openModalForSlideshow(ssIdx);
+    };
+}
+if (document.getElementById('slideshow-next-zone')) {
+    document.getElementById('slideshow-next-zone').onclick = function(e){ 
+        e.stopPropagation();
+        nextSS(); 
+        startSSAuto(); 
+    };
+}
+if (document.getElementById('slideshow-prev-zone')) {
+    document.getElementById('slideshow-prev-zone').onclick = function(e){
+        e.stopPropagation();
+        prevSS(); 
+        startSSAuto(); 
+    };
 }
 
 showSS(0); 
@@ -913,4 +922,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
 </body>
 </html>
+
+
 
