@@ -71,23 +71,18 @@
   }
   button{cursor:pointer}
   .canvas-wrap{display:flex;flex-direction:column;gap:10px}
-  .stage{background:#0a1724;border-radius:8px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  canvas{max-width:100%;height:auto;border-radius:6px;background:#0b1116}
+  .stage{position:relative;background:#0a1724;border-radius:8px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  canvas{max-width:100%;height:auto;border-radius:6px;}
+  #mainCanvas { background: white; }
+  #drawingCanvas { position: absolute; top: 12px; left: 12px; pointer-events: none; }
   .hint{font-size:12px;color:var(--muted);margin-top:6px}
   .buttons{display:flex;gap:6px;margin-top:10px}
   .small{font-size:12px;padding:7px 10px}
   footer{grid-column:1/-1;margin-top:6px;font-size:12px;color:var(--muted);text-align:center}
   .file-drag{border:2px dashed rgba(255,255,255,0.02);padding:8px;border-radius:8px;text-align:center;color:var(--muted)}
   .upload-status { font-size:13px; color:var(--muted); margin-top:8px; }
-  
-  /* Modal for Profile Images */
-  .modal-overlay { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
-  .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 20px; border-radius: 12px; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto; }
-  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-  .modal-close { font-size: 24px; color: var(--muted); cursor: pointer; background: none; border: none; padding: 0; }
-  .modal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
-  .modal-thumb { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; }
-  .modal-thumb:hover { opacity: 1; }
+  .modal-overlay{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.8)}.modal-content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);padding:20px;border-radius:12px;width:90%;max-width:800px;max-height:80vh;overflow-y:auto}.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.modal-close{font-size:24px;color:var(--muted);cursor:pointer;background:none;border:none;padding:0}.modal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}.modal-thumb{width:100%;height:100px;object-fit:cover;border-radius:8px;cursor:pointer;opacity:.8;transition:opacity .2s}.modal-thumb:hover{opacity:1}
+  .tool-btn.active { background-color: var(--accent); color: var(--card); }
 
   @media(max-width:980px){
     .wrap{grid-template-columns:1fr; padding:12px}
@@ -126,6 +121,22 @@
         <input id="fileInput" type="file" accept="image/*" style="flex-grow: 1;" />
         <button id="loadFromProfileBtn" class="small" style="display:none;">Load from Profile</button>
       </div>
+
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0;">
+      <label>Tools</label>
+      <div class="row">
+        <button id="toolGradient" class="small tool-btn active">Gradient/Text</button>
+        <button id="toolPencil" class="small tool-btn">Pencil</button>
+      </div>
+
+      <div id="pencilControls" style="display:none;">
+          <label>Pencil Color & Size</label>
+          <div class="row">
+              <input id="pencilColor" type="color" value="#ff0000" />
+              <input id="pencilSize" type="range" min="1" max="50" step="1" value="5" />
+              <span id="pencilSizeVal" style="width:38px;text-align:right;font-size:12px;color:var(--muted)">5</span>
+          </div>
+      </div>
       
       <label style="margin-top:14px">Gradient Overlay</label>
       <div class="row">
@@ -148,15 +159,8 @@
 
       <label style="margin-top:14px">Text Overlay</label>
       <input id="overlayText" type="text" placeholder="Enter overlay text" value="Sample Text" />
-      <div class="row">
-        <label style="flex:1">Font Size</label>
-        <input id="fontSize" type="number" min="10" max="200" value="64" style="width:80px">
-      </div>
-      <div class="row">
-        <input id="textColor" type="color" value="#ffffff" />
-        <input id="textAlpha" type="range" min="0" max="1" step="0.01" value="1" />
-        <span id="textAlphaVal" style="width:38px;text-align:right;font-size:12px;color:var(--muted)">1.00</span>
-      </div>
+      <div class="row"><label style="flex:1">Font Size</label><input id="fontSize" type="number" min="10" max="200" value="64" style="width:80px"></div>
+      <div class="row"><input id="textColor" type="color" value="#ffffff" /><input id="textAlpha" type="range" min="0" max="1" step="0.01" value="1" /><span id="textAlphaVal" style="width:38px;text-align:right;font-size:12px;color:var(--muted)">1.00</span></div>
       <label>Text Blend Mode</label>
       <select id="textBlend">
         <option value="source-over">Normal</option><option value="overlay">Overlay</option><option value="lighten">Lighten</option><option value="darken">Darken</option><option value="screen">Screen</option><option value="multiply">Multiply</option>
@@ -164,21 +168,14 @@
       <button id="resetBtn" class="small">Reset All</button>
       <button id="downloadBtn" class="small">Download PNG</button>
 
-      <div class="hint">
-        ⬇ Click & drag on the image to set gradient direction.  
-        ✍️ Drag the text to reposition it.
-      </div>
+      <div class="hint">⬇ Click & drag for gradient. ✍️ Drag text to move. ✏️ Use Pencil tool to draw.</div>
 
       <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0;">
       <h1 style="font-size:16px;">Save to Your Profile</h1>
       <div id="upload-panel" style="display:none;">
-        <label>Description</label>
-        <input id="upload_desc" type="text" placeholder="Work description">
-        <label>Date of Work</label>
-        <input id="upload_date" type="date">
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <button id="upload_work_btn" class="small">Save to Profile</button>
-        </div>
+        <label>Description</label><input id="upload_desc" type="text" placeholder="Work description">
+        <label>Date of Work</label><input id="upload_date" type="date">
+        <div style="display:flex;gap:8px;margin-top:8px;"><button id="upload_work_btn" class="small">Save to Profile</button></div>
         <div id="upload_status" class="upload-status"></div>
       </div>
       <div id="upload-login-prompt" class="hint">Log in to save your creations to your profile.</div>
@@ -188,11 +185,12 @@
   <div class="panel canvas-wrap">
     <h1>Canvas</h1>
     <div class="stage">
-      <canvas id="canvas" width="880" height="550"></canvas>
+      <canvas id="mainCanvas" width="880" height="550"></canvas>
+      <canvas id="drawingCanvas" width="880" height="550"></canvas>
       <div class="hint file-drag" id="dropHint">Drop image file onto the canvas</div>
     </div>
     <div class="buttons" style="justify-content:center">
-      <div class="hint" id="status">No image loaded</div>
+      <div class="hint" id="status">White canvas ready. Load an image or start drawing.</div>
     </div>
   </div>
 
@@ -202,20 +200,16 @@
 <!-- Modal for loading work from profile -->
 <div id="profileWorkModal" class="modal-overlay">
   <div class="modal-content">
-    <div class="modal-header">
-      <h1>Load Work from Your Profile</h1>
-      <button id="modalCloseBtn" class="modal-close">&times;</button>
-    </div>
-    <div id="modalGrid" class="modal-grid">
-      <!-- Thumbnails will be injected here -->
-    </div>
+    <div class="modal-header"><h1_>Load Work from Your Profile</h1_><button id="modalCloseBtn" class="modal-close">&times;</button></div>
+    <div id="modalGrid" class="modal-grid"></div>
   </div>
 </div>
 
 
 <script>
 (function(){
-  const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+  const mainCanvas = document.getElementById('mainCanvas'), mainCtx = mainCanvas.getContext('2d');
+  const drawingCanvas = document.getElementById('drawingCanvas'), drawCtx = drawingCanvas.getContext('2d');
   const fileInput = document.getElementById('fileInput'), status = document.getElementById('status'), dropHint = document.getElementById('dropHint');
   const startColorInput = document.getElementById('startColor'), endColorInput = document.getElementById('endColor');
   const startAlphaInput = document.getElementById('startAlpha'), endAlphaInput = document.getElementById('endAlpha');
@@ -230,123 +224,145 @@
   const uploadBtn = document.getElementById('upload_work_btn'), uploadStatus = document.getElementById('upload_status');
   const loadFromProfileBtn = document.getElementById('loadFromProfileBtn');
   const profileWorkModal = document.getElementById('profileWorkModal'), modalGrid = document.getElementById('modalGrid'), modalCloseBtn = document.getElementById('modalCloseBtn');
-  
+  const toolGradientBtn = document.getElementById('toolGradient'), toolPencilBtn = document.getElementById('toolPencil');
+  const pencilControls = document.getElementById('pencilControls'), pencilColorInput = document.getElementById('pencilColor'), pencilSizeInput = document.getElementById('pencilSize'), pencilSizeVal = document.getElementById('pencilSizeVal');
+
   let img = new Image(); img.crossOrigin = "anonymous";
-  let imgLoaded = false, drag = false, start = null, end = null, mode = 'linear', currentComposite = 'source-over';
-  let textLayer = { text: 'Sample Text', x: canvas.width/2, y: canvas.height/2, fontSize: 64, color: '#ffffff', alpha: 1, blend: 'source-over' };
-  let movingText = false, moveOffset = {x:0,y:0};
+  let imgLoaded = false, isDrawing = false, isDraggingGradient = false, isMovingText = false;
+  let gradientStart = null, gradientEnd = null, gradientMode = 'linear', gradientComposite = 'source-over';
+  let textLayer = { text: 'Sample Text', x: mainCanvas.width/2, y: mainCanvas.height/2, fontSize: 64, color: '#ffffff', alpha: 1, blend: 'source-over' };
+  let textMoveOffset = {x:0, y:0};
+  let lastPos = {x:0, y:0};
+  let currentTool = 'gradient'; // 'gradient', 'pencil'
   let userProfileData = null;
 
   function setStatus(s){ status.textContent = s; }
   function rgba(hex,a){ const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; }
 
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(imgLoaded) ctx.drawImage(img,0,0,canvas.width,canvas.height);
-    else {
-      ctx.fillStyle="#0b1116"; ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle="#2c3e50"; ctx.font="14px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.fillText("Load an image to begin", canvas.width/2, canvas.height/2);
-    }
-    if(start && end){
-      ctx.save(); ctx.globalCompositeOperation = currentComposite;
+  function drawMainCanvas(){
+    mainCtx.clearRect(0,0,mainCanvas.width,mainCanvas.height);
+    mainCtx.fillStyle = 'white';
+    mainCtx.fillRect(0,0,mainCanvas.width,mainCanvas.height);
+    if(imgLoaded) mainCtx.drawImage(img,0,0,mainCanvas.width,mainCanvas.height);
+    
+    if(gradientStart && gradientEnd){
+      mainCtx.save(); mainCtx.globalCompositeOperation = gradientComposite;
       const sc=rgba(startColorInput.value,startAlphaInput.value), ec=rgba(endColorInput.value,endAlphaInput.value);
       let g;
-      if(mode==='linear') g=ctx.createLinearGradient(start.x,start.y,end.x,end.y);
-      else { const r=Math.hypot(end.x-start.x,end.y-start.y); g=ctx.createRadialGradient(start.x,start.y,0,start.x,start.y,r); }
-      g.addColorStop(0,sc); g.addColorStop(1,ec); ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.restore();
+      if(gradientMode==='linear') g=mainCtx.createLinearGradient(gradientStart.x,gradientStart.y,gradientEnd.x,gradientEnd.y);
+      else { const r=Math.hypot(gradientEnd.x-gradientStart.x,gradientEnd.y-gradientStart.y); g=mainCtx.createRadialGradient(gradientStart.x,gradientStart.y,0,gradientStart.x,gradientStart.y,r); }
+      g.addColorStop(0,sc); g.addColorStop(1,ec); mainCtx.fillStyle=g; mainCtx.fillRect(0,0,mainCanvas.width,mainCanvas.height); mainCtx.restore();
     }
     if(textLayer.text){
-      ctx.save(); ctx.globalCompositeOperation=textLayer.blend; ctx.font=`${textLayer.fontSize}px sans-serif`;
-      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=rgba(textLayer.color,textLayer.alpha);
-      ctx.fillText(textLayer.text,textLayer.x,textLayer.y); ctx.restore();
-    }
-    if(drag && start && end){
-      ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.setLineDash([6,4]);
-      ctx.beginPath(); ctx.moveTo(start.x,start.y); ctx.lineTo(end.x,end.y); ctx.stroke(); ctx.restore();
+      mainCtx.save(); mainCtx.globalCompositeOperation=textLayer.blend; mainCtx.font=`${textLayer.fontSize}px sans-serif`;
+      mainCtx.textAlign='center'; mainCtx.textBaseline='middle'; mainCtx.fillStyle=rgba(textLayer.color,textLayer.alpha);
+      mainCtx.fillText(textLayer.text,textLayer.x,textLayer.y); mainCtx.restore();
     }
   }
 
-  function toCanvasCoords(e){ const r=canvas.getBoundingClientRect(),cX=e.touches?e.touches[0].clientX:e.clientX,cY=e.touches?e.touches[0].clientY:e.clientY; return {x:(cX-r.left)*(canvas.width/r.width), y:(cY-r.top)*(canvas.height/r.height)}; }
-  canvas.addEventListener('mousedown',e=>{ const p=toCanvasCoords(e); if(isOnText(p)){ startTextMove(p); return; } drag=true; start=p; end={...start}; });
-  canvas.addEventListener('mousemove',e=>{ const p=toCanvasCoords(e); if(movingText){ textLayer.x=p.x-moveOffset.x; textLayer.y=p.y-moveOffset.y; draw(); return;} if(!drag)return; end=p; draw(); });
-  canvas.addEventListener('mouseup',e=>{ if(movingText){ movingText=false; draw(); return;} if(!drag)return; end=toCanvasCoords(e); drag=false; draw(); });
-  canvas.addEventListener('mouseleave',()=>{drag=false; movingText=false;});
-  function isOnText(p){ ctx.font=`${textLayer.fontSize}px sans-serif`; const w=ctx.measureText(textLayer.text).width, h=textLayer.fontSize; return (p.x>textLayer.x-w/2 && p.x<textLayer.x+w/2 && p.y>textLayer.y-h/2 && p.y<textLayer.y+h/2); }
-  function startTextMove(p){ movingText=true; moveOffset.x=p.x-textLayer.x; moveOffset.y=p.y-textLayer.y; }
+  function toCanvasCoords(e){ const r=mainCanvas.getBoundingClientRect(),cX=e.touches?e.touches[0].clientX:e.clientX,cY=e.touches?e.touches[0].clientY:e.clientY; return {x:(cX-r.left)*(mainCanvas.width/r.width), y:(cY-r.top)*(mainCanvas.height/r.height)}; }
+  
+  mainCanvas.addEventListener('mousedown',e=>{ 
+    const pos=toCanvasCoords(e);
+    if (currentTool === 'pencil') {
+      isDrawing = true;
+      lastPos = pos;
+    } else {
+      if(isOnText(pos)){ isMovingText=true; textMoveOffset.x=pos.x-textLayer.x; textMoveOffset.y=pos.y-textLayer.y; return; }
+      isDraggingGradient=true; gradientStart=pos; gradientEnd={...pos};
+    }
+  });
+  mainCanvas.addEventListener('mousemove',e=>{ 
+    const pos=toCanvasCoords(e);
+    if(isDrawing) {
+      drawCtx.beginPath(); drawCtx.moveTo(lastPos.x, lastPos.y); drawCtx.lineTo(pos.x, pos.y);
+      drawCtx.strokeStyle = pencilColorInput.value; drawCtx.lineWidth = pencilSizeInput.value;
+      drawCtx.lineCap = 'round'; drawCtx.lineJoin = 'round'; drawCtx.stroke();
+      lastPos = pos;
+    } else if(isMovingText){ 
+      textLayer.x=pos.x-textMoveOffset.x; textLayer.y=pos.y-textMoveOffset.y; drawMainCanvas(); 
+    } else if (isDraggingGradient) {
+      gradientEnd=pos; drawMainCanvas();
+    }
+  });
+  mainCanvas.addEventListener('mouseup',()=>{ isDrawing=false; isMovingText=false; isDraggingGradient=false; });
+  mainCanvas.addEventListener('mouseleave',()=>{ isDrawing=false; isMovingText=false; isDraggingGradient=false; });
+
+  function isOnText(p){ mainCtx.font=`${textLayer.fontSize}px sans-serif`; const w=mainCtx.measureText(textLayer.text).width,h=textLayer.fontSize; return(p.x>textLayer.x-w/2&&p.x<textLayer.x+w/2&&p.y>textLayer.y-h/2&&p.y<textLayer.y+h/2); }
 
   function loadImage(src) {
-    img = new Image(); img.crossOrigin = "anonymous";
-    img.onload=()=>{imgLoaded=true; canvas.width=img.width; canvas.height=img.height; textLayer.x=canvas.width/2; textLayer.y=canvas.height/2; draw(); setStatus(`Image loaded: ${img.width}x${img.height}`);};
+    img=new Image(); img.crossOrigin="anonymous";
+    img.onload=()=>{ imgLoaded=true; mainCanvas.width=drawingCanvas.width=img.width; mainCanvas.height=drawingCanvas.height=img.height; textLayer.x=mainCanvas.width/2; textLayer.y=mainCanvas.height/2; drawMainCanvas(); setStatus(`Image loaded: ${img.width}x${img.height}`); };
     img.onerror=()=>{setStatus('Error loading image.');};
     img.src=src;
   }
 
   fileInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(f) loadImage(URL.createObjectURL(f)); });
-  ['dragenter','dragover'].forEach(ev=>canvas.addEventListener(ev,e=>{e.preventDefault();dropHint.style.borderColor="#3aa0ff"}));
-  ['dragleave','drop'].forEach(ev=>canvas.addEventListener(ev,e=>{e.preventDefault();dropHint.style.borderColor=""}));
-  canvas.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) loadImage(URL.createObjectURL(f)); });
+  ['dragenter','dragover'].forEach(ev=>mainCanvas.addEventListener(ev,e=>{e.preventDefault();dropHint.style.borderColor="#3aa0ff"}));
+  ['dragleave','drop'].forEach(ev=>mainCanvas.addEventListener(ev,e=>{e.preventDefault();dropHint.style.borderColor=""}));
+  mainCanvas.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) loadImage(URL.createObjectURL(f)); });
 
-  startAlphaInput.addEventListener('input',()=>{startAlphaVal.textContent=Number(startAlphaInput.value).toFixed(2);draw();});
-  endAlphaInput.addEventListener('input',()=>{endAlphaVal.textContent=Number(endAlphaInput.value).toFixed(2);draw();});
-  [startColorInput,endColorInput,blendModeSelect,overlayTextInput,fontSizeInput,textColorInput,textAlphaInput,textBlendSelect].forEach(el=>el.addEventListener('input',draw));
-  clearBtn.addEventListener('click',()=>{start=end=null;draw();});
-  linearBtn.addEventListener('click',()=>{mode='linear';setStatus('Mode: linear');});
-  radialBtn.addEventListener('click',()=>{mode='radial';setStatus('Mode: radial');});
-  resetBtn.addEventListener('click',()=>{ start=end=null;imgLoaded=false;img=new Image(); textLayer.x=canvas.width/2;textLayer.y=canvas.height/2;textLayer.text="Sample Text"; draw(); });
-  downloadBtn.addEventListener('click',()=>{ const l=document.createElement('a'); l.download='canvas_overlay.png'; l.href=canvas.toDataURL('image/png'); l.click(); });
+  // --- CONTROLS ---
+  [startColorInput,endColorInput,startAlphaInput,endAlphaInput,blendModeSelect,overlayTextInput,fontSizeInput,textColorInput,textAlphaInput,textBlendSelect].forEach(el=>el.addEventListener('input',drawMainCanvas));
+  startAlphaInput.addEventListener('input',()=>{startAlphaVal.textContent=Number(startAlphaInput.value).toFixed(2);});
+  endAlphaInput.addEventListener('input',()=>{endAlphaVal.textContent=Number(endAlphaInput.value).toFixed(2);});
+  textAlphaInput.addEventListener('input',()=>{textAlphaVal.textContent=Number(textAlphaInput.value).toFixed(2);});
+  clearBtn.addEventListener('click',()=>{gradientStart=gradientEnd=null;drawMainCanvas();});
+  linearBtn.addEventListener('click',()=>{gradientMode='linear';setStatus('Gradient: linear');});
+  radialBtn.addEventListener('click',()=>{gradientMode='radial';setStatus('Gradient: radial');});
+  resetBtn.addEventListener('click',()=>{ gradientStart=gradientEnd=null;imgLoaded=false;img=new Image(); textLayer.x=mainCanvas.width/2;textLayer.y=mainCanvas.height/2;textLayer.text="Sample Text"; drawMainCanvas(); drawCtx.clearRect(0,0,drawingCanvas.width,drawingCanvas.height); });
+  
+  toolGradientBtn.addEventListener('click', () => { currentTool = 'gradient'; toolPencilBtn.classList.remove('active'); toolGradientBtn.classList.add('active'); drawingCanvas.style.pointerEvents = 'none'; pencilControls.style.display = 'none'; });
+  toolPencilBtn.addEventListener('click', () => { currentTool = 'pencil'; toolGradientBtn.classList.remove('active'); toolPencilBtn.classList.add('active'); drawingCanvas.style.pointerEvents = 'auto'; pencilControls.style.display = 'block'; });
+  pencilSizeInput.addEventListener('input', () => pencilSizeVal.textContent = pencilSizeInput.value);
+
+  downloadBtn.addEventListener('click',()=>{ 
+      const tempCanvas=document.createElement('canvas'), tempCtx=tempCanvas.getContext('2d');
+      tempCanvas.width=mainCanvas.width; tempCanvas.height=mainCanvas.height;
+      tempCtx.drawImage(mainCanvas,0,0); tempCtx.drawImage(drawingCanvas,0,0);
+      const l=document.createElement('a'); l.download='canvas.png'; l.href=tempCanvas.toDataURL('image/png'); l.click(); 
+  });
 
   uploadBtn.addEventListener('click', ()=>{
-    if (!imgLoaded) { uploadStatus.textContent = 'Please load an image first.'; return; }
     uploadStatus.textContent = 'Uploading...';
-    canvas.toBlob(blob=>{
-      const fd=new FormData(); fd.append('upload_work', '1'); fd.append('work_desc', uploadDesc.value || 'Created with Canvas Editor');
-      fd.append('work_date', uploadDate.value || new Date().toISOString().split('T')[0]); fd.append('work_file', blob, 'canvas_image.png');
+    const tempCanvas=document.createElement('canvas'), tempCtx=tempCanvas.getContext('2d');
+    tempCanvas.width=mainCanvas.width; tempCanvas.height=mainCanvas.height;
+    tempCtx.drawImage(mainCanvas,0,0); tempCtx.drawImage(drawingCanvas,0,0);
+    tempCanvas.toBlob(blob=>{
+      const fd=new FormData(); fd.append('upload_work','1'); fd.append('work_desc',uploadDesc.value||'Created with Canvas Editor');
+      fd.append('work_date',uploadDate.value||new Date().toISOString().split('T')[0]); fd.append('work_file',blob,'canvas_image.png');
       fetch('studio3.php',{method:'POST',body:fd,credentials:'same-origin'})
-      .then(resp => { uploadStatus.textContent='Upload successful! Redirecting to studio...'; setTimeout(() => window.location.href = 'studio3.php', 1000); })
-      .catch(err => { uploadStatus.textContent = 'Upload error: ' + err.message; });
+      .then(()=>{ uploadStatus.textContent='Upload successful! Redirecting...'; setTimeout(()=>window.location.href='studio3.php',1000); })
+      .catch(err=>{ uploadStatus.textContent='Upload error: '+err.message; });
     }, 'image/png');
   });
 
   loadFromProfileBtn.addEventListener('click', () => {
-    if (!userProfileData || !userProfileData.work || userProfileData.work.length === 0) {
-        alert("No work found in your profile to load.");
-        return;
-    }
-    modalGrid.innerHTML = ''; // Clear previous thumbs
-    userProfileData.work.forEach(work => {
-        if (work.type !== 'image' && !/\.(jpg|jpeg|png|gif)$/i.test(work.path)) return; // Show only images
-        const thumb = document.createElement('img');
-        thumb.src = work.path.replace(/^\/var\/www\/html\//, '');
-        thumb.className = 'modal-thumb';
-        thumb.title = work.desc;
-        thumb.onclick = () => {
-            loadImage(thumb.src);
-            profileWorkModal.style.display = 'none';
-        };
+    if (!userProfileData||!userProfileData.work||userProfileData.work.length===0){ alert("No images found in your profile."); return; }
+    modalGrid.innerHTML='';
+    userProfileData.work.forEach(work=>{
+        if (work.type!=='image'&&!/\.(jpg|jpeg|png|gif)$/i.test(work.path)) return;
+        const thumb=document.createElement('img'); thumb.src=work.path.replace(/^\/var\/www\/html\//,'');
+        thumb.className='modal-thumb'; thumb.title=work.desc;
+        thumb.onclick=()=>{ loadImage(thumb.src); profileWorkModal.style.display='none'; };
         modalGrid.appendChild(thumb);
     });
     profileWorkModal.style.display = 'block';
   });
-
-  modalCloseBtn.addEventListener('click', () => profileWorkModal.style.display = 'none');
-  profileWorkModal.addEventListener('click', (e) => { if (e.target === profileWorkModal) profileWorkModal.style.display = 'none'; });
+  modalCloseBtn.addEventListener('click',()=>profileWorkModal.style.display='none');
+  profileWorkModal.addEventListener('click',e=>{if(e.target===profileWorkModal)profileWorkModal.style.display='none';});
 
   document.addEventListener('DOMContentLoaded', () => {
-    fetch('get_session.php').then(res => res.json()).then(data => {
-      if (data.loggedIn) {
-        document.getElementById('signin-container').style.display = 'none';
-        document.getElementById('register-link').style.display = 'none';
-        const userInfo = document.getElementById('user-info');
-        userInfo.style.display = 'flex';
-        document.getElementById('user-greeting').textContent = `Welcome, ${data.first}!`;
-        document.getElementById('upload-panel').style.display = 'block';
-        document.getElementById('upload-login-prompt').style.display = 'none';
-        loadFromProfileBtn.style.display = 'block';
-        userProfileData = data.profile;
+    fetch('get_session.php').then(res=>res.json()).then(data=>{
+      if(data.loggedIn){
+        document.getElementById('signin-container').style.display='none'; document.getElementById('register-link').style.display='none';
+        const userInfo=document.getElementById('user-info'); userInfo.style.display='flex';
+        document.getElementById('user-greeting').textContent=`Welcome, ${data.first}!`;
+        document.getElementById('upload-panel').style.display='block'; document.getElementById('upload-login-prompt').style.display='none';
+        loadFromProfileBtn.style.display='block'; userProfileData=data.profile;
       }
     });
-    draw();
+    drawMainCanvas();
   });
 })();
 </script>
