@@ -102,7 +102,7 @@ function update_user_profile_extra($first, $last, $bio, $dob, $country, $genre, 
 }
 
 // Helper: add work to profile.json
-function add_user_work($first, $last, $desc, $date, $image_path, $uuid) {
+function add_user_work($first, $last, $desc, $date, $file_path, $uuid, $file_type) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
     $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
     $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
@@ -115,7 +115,8 @@ function add_user_work($first, $last, $desc, $date, $image_path, $uuid) {
         $profile['work'][] = [
             "desc" => $desc,
             "date" => $date,
-            "image" => $image_path,
+            "path" => $file_path, // Use generic "path"
+            "type" => $file_type, // "image" or "audio"
             "uuid" => $uuid
         ];
         file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
@@ -228,26 +229,34 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     if (!is_dir($work_dir)) {
         mkdir($work_dir, 0755, true);
     }
-    $image_path = "";
-    if (isset($_FILES['work_image']) && $_FILES['work_image']['error'] == 0) {
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-        $file_type = mime_content_type($_FILES['work_image']['tmp_name']);
-        if (!in_array($file_type, $allowed_types)) {
-            $work_upload_msg = "Only JPG, PNG, and GIF files are allowed for work image.";
+    
+    if (isset($_FILES['work_file']) && $_FILES['work_file']['error'] == 0) {
+        $allowed_mimes = [
+            'image/jpeg' => 'image', 
+            'image/png' => 'image', 
+            'image/gif' => 'image',
+            'audio/mpeg' => 'audio'
+        ];
+        $mime_type = mime_content_type($_FILES['work_file']['tmp_name']);
+        
+        if (!array_key_exists($mime_type, $allowed_mimes)) {
+            $work_upload_msg = "Only JPG, PNG, GIF, and MP3 files are allowed.";
         } else {
-            $ext = pathinfo($_FILES['work_image']['name'], PATHINFO_EXTENSION);
+            $file_type = $allowed_mimes[$mime_type]; // 'image' or 'audio'
+            $ext = pathinfo($_FILES['work_file']['name'], PATHINFO_EXTENSION);
             $uuid = generateUUID();
-            $target_file = $work_dir . "/work_image_" . $uuid . "." . $ext;
-            if (move_uploaded_file($_FILES['work_image']['tmp_name'], $target_file)) {
-                $image_path = $target_file;
-                add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $image_path, $uuid);
+            $target_file = $work_dir . "/work_" . $uuid . "." . $ext;
+            
+            if (move_uploaded_file($_FILES['work_file']['tmp_name'], $target_file)) {
+                $web_path = str_replace("/var/www/html/", "", $target_file);
+                add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $web_path, $uuid, $file_type);
                 $work_upload_msg = "Work uploaded successfully!";
             } else {
-                $work_upload_msg = "Failed to upload work image.";
+                $work_upload_msg = "Failed to upload work file.";
             }
         }
     } else {
-        $work_upload_msg = "No work image uploaded or upload error.";
+        $work_upload_msg = "No work file uploaded or upload error.";
     }
 }
 ?>
@@ -495,8 +504,8 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                                 <input id="work_date" type="date" name="work_date" required>
                             </div>
                             <div class="form-row">
-                                <label for="work_image">Work Image</label>
-                                <input id="work_image" type="file" name="work_image" accept="image/*" required>
+                                <label for="work_file">Work File (Image or MP3)</label>
+                                <input id="work_file" type="file" name="work_file" accept="image/jpeg,image/png,image/gif,audio/mpeg" required>
                             </div>
                             <button type="submit" name="upload_work">Upload Work</button>
                         </form>
