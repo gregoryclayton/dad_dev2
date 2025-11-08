@@ -660,38 +660,45 @@ document.getElementById('sortGenreBtn').onclick = function() {
 };
 renderProfiles(userProfiles);
 
-// --- Slideshow JS & Modal (Simple, Clean) ---
+// --- Slideshow JS & Modal (FIXED) ---
 var ssImgs = slideshowImages || [], ssIdx = 0, ssInt = null;
 var ssImgElem = document.getElementById('slideshow-img');
+
 function showSS(idx) {
-    if (!ssImgs.length) { if (ssImgElem) { ssImgElem.src = ''; ssImgElem.alt = 'No artwork found'; } return;}
-    ssIdx = (idx + ssImgs.length)%ssImgs.length;
+    if (!ssImgs.length) { 
+        if (ssImgElem) { ssImgElem.src = ''; ssImgElem.alt = 'No artwork found'; } 
+        return;
+    }
+    ssIdx = (idx + ssImgs.length) % ssImgs.length;
     if (ssImgElem) ssImgElem.src = ssImgs[ssIdx];
 }
-function nextSS() { showSS(ssIdx+1);}
-function prevSS() { showSS(ssIdx-1);}
-function startSSAuto() { if (ssInt) clearInterval(ssInt); ssInt = setInterval(nextSS, 7000);}
+function nextSS() { showSS(ssIdx + 1); }
+function prevSS() { showSS(ssIdx - 1); }
+function startSSAuto() { 
+    if (ssInt) clearInterval(ssInt); 
+    ssInt = setInterval(nextSS, 7000);
+}
 
-// Correctly attach event listeners for slideshow navigation and modal
-if (ssImgElem) {
-    ssImgElem.onclick = function() {
-        openModalForSlideshow(ssIdx);
-    };
+// Attach a single click handler to the wrapper
+var slideshowWrapper = document.getElementById('slideshow-image-wrapper');
+if (slideshowWrapper) {
+    slideshowWrapper.addEventListener('click', function(e) {
+        var rect = e.currentTarget.getBoundingClientRect();
+        var clickX = e.clientX - rect.left;
+        var width = rect.width;
+
+        if (clickX < width * 0.2) { // Prev on left 20%
+            prevSS();
+            startSSAuto();
+        } else if (clickX > width * 0.8) { // Next on right 20%
+            nextSS();
+            startSSAuto();
+        } else { // Modal on middle 60%
+            openModalForSlideshow(ssIdx);
+        }
+    });
 }
-if (document.getElementById('slideshow-next-zone')) {
-    document.getElementById('slideshow-next-zone').onclick = function(e){ 
-        e.stopPropagation();
-        nextSS(); 
-        startSSAuto(); 
-    };
-}
-if (document.getElementById('slideshow-prev-zone')) {
-    document.getElementById('slideshow-prev-zone').onclick = function(e){
-        e.stopPropagation();
-        prevSS(); 
-        startSSAuto(); 
-    };
-}
+
 
 showSS(0); 
 startSSAuto();
