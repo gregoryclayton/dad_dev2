@@ -351,21 +351,21 @@ foreach ($topWorks as $workPath) {
   
    <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
     <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
-    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.933)); border-radius:16px; box-shadow:0 4px 24px #0003; padding:1.2em 1.7em; z-index:10001; min-width:80px; display:none;">
+    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.897)); border-radius: 14px; padding: 1em 1em 1em 1em; box-shadow: 0 4px 24px #00000024;">
       <!-- Your menu content here -->
      <!-- Add this play icon to the dot menu container -->
-<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow: 0 1px 4px #0003; cursor:pointer;">
+<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow: 0 1px 4px #0003;">
   <span style="color:#e27979;">▶</span>
 </div>
       <!-- New buttons for changing color -->
       <div style="position: relative;">
-  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle Music"></button>
-  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow: 0 1px 4px #0003; cursor:pointer;">
+  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle Music">🎵</button>
+  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 4px #0003;">
     <span style="color:#e27979;">▶</span>
   </div>
 </div>
-      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px; height:10px;" title="Change background"></button>
-      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px; height:10px;" title="B&W Theme"></button>
+      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Change Background"></button>
+      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
     </div>
   </div>
   
@@ -397,7 +397,7 @@ foreach ($topWorks as $workPath) {
 <?php if (!isset($_SESSION['email'])): ?>
 
 
-<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-right-radius:10px; margin: 0 0 0 auto;">
+<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-right-radius:10px;">
     <input style="width:80px; margin-right:20px;" type="email" name="email" placeholder="email" required><br>
     <input style="width:80px; margin-right:20px;" type="password" name="password"  placeholder="password" required><br>
     <button name="login">Login</button>
@@ -416,53 +416,28 @@ foreach ($topWorks as $workPath) {
     </div>
 </div>
 
-
-<!-- Slideshow Modal (Simple/Fixed) -->
-<div id="slideModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:10001; background:rgba(0,0,0,0.72); align-items:center; justify-content:center;">
-  <div style="background:white; border-radius:16px; padding:24px 32px; max-width:90vw; max-height:90vh; box-shadow:0 6px 32px #000a; position:relative; display:flex; flex-direction:column; align-items[...]
-    <button id="closeSlideModal" style="position:absolute; top:10px; right:15px; font-size:1.3em; background:none; border:none; color:#333; cursor:pointer;">×</button>
-    <img id="modalImage" src="" alt="Artwork" style="max-width:65vw; max-height:55vh; border-radius:10px; background:#f6f6f6; margin-bottom:18px;">
-    <div>
-        <div id="modalArtist" style="font-size:1.13em; font-weight:bold;"></div>
-        <div id="modalTitle" style="margin:8px 0 0 0; color:#666;"></div>
-        <div id="modalDate" style="margin:5px 0 0 0; color:#888; font-size:0.98em;"></div>
-        <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profi[...]
-    </div>
-    <div style="position:absolute; bottom:24px; right:32px;">
-      <?php if (isset($_SESSION['email'])): ?>
-        <input type="radio" name="slideModalLike" id="slideModalLikeRadio" style="width:20px; height:20px; accent-color: #e27979; cursor:pointer;">
-      <?php else: ?>
-        <div style="display: flex; flex-direction: column; align-items: center; opacity:0.6;">
-          <input type="radio" style="width:20px; height:20px; cursor:not-allowed;" disabled>
-          <span style="font-size:9px; color:#888; margin-top:4px;">login to select</span>
-        </div>
-      <?php endif; ?>
-    </div>
-  </div>
-</div>
-
 <!-- Top selected works gallery -->
 <div id="selectedWorksGallery" style="width:90vw; margin:2em auto 0 auto; display:flex; gap:40px; overflow-x:auto; padding-bottom:16px;">
 <?php foreach ($topWorks as $i => $workPath):
     $work = $workDetails[$workPath];
     ?>
-    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #0001; padding:12px; display:flex; flex-direction:column; align-items:center;">
-        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-radius:8px;">
+    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #00000012;">
+        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-radius:14px;">
         <div style="margin-top:12px;font-size:1.15em;font-weight:bold;"><?php echo htmlspecialchars($work['title']); ?></div>
     </div>
 <?php endforeach; ?>
 </div>
 
-<!-- Modal for selected works gallery -->
-<div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
-  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
-    <span id="closeSelectedWorksModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
-    <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
-    <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
-    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit profile</a>
+<!-- Universal Modal for All Works -->
+<div id="universalModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
+    <span id="closeUniversalModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+    <img id="universalModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
+    <div id="universalModalInfo" style="text-align:center; width:100%;"></div>
+    <a id="universalModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit profile</a>
     <div style="position:absolute; bottom:36px; right:28px;">
       <?php if (isset($_SESSION['email'])): ?>
-        <input type="radio" name="selectedWorkLike" id="selectedWorkLikeRadio" style="width:20px; height:20px; accent-color: #e27979; cursor:pointer;">
+        <input type="radio" name="universalWorkLike" id="universalWorkLikeRadio" style="width:20px; height:20px; accent-color: #e27979; cursor:pointer;">
       <?php else: ?>
         <div style="display: flex; flex-direction: column; align-items: center; opacity:0.6;">
           <input type="radio" style="width:20px; height:20px; cursor:not-allowed;" disabled>
@@ -498,60 +473,135 @@ foreach ($topWorks as $workPath) {
 </footer>
 
 <script>
-// Helper to safely escape attribute values when building HTML strings (if needed)
+// --- Helper Functions ---
 function escapeAttr(s) {
     if (!s && s !== 0) return '';
     return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,"&#39;").replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// --- Basic Gallery/Profiles Render and Search/Sort ---
-function renderProfiles(profiles) {
-    var container = document.getElementById('user-profiles');
-    container.innerHTML = '';
-    profiles.forEach(function(profileData, idx) {
-        var safe_first = profileData.first ? profileData.first.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
-        var safe_last = profileData.last ? profileData.last.replace(/[^a-zA-Z0-9_\-\.]/g, '_') : '';
-        var profile_username = safe_first + "_" + safe_last;
+function safe_name(val) {
+    if (!val) return "";
+    return val.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+}
 
-        var miniSrc = "";
-        if (Array.isArray(profileData.work) && profileData.work.length > 0) {
-            var found = profileData.work.find(w => /profile_image_/i.test(w.image));
-            if (!found) found = profileData.work[0];
+// --- Universal Modal Logic ---
+function openUniversalModal(workData) {
+    const modal = document.getElementById('universalModal');
+    if (!modal) return;
+
+    document.getElementById('universalModalImg').src = workData.path;
+    document.getElementById('universalModalImg').alt = workData.title;
+
+    let infoHtml = `<div style="font-weight:bold; font-size:1.2em;">${workData.title || 'Artwork'}</div>
+                    <div style="color:#555; font-size:1em; margin-top:8px;">${workData.artist}</div>
+                    <div style="color:#888; margin-top:6px; font-size:0.95em;">${workData.date}</div>`;
+    if(workData.selected_count) {
+        infoHtml += `<div style="color:#e27979; margin-top:6px;">Selected ${workData.selected_count} times</div>`;
+    }
+    document.getElementById('universalModalInfo').innerHTML = infoHtml;
+    
+    document.getElementById('universalModalProfileBtn').href = 'profile.php?user=' + encodeURIComponent(workData.user_folder);
+    
+    const radio = document.getElementById('universalWorkLikeRadio');
+    if (radio && loggedInUser_profile) {
+        radio.checked = loggedInUser_profile.selected_works?.some(w => w.path === workData.path) || false;
+        radio.onclick = () => selectWork(workData);
+    }
+    modal.style.display = 'flex';
+}
+
+function selectWork(workData) {
+    if (!loggedInUser_profile) return;
+    if (loggedInUser_profile.selected_works?.some(w => w.path === workData.path)) return;
+
+    const formData = new FormData();
+    formData.append('action', 'select_work');
+    formData.append('work_data', JSON.stringify(workData));
+
+    fetch('testy8.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Work selected successfully!");
+            if (!loggedInUser_profile.selected_works) loggedInUser_profile.selected_works = [];
+            loggedInUser_profile.selected_works.push(workData);
+        } else {
+            console.error("Failed to select work:", data.message);
+        }
+    })
+    .catch(err => console.error("Error selecting work:", err));
+}
+
+// --- Slideshow Logic ---
+var ssImgs = slideshowImages || [], ssIdx = 0, ssInt = null;
+function showSS(idx) {
+    if (!ssImgs.length) return;
+    ssIdx = (idx + ssImgs.length) % ssImgs.length;
+    document.getElementById('slideshow-img').src = ssImgs[ssIdx];
+}
+function startSSAuto() { 
+    if (ssInt) clearInterval(ssInt); 
+    ssInt = setInterval(() => showSS(ssIdx + 1), 7000);
+}
+
+function getProfileForImage(path) {
+    if (!path) return null;
+    const match = path.match(/^pusers\/([^\/]+)\/work\//);
+    if (!match) return null;
+    const folder = match[1];
+    return userProfiles.find(profile => {
+        const safe_first = safe_name(profile.first);
+        const safe_last = safe_name(profile.last);
+        return `${safe_first}_${safe_last}` === folder;
+    });
+}
+
+// --- Profile List Logic ---
+function renderProfiles(profiles) {
+    const container = document.getElementById('user-profiles');
+    container.innerHTML = '';
+    profiles.forEach(function(profileData) {
+        const safe_first = safe_name(profileData.first);
+        const safe_last = safe_name(profileData.last);
+        const profile_username = `${safe_first}_${safe_last}`;
+
+        let miniSrc = "";
+        if (profileData.work && profileData.work.length > 0) {
+            const found = profileData.work.find(w => /profile_image_/i.test(w.image)) || profileData.work[0];
             if (found && found.image) miniSrc = found.image.replace("/var/www/html", "");
         }
 
-        var submetaParts = [];
+        const submetaParts = [];
         if (profileData.dob) submetaParts.push(`Born: ${profileData.dob.substring(0,4)}`);
         if (profileData.country) submetaParts.push(escapeAttr(profileData.country));
         if (profileData.genre) submetaParts.push(escapeAttr(profileData.genre));
 
-        var row = document.createElement('div');
+        const row = document.createElement('div');
         row.className = 'user-row';
-        row.innerHTML = `
-            <div class="user-row-main">
+        row.innerHTML = `<div class="user-row-main">
                 ${miniSrc ? `<img src="${escapeAttr(miniSrc)}" alt="${escapeAttr(profile_username)} photo" class="mini-profile">` : '<div class="mini-profile" style="background:#e9eef6;"></div>'}
                 <div>
                     <div class="user-name">${escapeAttr(profileData.first || '')} ${escapeAttr(profileData.last || '')}</div>
                     <div class="user-submeta">${submetaParts.join(' &bull; ')}</div>
                 </div>
             </div>
-            <div class="profile-dropdown"></div>
-        `;
+            <div class="profile-dropdown"></div>`;
 
-        var dropdownContainer = row.querySelector('.profile-dropdown');
-        
-        row.querySelector('.user-row-main').addEventListener('click', function(e) {
+        const dropdownContainer = row.querySelector('.profile-dropdown');
+        row.querySelector('.user-row-main').addEventListener('click', (e) => {
             e.stopPropagation();
-
             if (dropdownContainer.style.display === 'block') {
                 dropdownContainer.style.display = 'none';
                 dropdownContainer.innerHTML = '';
             } else {
+                document.querySelectorAll('.profile-dropdown').forEach(d => {
+                    d.style.display = 'none';
+                    d.innerHTML = '';
+                });
                 buildDropdownContent(dropdownContainer, profileData, profile_username, miniSrc);
                 dropdownContainer.style.display = 'block';
             }
         });
-
         container.appendChild(row);
     });
 }
@@ -565,13 +615,15 @@ function buildDropdownContent(container, profileData, profile_username, imgSrc) 
         profileData.work.forEach(function(work_item) {
             var workImgSrc = work_item.image ? work_item.image.replace("/var/www/html", "") : '';
             if(workImgSrc) {
+                const workData = {
+                    path: workImgSrc,
+                    title: work_item.desc || '',
+                    date: work_item.date || '',
+                    artist: `${profileData.first || ''} ${profileData.last || ''}`,
+                    user_folder: profile_username
+                };
                 workHtml += `<div class="dropdown-work-item">
-                                <img src="${escapeAttr(workImgSrc)}" class="work-image" 
-                                    data-desc="${escapeAttr(work_item.desc || '')}" 
-                                    data-date="${escapeAttr(work_item.date || '')}" 
-                                    data-artist="${escapeAttr((profileData.first || '') + ' ' + (profileData.last || ''))}" 
-                                    data-profile="${escapeAttr(profile_username)}" 
-                                    data-path="${escapeAttr(workImgSrc)}">
+                                <img src="${escapeAttr(workImgSrc)}" class="work-image" onclick='openUniversalModal(${JSON.stringify(workData)})'>
                                 <div class="work-info">
                                     <div class="desc">${escapeAttr(work_item.desc || '')}</div>
                                     <div class="date">${escapeAttr(work_item.date || '')}</div>
@@ -582,8 +634,7 @@ function buildDropdownContent(container, profileData, profile_username, imgSrc) 
         workHtml += '</div>';
     }
     
-    container.innerHTML = `
-        <div class="dropdown-inner">
+    container.innerHTML = `<div class="dropdown-inner">
             <div class="dropdown-header">
                 <img src="${imgSrc || 'placeholder.png'}" class="dropdown-main-image">
                 <div>
@@ -595,333 +646,80 @@ function buildDropdownContent(container, profileData, profile_username, imgSrc) 
                 <div class="dropdown-meta">${bioHtml}</div>
                 ${workHtml}
             </div>
-        </div>
-    `;
+        </div>`;
 }
 
-// search and sort functions (unchanged logic)
-function searchProfiles() {
-    var search = (document.getElementById('artistSearchBar').value || "").toLowerCase();
-    if (!search) { renderProfiles(userProfiles); return; }
-    var filtered = userProfiles.filter(function(profile) {
-        return (
-            (profile.first && profile.first.toLowerCase().includes(search)) ||
-            (profile.last && profile.last.toLowerCase().includes(search)) ||
-            (profile.email && profile.email.toLowerCase().includes(search)) ||
-            (profile.country && profile.country.toLowerCase().includes(search)) ||
-            (profile.genre && profile.genre.toLowerCase().includes(search)) ||
-            (profile.bio && profile.bio.toLowerCase().includes(search))
+// --- DOMContentLoaded: Attach all event listeners ---
+document.addEventListener("DOMContentLoaded", function() {
+    // Slideshow listeners
+    const slideshowWrapper = document.getElementById('slideshow-image-wrapper');
+    if (slideshowWrapper) {
+        slideshowWrapper.addEventListener('click', function(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+
+            if (clickX < width * 0.2) { showSS(ssIdx - 1); startSSAuto(); } 
+            else if (clickX > width * 0.8) { showSS(ssIdx + 1); startSSAuto(); } 
+            else {
+                const path = ssImgs[ssIdx];
+                const profile = getProfileForImage(path);
+                const workData = { path: path, title: '', date: '', artist: 'Unknown Artist', user_folder: '' };
+                if (profile) {
+                    workData.artist = `${profile.first || ''} ${profile.last || ''}`;
+                    workData.user_folder = `${safe_name(profile.first)}_${safe_name(profile.last)}`;
+                    const imgfile = path.split('/').pop();
+                    const w = profile.work.find(w => w.image && w.image.endsWith(imgfile));
+                    if (w) {
+                        workData.title = w.desc || "";
+                        workData.date = w.date || "";
+                    }
+                }
+                openUniversalModal(workData);
+            }
+        });
+    }
+    showSS(0); 
+    startSSAuto();
+
+    // Top selected works gallery listeners
+    const topWorksData = <?php echo json_encode($topWorksData); ?>;
+    document.querySelectorAll('.selected-work-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const idx = parseInt(card.getAttribute('data-idx'));
+            const work = topWorksData[idx];
+            openUniversalModal(work);
+        });
+    });
+
+    // Universal modal close listeners
+    document.getElementById('closeUniversalModal').onclick = () => { document.getElementById('universalModal').style.display = 'none'; };
+    document.getElementById('universalModal').onclick = (e) => { if (e.target === e.currentTarget) e.currentTarget.style.display = 'none'; };
+
+    // Profile list, search, and sort listeners
+    renderProfiles(userProfiles);
+    const searchBar = document.getElementById('artistSearchBar');
+    searchBar.addEventListener('input', () => {
+        const search = searchBar.value.toLowerCase();
+        if (!search) { renderProfiles(userProfiles); return; }
+        const filtered = userProfiles.filter(p =>
+            (p.first?.toLowerCase().includes(search)) ||
+            (p.last?.toLowerCase().includes(search)) ||
+            (p.country?.toLowerCase().includes(search)) ||
+            (p.genre?.toLowerCase().includes(search))
         );
+        renderProfiles(filtered);
     });
-    renderProfiles(filtered);
-}
-document.getElementById('artistSearchBar').addEventListener('input', searchProfiles);
 
-document.getElementById('sortAlphaBtn').onclick = function() {
-    var sorted = userProfiles.slice().sort(function(a, b) {
-        var nameA = ((a.first || "") + " " + (a.last || "")).toLowerCase();
-        var nameB = ((b.first || "") + " " + (b.last || "")).toLowerCase();
-        return nameA.localeCompare(nameB);
-    });
-    renderProfiles(sorted);
-};
-document.getElementById('sortDateBtn').onclick = function() {
-    var sorted = userProfiles.slice().sort(function(a, b) {
-        var dobA = a.dob ? new Date(a.dob) : null;
-        var dobB = b.dob ? new Date(b.dob) : null;
-        if (!dobA && !dobB) return 0;
-        if (!dobA) return 1;
-        if (!dobB) return -1;
-        return dobA - dobB;
-    });
-    renderProfiles(sorted);
-};
-document.getElementById('sortCountryBtn').onclick = function() {
-    var sorted = userProfiles.slice().sort(function(a, b) {
-        var countryA = (a.country || "").toLowerCase();
-        var countryB = (b.country || "").toLowerCase();
-        if (!countryA && !countryB) return 0;
-        if (!countryA) return 1;
-        if (!countryB) return -1;
-        return countryA.localeCompare(countryB);
-    });
-    renderProfiles(sorted);
-};
-document.getElementById('sortGenreBtn').onclick = function() {
-    var sorted = userProfiles.slice().sort(function(a, b) {
-        var genreA = (a.genre || "").toLowerCase();
-        var genreB = (b.genre || "").toLowerCase();
-        if (!genreA && !genreB) return 0;
-        if (!genreA) return 1;
-        if (!genreB) return -1;
-        return genreA.localeCompare(genreB);
-    });
-    renderProfiles(sorted);
-};
-renderProfiles(userProfiles);
+    document.getElementById('sortAlphaBtn').onclick = () => renderProfiles(userProfiles.slice().sort((a, b) => ((a.first||"")+" "+(a.last||"")).toLowerCase().localeCompare(((b.first||"")+" "+(b.last||"")).toLowerCase())));
+    document.getElementById('sortDateBtn').onclick = () => renderProfiles(userProfiles.slice().sort((a,b) => (a.dob ? new Date(a.dob) : 0) - (b.dob ? new Date(b.dob) : 0) || (b.dob ? 1 : -1) ));
+    document.getElementById('sortCountryBtn').onclick = () => renderProfiles(userProfiles.slice().sort((a,b) => (a.country||"").toLowerCase().localeCompare((b.country||"").toLowerCase())));
+    document.getElementById('sortGenreBtn').onclick = () => renderProfiles(userProfiles.slice().sort((a,b) => (a.genre||"").toLowerCase().localeCompare((b.genre||"").toLowerCase())));
 
-// --- Slideshow JS & Modal (FIXED) ---
-var ssImgs = slideshowImages || [], ssIdx = 0, ssInt = null;
-var ssImgElem = document.getElementById('slideshow-img');
-
-function showSS(idx) {
-    if (!ssImgs.length) { 
-        if (ssImgElem) { ssImgElem.src = ''; ssImgElem.alt = 'No artwork found'; } 
-        return;
-    }
-    ssIdx = (idx + ssImgs.length) % ssImgs.length;
-    if (ssImgElem) ssImgElem.src = ssImgs[ssIdx];
-}
-function nextSS() { showSS(ssIdx + 1); }
-function prevSS() { showSS(ssIdx - 1); }
-function startSSAuto() { 
-    if (ssInt) clearInterval(ssInt); 
-    ssInt = setInterval(nextSS, 7000);
-}
-
-// Attach a single click handler to the wrapper
-var slideshowWrapper = document.getElementById('slideshow-image-wrapper');
-if (slideshowWrapper) {
-    slideshowWrapper.addEventListener('click', function(e) {
-        var rect = e.currentTarget.getBoundingClientRect();
-        var clickX = e.clientX - rect.left;
-        var width = rect.width;
-
-        if (clickX < width * 0.2) { // Prev on left 20%
-            prevSS();
-            startSSAuto();
-        } else if (clickX > width * 0.8) { // Next on right 20%
-            nextSS();
-            startSSAuto();
-        } else { // Modal on middle 60%
-            openModalForSlideshow(ssIdx);
-        }
-    });
-}
-
-
-showSS(0); 
-startSSAuto();
-
-// --- NEW: Function to handle selecting a work ---
-function selectWork(workData) {
-    if (!loggedInUser_profile) {
-        console.log("Not logged in, cannot select work.");
-        return;
-    }
-    
-    // Check if already selected to prevent duplicates
-    if (loggedInUser_profile.selected_works && loggedInUser_profile.selected_works.find(w => w.path === workData.path)) {
-      console.log("Work already selected.");
-      return;
-    }
-
-    var formData = new FormData();
-    formData.append('action', 'select_work');
-    formData.append('work_data', JSON.stringify(workData));
-
-    fetch('testy8.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            console.log("Work selected successfully!");
-            // Update local profile data to reflect selection immediately
-            if (!loggedInUser_profile.selected_works) loggedInUser_profile.selected_works = [];
-            loggedInUser_profile.selected_works.push(workData);
-        } else {
-            console.error("Failed to select work:", data.message);
-        }
-    })
-    .catch(err => console.error("Error selecting work:", err));
-}
-
-// -- Modal Logic (Simple/Single Source of Truth) --
-function getProfileForImage(path) {
-    if (!path) return null;
-    var m = path.match(/^pusers\/([^\/]+)\/work\//); if (!m) return null;
-    var folder = m[1];
-    for (var i=0;i<userProfiles.length;++i) {
-        var profile = userProfiles[i];
-        var safe_first = profile.first ? safe_name(profile.first) : "";
-        var safe_last = profile.last ? safe_name(profile.last) : "";
-        if (`${safe_first}_${safe_last}` === folder) return profile;
-    }
-    return null;
-}
-function openModalForSlideshow(slideIdx) {
-    var modal = document.getElementById('slideModal');
-    if (!modal) return;
-    var modalImg = document.getElementById('modalImage');
-    var modalArtist = document.getElementById('modalArtist');
-    var modalTitle = document.getElementById('modalTitle');
-    var modalDate = document.getElementById('modalDate');
-    var visitProfileBtn = document.getElementById('visitProfileBtn');
-    var radio = document.getElementById('slideModalLikeRadio');
-
-    var path = ssImgs[slideIdx];
-    if (modalImg) modalImg.src = path || '';
-    var profile = getProfileForImage(path);
-    var workData = { path: path, title: '', date: '', artist: '', user_folder: '' };
-
-    if (profile) {
-        workData.artist = (profile.first || '') + " " + (profile.last || '');
-        workData.user_folder = (profile.first ? safe_name(profile.first) : '') + '_' + (profile.last ? safe_name(profile.last) : '');
-        if (Array.isArray(profile.work)) {
-            var imgfile = path.split('/').pop();
-            var w = profile.work.find(function(w) { if (!w.image) return false; return w.image.endsWith(imgfile); });
-            if (w) {
-                workData.title = w.desc || "";
-                workData.date = w.date || "";
-            }
-        }
-        modalArtist.textContent = workData.artist;
-        if (visitProfileBtn) visitProfileBtn.onclick = function() { window.location.href = "profile.php?user="+encodeURIComponent(workData.user_folder);};
-    } else {
-        if (modalArtist) modalArtist.textContent = "Unknown Artist";
-        if (visitProfileBtn) visitProfileBtn.onclick = null;
-    }
-    if (modalTitle) modalTitle.textContent = workData.title || 'Artwork';
-    if (modalDate) modalDate.textContent = workData.date ? 'Date: ' + workData.date : '';
-    
-    // Check if work is already selected by logged in user
-    if (radio) {
-        radio.checked = false; // reset
-        if (loggedInUser_profile && loggedInUser_profile.selected_works) {
-            if (loggedInUser_profile.selected_works.find(w => w.path === path)) {
-                radio.checked = true;
-            }
-        }
-        // Attach current work data to radio for selection
-        radio.onclick = function() { selectWork(workData); };
-    }
-
-    modal.style.display = 'flex';
-}
-var closeBtn = document.getElementById('closeSlideModal');
-if (closeBtn) closeBtn.onclick = function() { document.getElementById('slideModal').style.display = 'none'; };
-var slideModal = document.getElementById('slideModal');
-if (slideModal) slideModal.onclick = function(e) { if (e.target === this) this.style.display = 'none'; };
-
-// --- Selected works gallery modal logic ---
-const selectedWorksData = <?php echo json_encode($topWorksData, JSON_PRETTY_PRINT); ?>;
-document.querySelectorAll('.selected-work-card').forEach(card => {
-    card.addEventListener('click', function(e) {
-        const idx = parseInt(card.getAttribute('data-idx'));
-        const work = selectedWorksData[idx];
-
-        document.getElementById('selectedWorksModalImg').src = work.path;
-        document.getElementById('selectedWorksModalImg').alt = work.title;
-
-        let infoHtml = `
-            <div style="font-weight:bold; font-size:1.2em;">${work.title}</div>
-            <div style="color:#e27979; margin-top:6px;">Selected ${work.selected_count} times</div>
-            <div style="color:#555; font-size:1em; margin-top:8px;">${work.artist}</div>
-            <div style="color:#888; margin-top:2px; font-size:0.95em;">${work.date ? work.date : (work.timestamp ? (new Date(work.timestamp)).toLocaleDateString() : '')}</div>
-        `;
-        document.getElementById('selectedWorksModalInfo').innerHTML = infoHtml;
-        document.getElementById('selectedWorksModalProfileBtn').href = 'profile.php?user=' + encodeURIComponent(work.user_folder);
-        
-        var radio = document.getElementById('selectedWorkLikeRadio');
-        if (radio) {
-            radio.checked = false; // reset
-            if (loggedInUser_profile && loggedInUser_profile.selected_works && loggedInUser_profile.selected_works.find(w => w.path === work.path)) {
-                radio.checked = true;
-            }
-            radio.onclick = function() { selectWork(work); };
-        }
-
-        document.getElementById('selectedWorksModal').style.display = 'flex';
-    });
 });
-document.getElementById('closeSelectedWorksModal').onclick = function() {
-    document.getElementById('selectedWorksModal').style.display = 'none';
-};
-document.getElementById('selectedWorksModal').onclick = function(e) {
-    if (e.target === this) this.style.display = 'none';
-};
 
-// --- New: attach modal behavior to profile work thumbnails using event delegation ---
-document.addEventListener('click', function(e) {
-    var t = e.target;
-    if (t && t.classList && t.classList.contains('work-image')) {
-        e.stopPropagation();
-        var workData = {
-            path: t.dataset.path || t.src || '',
-            title: t.dataset.desc || '',
-            date: t.dataset.date || '',
-            artist: t.dataset.artist || '',
-            user_folder: t.dataset.profile || ''
-        };
-        
-        // Use selectedWorksModal
-        var modal = document.getElementById('selectedWorksModal');
-        if (!modal) return;
-        document.getElementById('selectedWorksModalImg').src = workData.path;
-        document.getElementById('selectedWorksModalImg').alt = workData.title || '';
-        document.getElementById('selectedWorksModalInfo').innerHTML = `
-            <div style="font-weight:bold; font-size:1.2em;">${escapeAttr(workData.title) || 'Artwork'}</div>
-            <div style="color:#555; font-size:1em; margin-top:8px;">${escapeAttr(workData.artist)}</div>
-            <div style="color:#888; margin-top:6px; font-size:0.95em;">${escapeAttr(workData.date)}</div>
-        `;
-        document.getElementById('selectedWorksModalProfileBtn').href = 'profile.php?user=' + encodeURIComponent(workData.user_folder);
-        
-        var radio = document.getElementById('selectedWorkLikeRadio');
-        if (radio) {
-            radio.checked = false; // reset
-            if (loggedInUser_profile && loggedInUser_profile.selected_works && loggedInUser_profile.selected_works.find(w => w.path === workData.path)) {
-                radio.checked = true;
-            }
-            radio.onclick = function() { selectWork(workData); };
-        }
-        
-        modal.style.display = 'flex';
-    }
-}, true);
-
-</script>
-
-<script>
-    // --- Title-container popout menu functionality (unchanged) ---
-document.addEventListener('DOMContentLoaded', function() {
-  var titleContainer = document.getElementById('mainTitleContainer');
-  var menu = document.getElementById('titleMenuPopout');
-  var closeBtn = document.getElementById('closeTitleMenu');
-
-  function closeMenu() {
-    if (menu) menu.style.display = 'none';
-  }
-
-  if (titleContainer && menu) {
-    titleContainer.style.cursor = "pointer";
-    titleContainer.addEventListener('click', function(e) {
-      var rect = titleContainer.getBoundingClientRect();
-      menu.style.left = (rect.left + window.scrollX + rect.width + 18) + "px";
-      menu.style.top = (rect.top + window.scrollY) + "px";
-      menu.style.display = 'block';
-    });
-  }
-
-  if (closeBtn) {
-    closeBtn.onclick = function(e) { closeMenu(); };
-  }
-
-  document.addEventListener('mousedown', function(e) {
-    if (menu && menu.style.display === 'block' && !menu.contains(e.target) && !titleContainer.contains(e.target)) {
-      closeMenu();
-    }
-  });
-
-  document.addEventListener('keydown', function(e) {
-    if (e.key === "Escape") closeMenu();
-  });
-});
 </script>
     
 </body>
 </html>
-
-
 
