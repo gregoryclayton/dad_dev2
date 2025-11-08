@@ -711,15 +711,50 @@ document.addEventListener("DOMContentLoaded", function() {
         renderProfiles(filtered);
     });
 
-    document.getElementById('sortAlphaBtn').onclick = () => renderProfiles(userProfiles.slice().sort((a, b) => ((a.first||"")+" "+(a.last||"")).toLowerCase().localeCompare(((b.first||"")+" "+(b.last||"")).toLowerCase())));
-    document.getElementById('sortDateBtn').onclick = () => renderProfiles(userProfiles.slice().sort((a,b) => (a.dob ? new Date(a.dob) : 0) - (b.dob ? new Date(b.dob) : 0) || (b.dob ? 1 : -1) ));
-    document.getElementById('sortCountryBtn').onclick = () => renderProfiles(userProfiles.slice().sort((a,b) => (a.country||"").toLowerCase().localeCompare((b.country||"").toLowerCase())));
-    document.getElementById('sortGenreBtn').onclick = () => renderProfiles(userProfiles.slice().sort((a,b) => (a.genre||"").toLowerCase().localeCompare((b.genre||"").toLowerCase())));
-
+    document.getElementById('sortAlphaBtn').onclick = function() {
+        var sorted = userProfiles.slice().sort(function(a, b) {
+            var nameA = ((a.first || "") + " " + (a.last || "")).toLowerCase();
+            var nameB = ((b.first || "") + " " + (b.last || "")).toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+        renderProfiles(sorted);
+    };
+    document.getElementById('sortDateBtn').onclick = function() {
+        var sorted = userProfiles.slice().sort(function(a, b) {
+            var dobA = a.dob ? new Date(a.dob) : null;
+            var dobB = b.dob ? new Date(b.dob) : null;
+            if (!dobA && !dobB) return 0;
+            if (!dobA) return 1;
+            if (!dobB) return -1;
+            return dobA - dobB;
+        });
+        renderProfiles(sorted);
+    };
+    document.getElementById('sortCountryBtn').onclick = function() {
+        var sorted = userProfiles.slice().sort(function(a, b) {
+            var countryA = (a.country || "").toLowerCase();
+            var countryB = (b.country || "").toLowerCase();
+            if (!countryA && !countryB) return 0;
+            if (!countryA) return 1;
+            if (!countryB) return -1;
+            return countryA.localeCompare(countryB);
+        });
+        renderProfiles(sorted);
+    };
+    document.getElementById('sortGenreBtn').onclick = function() {
+        var sorted = userProfiles.slice().sort(function(a, b) {
+            var genreA = (a.genre || "").toLowerCase();
+            var genreB = (b.genre || "").toLowerCase();
+            if (!genreA && !genreB) return 0;
+            if (!genreA) return 1;
+            if (!genreB) return -1;
+            return genreA.localeCompare(genreB);
+        });
+        renderProfiles(sorted);
+    };
 });
 
 </script>
     
 </body>
 </html>
-
