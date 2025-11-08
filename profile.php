@@ -355,7 +355,42 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         modal.style.display = 'flex';
     }
 
-    // --- Profile List, Search, and Sort Functions ---
+    function buildDropdownContent(container, profileData, profile_username, imgSrc) {
+        let bioHtml = profileData.bio ? `<div><strong>Bio:</strong> ${escapeHtml(profileData.bio)}</div>` : '';
+        let workHtml = '';
+        if (profileData.work && Array.isArray(profileData.work) && profileData.work.length > 0) {
+            workHtml += '<div class="dropdown-gallery-title">Work</div><div class="dropdown-work-gallery">';
+            profileData.work.forEach(function(work_item) {
+                var workImgSrc = work_item.image ? work_item.image.replace("/var/www/html", "") : '';
+                if(workImgSrc) {
+                    const dataAttrs = `data-path="${escapeAttr(workImgSrc)}" data-type="image" data-title="${escapeAttr(work_item.desc || '')}" data-date="${escapeAttr(work_item.date || '')}" data-artist="${escapeAttr((profileData.first || '') + ' ' + (profileData.last || ''))}" data-profile="${escapeAttr(profile_username)}"`;
+                    workHtml += `<div class="dropdown-work-item">
+                                    <img src="${escapeAttr(workImgSrc)}" class="work-image" ${dataAttrs}>
+                                    <div class="work-info">
+                                        <div class="desc">${escapeHtml(work_item.desc || '')}</div>
+                                        <div class="date">${escapeHtml(work_item.date || '')}</div>
+                                    </div>
+                                 </div>`;
+                }
+            });
+            workHtml += '</div>';
+        }
+        
+        container.innerHTML = `<div class="dropdown-inner">
+            <div class="dropdown-header">
+                <img src="${imgSrc || 'placeholder.png'}" class="dropdown-main-image">
+                <div>
+                    <div class="dropdown-name">${escapeHtml(profileData.first)} ${escapeHtml(profileData.last)}</div>
+                    <button class="profile-btn" style="margin-top:10px;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(profile_username)}'">Visit Full Profile</button>
+                </div>
+            </div>
+            <div class="dropdown-body">
+                <div class="dropdown-meta">${bioHtml}</div>
+                ${workHtml}
+            </div>
+        </div>`;
+    }
+
     function renderProfiles(profiles) {
         var container = document.getElementById('user-profiles');
         container.innerHTML = '';
@@ -377,8 +412,20 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                     <div class="user-name">${escapeHtml(profileData.first)} ${escapeHtml(profileData.last)}</div>
                     <div class="user-submeta">${submetaParts.join(' &bull; ')}</div>
                 </div>
-            </div>`;
-            row.onclick = () => { window.location.href = `profile.php?user=${encodeURIComponent(profile_username)}`; };
+            </div>
+            <div class="profile-dropdown"></div>`;
+
+            var dropdownContainer = row.querySelector('.profile-dropdown');
+            row.querySelector('.user-row-main').addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (dropdownContainer.style.display === 'block') {
+                    dropdownContainer.style.display = 'none';
+                    dropdownContainer.innerHTML = '';
+                } else {
+                    buildDropdownContent(dropdownContainer, profileData, profile_username, miniSrc);
+                    dropdownContainer.style.display = 'block';
+                }
+            });
             container.appendChild(row);
         });
     }
@@ -408,7 +455,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                     document.getElementById('mainProfile').innerHTML = "<em style='padding:18px; display:block; text-align:center;'>Error loading profile.</em>";
                 });
         } else {
-             document.getElementById('mainProfile').innerHTML = "<em style='padding:18px; display:block; text-align:center;'>No profile selected.</em>";
+             document.getElementById('mainProfile').style.display = 'none';
         }
         
         var modal = document.getElementById('selectedWorksModal');
@@ -420,7 +467,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         renderProfiles(userProfiles);
         document.getElementById('artistSearchBar').addEventListener('input', searchProfiles);
         document.getElementById('sortAlphaBtn').addEventListener('click', () => {
-            renderProfiles(userProfiles.slice().sort((a,b) => `${a.first} ${a.last}`.localeCompare(`${b.first} ${b.last}`)));
+            renderProfiles(userProfiles.slice().sort((a,b) => `${a.first||''} ${a.last||''}`.localeCompare(`${b.first||''} ${b.last||''}`)));
         });
         document.getElementById('sortDateBtn').addEventListener('click', () => {
              renderProfiles(userProfiles.slice().sort((a,b) => (a.dob || '0').localeCompare(b.dob || '0')));
@@ -430,6 +477,12 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         });
         document.getElementById('sortGenreBtn').addEventListener('click', () => {
             renderProfiles(userProfiles.slice().sort((a,b) => (a.genre || '').localeCompare(b.genre || '')));
+        });
+        // Event delegation for work images inside dropdowns
+        document.getElementById('user-profiles').addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('work-image')) {
+                openSelectedWorkModal(e.target.dataset);
+            }
         });
     });
 </script>
