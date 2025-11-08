@@ -422,6 +422,11 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                     dropdownContainer.style.display = 'none';
                     dropdownContainer.innerHTML = '';
                 } else {
+                    // Hide other dropdowns
+                    document.querySelectorAll('.profile-dropdown').forEach(d => {
+                        d.style.display = 'none';
+                        d.innerHTML = '';
+                    });
                     buildDropdownContent(dropdownContainer, profileData, profile_username, miniSrc);
                     dropdownContainer.style.display = 'block';
                 }
@@ -466,17 +471,46 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         // --- Init Profile List ---
         renderProfiles(userProfiles);
         document.getElementById('artistSearchBar').addEventListener('input', searchProfiles);
-        document.getElementById('sortAlphaBtn').addEventListener('click', () => {
-            renderProfiles(userProfiles.slice().sort((a,b) => `${a.first||''} ${a.last||''}`.localeCompare(`${b.first||''} ${b.last||''}`)));
+        document.getElementById('sortAlphaBtn').addEventListener('click', function() {
+            var sorted = userProfiles.slice().sort(function(a, b) {
+                var nameA = ((a.first || "") + " " + (a.last || "")).toLowerCase();
+                var nameB = ((b.first || "") + " " + (b.last || "")).toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+            renderProfiles(sorted);
         });
-        document.getElementById('sortDateBtn').addEventListener('click', () => {
-             renderProfiles(userProfiles.slice().sort((a,b) => (a.dob || '0').localeCompare(b.dob || '0')));
+        document.getElementById('sortDateBtn').addEventListener('click', function() {
+            var sorted = userProfiles.slice().sort(function(a, b) {
+                var dobA = a.dob ? new Date(a.dob) : null;
+                var dobB = b.dob ? new Date(b.dob) : null;
+                if (!dobA && !dobB) return 0;
+                if (!dobA) return 1;
+                if (!dobB) return -1;
+                return dobA - dobB;
+            });
+            renderProfiles(sorted);
         });
-        document.getElementById('sortCountryBtn').addEventListener('click', () => {
-            renderProfiles(userProfiles.slice().sort((a,b) => (a.country || '').localeCompare(b.country || '')));
+        document.getElementById('sortCountryBtn').addEventListener('click', function() {
+            var sorted = userProfiles.slice().sort(function(a, b) {
+                var countryA = (a.country || "").toLowerCase();
+                var countryB = (b.country || "").toLowerCase();
+                if (!countryA && !countryB) return 0;
+                if (!countryA) return 1;
+                if (!countryB) return -1;
+                return countryA.localeCompare(countryB);
+            });
+            renderProfiles(sorted);
         });
-        document.getElementById('sortGenreBtn').addEventListener('click', () => {
-            renderProfiles(userProfiles.slice().sort((a,b) => (a.genre || '').localeCompare(b.genre || '')));
+        document.getElementById('sortGenreBtn').addEventListener('click', function() {
+            var sorted = userProfiles.slice().sort(function(a, b) {
+                var genreA = (a.genre || "").toLowerCase();
+                var genreB = (b.genre || "").toLowerCase();
+                if (!genreA && !genreB) return 0;
+                if (!genreA) return 1;
+                if (!genreB) return -1;
+                return genreA.localeCompare(genreB);
+            });
+            renderProfiles(sorted);
         });
         // Event delegation for work images inside dropdowns
         document.getElementById('user-profiles').addEventListener('click', function(e) {
