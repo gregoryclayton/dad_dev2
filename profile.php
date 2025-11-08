@@ -156,18 +156,19 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     .signin-bar-container input{padding:6px;border:1px solid #ccc;border-radius:6px;}
     .signin-bar-container button{padding:6px 12px;border:none;background:#e27979;color:white;border-radius:6px;cursor:pointer;}
     .signin-bar-container .welcome-msg a{color:#c0392b;text-decoration:none;margin-left:12px;}
+    .user-row{display:flex;flex-direction:column;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer}.user-row:hover{background:#f9f9f9}.user-row-main{display:flex;width:100%;align-items:center;padding:0 10px}.mini-profile{width:40px;height:40px;object-fit:cover;border-radius:8px;margin-right:10px;box-shadow:0 2px 8px #0000001f;flex-shrink:0}.user-name{font-size:14px;font-family:monospace}.user-submeta{color:#666;font-size:.9em;margin-top:4px}.profile-dropdown{display:none;width:100%;padding:15px 10px 0}.dropdown-inner{display:flex;flex-direction:column;gap:15px}.dropdown-header{display:flex;gap:15px;align-items:center}.dropdown-main-image{width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f4f4f4;flex-shrink:0}.dropdown-name{font-size:1.4em;font-weight:700;margin:0}.dropdown-meta{margin-top:8px;color:#555;line-height:1.5;font-size:.9em}.dropdown-gallery-title{margin-top:15px;font-weight:600;font-size:1em}.dropdown-work-gallery{display:flex;overflow-x:auto;gap:10px;padding:5px 0 10px}.dropdown-work-item{display:flex;flex-direction:column;flex-shrink:0;width:120px}.work-image{width:120px;height:120px;object-fit:cover;border-radius:8px;cursor:pointer;box-shadow:0 2px 8px #00000014}.work-info{font-size:.85em;padding-top:6px}.work-info .desc{font-weight:600;color:#333}.work-info .date{color:#777}.dropdown-body{overflow:hidden}
     @media (max-width:760px){.main-profile-inner{flex-direction:column;align-items:center}.profile-left{flex-basis:auto}.profile-right{width:100%}}
+    @media (min-width:600px){.dropdown-inner{flex-direction:row}.dropdown-header{flex-direction:column;align-items:flex-start;gap:0}.dropdown-main-image{width:120px;height:120px}}
     </style>
 
     <script>
     var profileImagesMap = <?php echo json_encode($profile_images_map, JSON_UNESCAPED_SLASHES); ?>;
     var isLoggedIn = <?php echo json_encode(isset($_SESSION['email'])); ?>;
     var loggedInUserProfile = <?php echo json_encode($loggedInUserProfile); ?>;
+    var userProfiles = <?php echo json_encode($userProfiles, JSON_UNESCAPED_SLASHES); ?>;
     </script>
 </head>
 <body>
-
-    <div id="mainProfile"></div>
 
 <div class="navbar">
     <div class="navbarbtns">
@@ -193,9 +194,11 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     <?php endif; ?>
 </div>
 
+<div id="mainProfile"></div>
+
 <!-- Content Section (Search, Sort, Profiles) -->
-<div class="container-container-container" style="display:grid; align-items:center; justify-items: center;">
-<div class="container-container" style="border: double; border-radius:20px; padding-top:50px; width:90%; align-items:center; justify-items: center; display:grid; background-color: #f2e9e9;">
+<div class="container-container-container" style="display:grid; align-items:center; justify-items: center; margin-top: 30px;">
+<div class="container-container" style="border: double; border-radius:20px; padding: 20px 50px 50px; width:90%; display:grid; background-color: #f2e9e9;">
   <div style="display:flex; justify-content: center; align-items:center;">
     <div>
       <input type="text" id="artistSearchBar" placeholder="Search artists..." style="width:60vw; padding:0.6em 1em; font-size:1em; border-radius:7px; border:1px solid #ccc;">
@@ -210,7 +213,6 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
   <div id="user-profiles"></div>
 </div>
 </div>
-    
 
 
 <div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
@@ -312,14 +314,11 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                console.log("Work selection updated.");
                 if (loggedInUserProfile.selected_works && !loggedInUserProfile.selected_works.some(w => w.path === workData.path)) {
                     loggedInUserProfile.selected_works.push(workData);
                 }
-            } else {
-                console.error("Selection failed: ", data.message);
             }
-        }).catch(err => console.error("Selection POST failed: ", err));
+        });
     }
 
     function openSelectedWorkModal(workDataset) {
@@ -350,13 +349,53 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 
         if (radio && isLoggedIn && loggedInUserProfile) {
             radio.checked = loggedInUserProfile.selected_works?.some(sw => sw.path === workDataset.path) || false;
-            // Re-bind onclick every time to capture the current work's data
             radio.onclick = () => selectWork(workDataset);
         }
 
         modal.style.display = 'flex';
     }
 
+    // --- Profile List, Search, and Sort Functions ---
+    function renderProfiles(profiles) {
+        var container = document.getElementById('user-profiles');
+        container.innerHTML = '';
+        profiles.forEach(function(profileData) {
+            var safe_first = (profileData.first || '').replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+            var safe_last = (profileData.last || '').replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+            var profile_username = `${safe_first}_${safe_last}`;
+            var miniSrc = (profileImagesMap[profile_username] && profileImagesMap[profile_username][0]) || '';
+            var submetaParts = [];
+            if (profileData.dob) submetaParts.push(`Born: ${profileData.dob.substring(0,4)}`);
+            if (profileData.country) submetaParts.push(escapeAttr(profileData.country));
+            if (profileData.genre) submetaParts.push(escapeAttr(profileData.genre));
+
+            var row = document.createElement('div');
+            row.className = 'user-row';
+            row.innerHTML = `<div class="user-row-main">
+                ${miniSrc ? `<img src="${escapeAttr(miniSrc)}" alt="${escapeAttr(profile_username)} photo" class="mini-profile">` : '<div class="mini-profile" style="background:#e9eef6;"></div>'}
+                <div>
+                    <div class="user-name">${escapeHtml(profileData.first)} ${escapeHtml(profileData.last)}</div>
+                    <div class="user-submeta">${submetaParts.join(' &bull; ')}</div>
+                </div>
+            </div>`;
+            row.onclick = () => { window.location.href = `profile.php?user=${encodeURIComponent(profile_username)}`; };
+            container.appendChild(row);
+        });
+    }
+
+    function searchProfiles() {
+        var search = (document.getElementById('artistSearchBar').value || "").toLowerCase();
+        if (!search) { renderProfiles(userProfiles); return; }
+        var filtered = userProfiles.filter(p => 
+            (p.first && p.first.toLowerCase().includes(search)) ||
+            (p.last && p.last.toLowerCase().includes(search)) ||
+            (p.country && p.country.toLowerCase().includes(search)) ||
+            (p.genre && p.genre.toLowerCase().includes(search))
+        );
+        renderProfiles(filtered);
+    }
+    
+    // --- Main DOMContentLoaded ---
     document.addEventListener("DOMContentLoaded", function() {
         var params = new URLSearchParams(window.location.search);
         var username = params.get('user');
@@ -365,17 +404,33 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                 .then(res => res.json())
                 .then(renderMainProfile)
                 .catch(err => {
-                    console.error("Failed to load profile:", err);
+                    console.error("Failed to load main profile:", err);
                     document.getElementById('mainProfile').innerHTML = "<em style='padding:18px; display:block; text-align:center;'>Error loading profile.</em>";
                 });
         } else {
-            document.getElementById('mainProfile').innerHTML = "<em style='padding:18px; display:block; text-align:center;'>No profile selected.</em>";
+             document.getElementById('mainProfile').innerHTML = "<em style='padding:18px; display:block; text-align:center;'>No profile selected.</em>";
         }
         
         var modal = document.getElementById('selectedWorksModal');
         var closeBtn = document.getElementById('closeSelectedWorksModal');
         if(closeBtn) closeBtn.onclick = () => { modal.style.display = 'none'; document.getElementById('selectedWorksModalAudio').pause(); };
         if(modal) modal.onclick = (e) => { if (e.target === modal) { modal.style.display = 'none'; document.getElementById('selectedWorksModalAudio').pause(); } };
+        
+        // --- Init Profile List ---
+        renderProfiles(userProfiles);
+        document.getElementById('artistSearchBar').addEventListener('input', searchProfiles);
+        document.getElementById('sortAlphaBtn').addEventListener('click', () => {
+            renderProfiles(userProfiles.slice().sort((a,b) => `${a.first} ${a.last}`.localeCompare(`${b.first} ${b.last}`)));
+        });
+        document.getElementById('sortDateBtn').addEventListener('click', () => {
+             renderProfiles(userProfiles.slice().sort((a,b) => (a.dob || '0').localeCompare(b.dob || '0')));
+        });
+        document.getElementById('sortCountryBtn').addEventListener('click', () => {
+            renderProfiles(userProfiles.slice().sort((a,b) => (a.country || '').localeCompare(b.country || '')));
+        });
+        document.getElementById('sortGenreBtn').addEventListener('click', () => {
+            renderProfiles(userProfiles.slice().sort((a,b) => (a.genre || '').localeCompare(b.genre || '')));
+        });
     });
 </script>
 
