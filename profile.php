@@ -1,6 +1,43 @@
 <?php
-// profile.php: Displays a single user's profile info in the mainProfile div, loaded via AJAX
+session_start();
+include 'connection.php'; // Include database connection
 
+// Connect to MySQL
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
+
+// Handle login
+if (isset($_POST['login'])) {
+    $email = $conn->real_escape_string($_POST['email']);
+    $pass = $_POST['password'];
+    $result = $conn->query("SELECT * FROM users WHERE email='$email'");
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+        if (password_verify($pass, $row['password'])) {
+            $_SESSION['email'] = $email;
+            $_SESSION['first'] = $row['first'];
+            $_SESSION['last'] = $row['last'];
+        }
+    }
+    // Redirect to the same page to clear POST data and show logged-in state
+    header("Location: " . $_SERVER['REQUEST_URI']);
+    exit();
+}
+
+// Handle logout
+if (isset($_GET['logout'])) {
+    session_destroy();
+    // Redirect to home page or the same profile page without logout param
+    $redirect_url = strtok($_SERVER["REQUEST_URI"], '?');
+    if (isset($_GET['user'])) {
+        $redirect_url .= '?user=' . urlencode($_GET['user']);
+    }
+    header("Location: " . $redirect_url);
+    exit();
+}
+
+
+// profile.php: Displays a single user's profile info in the mainProfile div, loaded via AJAX
 function get_profile_data($username) {
     $profile_json_path = "/var/www/html/pusers/" . $username . "/profile.json";
     if (!file_exists($profile_json_path)) return null;
@@ -69,117 +106,13 @@ if (is_dir($baseDir)) {
     <link rel="stylesheet" type="text/css" href="style.css">
 
     <style>
-    /* Main profile layout */
-    #mainProfile {
-        max-width: 1100px;
-        margin: 26px auto;
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.08);
-        padding: 20px;
-        color: #222;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-    .main-profile-inner {
-        display: flex;
-        gap: 22px;
-        align-items: flex-start;
-        flex-wrap: wrap;
-    }
-    .profile-left {
-        flex: 0 0 240px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .main-profile-image {
-        width: 240px;
-        height: 240px;
-        border-radius: 10px;
-        object-fit: cover;
-        background: #f4f4f4;
-        display: block;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    }
-    .profile-placeholder {
-        width: 240px;
-        height: 240px;
-        border-radius: 10px;
-        background: linear-gradient(135deg,#f3f3f5,#e9eef6);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:48px;
-        color:#9aa3b2;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-    }
-    .profile-right {
-        flex: 1 1 480px;
-        min-width: 260px;
-    }
-    .profile-header {
-        display:flex;
-        align-items:baseline;
-        gap:12px;
-    }
-    .profile-name {
-        font-size:28px;
-        font-weight:700;
-        margin:0;
-    }
-    .profile-meta {
-        margin-top:12px;
-        color:#444;
-        line-height:1.5;
-    }
-    .profile-meta .label { font-weight:600; color:#333; margin-right:8px; }
-    
-    .horizontal-gallery {
-        display: flex;
-        overflow-x: auto;
-        gap: 12px;
-        padding-bottom: 15px; /* For scrollbar */
-        margin-top: 10px;
-    }
-    .work-thumb, .audio-thumb {
-        width: 140px;
-        height: 140px;
-        border-radius:8px;
-        box-shadow:0 4px 12px rgba(0,0,0,0.06);
-        cursor:pointer;
-        flex-shrink: 0;
-    }
-    .work-thumb {
-        object-fit:cover;
-        background:#f6f6f6;
-    }
-    .audio-thumb {
-        background: #f0f2f5;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 10px;
-        font-size: 14px;
-        color: #555;
-    }
-    .audio-thumb::before {
-        content: '🎵';
-        font-size: 36px;
-        margin-bottom: 8px;
-    }
-    .gallery-title {
-        margin-top: 20px;
-        font-size: 1.1em;
-        font-weight: 600;
-    }
-
-    @media (max-width: 760px) {
-        .main-profile-inner { flex-direction: column; align-items: center; }
-        .profile-left { flex-basis: auto; }
-        .profile-right { width: 100%; }
-    }
+    #mainProfile{max-width:1100px;margin:26px auto;background:#fff;border-radius:12px;box-shadow:0 6px 24px #00000014;padding:20px;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial}.main-profile-inner{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}.profile-left{flex:0 0 240px;display:flex;flex-direction:column;align-items:center}.main-profile-image{width:240px;height:240px;border-radius:10px;object-fit:cover;background:#f4f4f4;display:block;box-shadow:0 6px 18px #00000014}.profile-placeholder{width:240px;height:240px;border-radius:10px;background:linear-gradient(135deg,#f3f3f5,#e9eef6);display:flex;align-items:center;justify-content:center;font-size:48px;color:#9aa3b2;box-shadow:0 6px 18px #0000000f}.profile-right{flex:1 1 480px;min-width:260px}.profile-header{display:flex;align-items:baseline;gap:12px}.profile-name{font-size:28px;font-weight:700;margin:0}.profile-meta{margin-top:12px;color:#444;line-height:1.5}.profile-meta .label{font-weight:600;color:#333;margin-right:8px}.horizontal-gallery{display:flex;overflow-x:auto;gap:12px;padding-bottom:15px;margin-top:10px}.work-thumb,.audio-thumb{width:140px;height:140px;border-radius:8px;box-shadow:0 4px 12px #0000000f;cursor:pointer;flex-shrink:0}.work-thumb{object-fit:cover;background:#f6f6f6}.audio-thumb{background:#f0f2f5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:14px;color:#555}.audio-thumb::before{content:'🎵';font-size:36px;margin-bottom:8px}.gallery-title{margin-top:20px;font-size:1.1em;font-weight:600}
+    .signin-bar-container{max-width:1100px;margin:-10px auto 10px auto;padding:10px 20px;background:#fff;border-radius:0 0 12px 12px;box-shadow:0 6px 14px #0000000a;display:flex;justify-content:flex-end;align-items:center;font-size:14px;}
+    .signin-bar-container form{display:flex;gap:8px;align-items:center;}
+    .signin-bar-container input{padding:6px;border:1px solid #ccc;border-radius:6px;}
+    .signin-bar-container button{padding:6px 12px;border:none;background:#e27979;color:white;border-radius:6px;cursor:pointer;}
+    .signin-bar-container .welcome-msg a{color:#c0392b;text-decoration:none;margin-left:12px;}
+    @media (max-width:760px){.main-profile-inner{flex-direction:column;align-items:center}.profile-left{flex-basis:auto}.profile-right{width:100%}}
     </style>
 
     <script>
@@ -187,8 +120,6 @@ if (is_dir($baseDir)) {
     </script>
 </head>
 <body>
-
-<div id="mainProfile"></div>
 
 <div class="navbar">
     <div class="navbarbtns">
@@ -198,6 +129,23 @@ if (is_dir($baseDir)) {
         <div class="navbtn"><a href="database.php">database</a></div>
     </div>
 </div>
+
+<div class="signin-bar-container">
+    <?php if (!isset($_SESSION['email'])): ?>
+        <form method="POST">
+            <input type="email" name="email" placeholder="email" required>
+            <input type="password" name="password"  placeholder="password" required>
+            <button name="login">Login</button>
+        </form>
+    <?php else: ?>
+        <div class="welcome-msg">
+            Welcome, <strong><?php echo htmlspecialchars($_SESSION['first']); ?></strong>!
+            <a href="?logout=1&user=<?php echo urlencode($_GET['user'] ?? ''); ?>">Logout</a>
+        </div>
+    <?php endif; ?>
+</div>
+
+<div id="mainProfile"></div>
 
 <div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
   <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
@@ -331,8 +279,8 @@ if (is_dir($baseDir)) {
         
         var modal = document.getElementById('selectedWorksModal');
         var closeBtn = document.getElementById('closeSelectedWorksModal');
-        if(closeBtn) closeBtn.onclick = () => { modal.style.display = 'none'; };
-        if(modal) modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+        if(closeBtn) closeBtn.onclick = () => { modal.style.display = 'none'; document.getElementById('selectedWorksModalAudio').pause(); };
+        if(modal) modal.onclick = (e) => { if (e.target === modal) { modal.style.display = 'none'; document.getElementById('selectedWorksModalAudio').pause(); } };
     });
 </script>
 
