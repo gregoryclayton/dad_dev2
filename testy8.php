@@ -703,10 +703,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const search = searchBar.value.toLowerCase();
         if (!search) { renderProfiles(userProfiles); return; }
         const filtered = userProfiles.filter(p =>
-            (p.first?.toLowerCase().includes(search)) ||
-            (p.last?.toLowerCase().includes(search)) ||
-            (p.country?.toLowerCase().includes(search)) ||
-            (p.genre?.toLowerCase().includes(search))
+            (p.first && p.first.toLowerCase().includes(search)) ||
+            (p.last && p.last.toLowerCase().includes(search)) ||
+            (p.dob && p.dob.toLowerCase().includes(search)) ||
+            (p.country && p.country.toLowerCase().includes(search)) ||
+            (p.genre && p.genre.toLowerCase().includes(search))
         );
         renderProfiles(filtered);
     });
