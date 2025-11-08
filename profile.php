@@ -245,13 +245,12 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         if (profileData.email) rightHtml += `<div><span class="label">Email:</span> <a href="mailto:${encodeURIComponent(profileData.email)}">${escapeHtml(profileData.email)}</a></div>`;
         rightHtml += '</div>';
 
-        // Helper function to build a gallery
         const buildGallery = (title, works) => {
             if (!works || !Array.isArray(works) || works.length === 0) return '';
             let galleryHtml = `<div class="gallery-title">${escapeHtml(title)}</div><div class="horizontal-gallery">`;
             works.forEach(item => {
                 const path = item.path || (item.image ? item.image.replace("/var/www/html", "") : '');
-                const type = item.type || 'image'; // Default to image
+                const type = item.type || 'image';
                 const title = item.title || item.desc || '';
                 const date = item.date || '';
                 const artist = item.artist || `${profileData.first} ${profileData.last}`;
@@ -271,7 +270,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 
         rightHtml += buildGallery('My Work', profileData.work);
         rightHtml += buildGallery('Collection', profileData.selected_works);
-        rightHtml += '</div>'; // .profile-right
+        rightHtml += '</div>';
 
         details.innerHTML = `<div class="main-profile-inner">${leftHtml}${rightHtml}</div>`;
 
@@ -297,38 +296,42 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                 if (loggedInUserProfile.selected_works && !loggedInUserProfile.selected_works.some(w => w.path === workData.path)) {
                     loggedInUserProfile.selected_works.push(workData);
                 }
+            } else {
+                console.error("Selection failed: ", data.message);
             }
-        });
+        }).catch(err => console.error("Selection POST failed: ", err));
     }
 
-    function openSelectedWorkModal(work) {
-        var modal = document.getElementById('selectedWorksModal');
-        var imgEl = document.getElementById('selectedWorksModalImg');
-        var audioEl = document.getElementById('selectedWorksModalAudio');
-        var infoEl = document.getElementById('selectedWorksModalInfo');
-        var profileBtn = document.getElementById('selectedWorksModalProfileBtn');
-        var radio = document.getElementById('selectedWorkLikeRadio');
+    function openSelectedWorkModal(workDataset) {
+        const modal = document.getElementById('selectedWorksModal');
+        const imgEl = document.getElementById('selectedWorksModalImg');
+        const audioEl = document.getElementById('selectedWorksModalAudio');
+        const infoEl = document.getElementById('selectedWorksModalInfo');
+        const profileBtn = document.getElementById('selectedWorksModalProfileBtn');
+        const radio = document.getElementById('selectedWorkLikeRadio');
 
         imgEl.style.display = 'none'; audioEl.style.display = 'none';
-
-        if (work.type === 'audio') {
-            audioEl.src = work.path || ''; audioEl.style.display = 'block';
+        audioEl.pause(); audioEl.src = '';
+        
+        if (workDataset.type === 'audio') {
+            audioEl.src = workDataset.path || ''; audioEl.style.display = 'block';
         } else {
-            imgEl.src = work.path || ''; imgEl.alt = work.title || 'Artwork'; imgEl.style.display = 'block';
+            imgEl.src = workDataset.path || ''; imgEl.alt = workDataset.title || 'Artwork'; imgEl.style.display = 'block';
         }
         
-        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(work.title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(work.artist)}</div>${work.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(work.date)}</div>` : ''}`;
+        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(workDataset.title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(workDataset.date)}</div>` : ''}`;
         
-        if (profileBtn && work.profile) {
-            profileBtn.href = 'profile.php?user=' + encodeURIComponent(work.profile);
+        if (profileBtn && workDataset.profile) {
+            profileBtn.href = 'profile.php?user=' + encodeURIComponent(workDataset.profile);
             profileBtn.style.display = 'inline-block';
         } else {
             profileBtn.style.display = 'none';
         }
 
-        if (radio && isLoggedIn) {
-            radio.checked = loggedInUserProfile.selected_works?.some(sw => sw.path === work.path) || false;
-            radio.onclick = () => selectWork(work);
+        if (radio && isLoggedIn && loggedInUserProfile) {
+            radio.checked = loggedInUserProfile.selected_works?.some(sw => sw.path === workDataset.path) || false;
+            // Re-bind onclick every time to capture the current work's data
+            radio.onclick = () => selectWork(workDataset);
         }
 
         modal.style.display = 'flex';
