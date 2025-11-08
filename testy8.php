@@ -411,24 +411,22 @@ foreach ($topWorks as $workPath) {
 
 <!-- Slideshow -->
 <div id="slideshow-container">
-    <img id="slideshow-img" src="<?php echo count($slideshow_images) ? htmlspecialchars($slideshow_images[0]) : ''; ?>" alt="Artwork Slideshow" />
-    <?php if (count($slideshow_images) > 1): ?>
-        <div id="slideshow-prev-zone" class="slideshow-nav"></div>
-        <div id="slideshow-next-zone" class="slideshow-nav"></div>
-    <?php endif; ?>
+    <div id="slideshow-image-wrapper">
+        <img id="slideshow-img" src="<?php echo count($slideshow_images) ? htmlspecialchars($slideshow_images[0]) : ''; ?>" alt="Artwork Slideshow" />
+    </div>
 </div>
 
 
 <!-- Slideshow Modal (Simple/Fixed) -->
 <div id="slideModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:10001; background:rgba(0,0,0,0.72); align-items:center; justify-content:center;">
-  <div style="background:white; border-radius:16px; padding:24px 32px; max-width:90vw; max-height:90vh; box-shadow:0 6px 32px #000a; position:relative; display:flex; flex-direction:column; align-items:center;">
+  <div style="background:white; border-radius:16px; padding:24px 32px; max-width:90vw; max-height:90vh; box-shadow:0 6px 32px #000a; position:relative; display:flex; flex-direction:column; align-items[...]
     <button id="closeSlideModal" style="position:absolute; top:10px; right:15px; font-size:1.3em; background:none; border:none; color:#333; cursor:pointer;">×</button>
     <img id="modalImage" src="" alt="Artwork" style="max-width:65vw; max-height:55vh; border-radius:10px; background:#f6f6f6; margin-bottom:18px;">
     <div>
         <div id="modalArtist" style="font-size:1.13em; font-weight:bold;"></div>
         <div id="modalTitle" style="margin:8px 0 0 0; color:#666;"></div>
         <div id="modalDate" style="margin:5px 0 0 0; color:#888; font-size:0.98em;"></div>
-        <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profile</button>
+        <button id="visitProfileBtn" style="margin-top:14px; background:#e8bebe; border:none; border-radius:7px; padding:0.6em 1.5em; font-family:monospace; font-size:1em; cursor:pointer;">visit profi[...]
     </div>
     <div style="position:absolute; bottom:24px; right:32px;">
       <?php if (isset($_SESSION['email'])): ?>
