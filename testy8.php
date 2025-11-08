@@ -302,7 +302,7 @@ foreach ($topWorks as $workPath) {
       .work-info .date { color:#777; }
       .dropdown-body { overflow: hidden; }
 
-      /* Slideshow Styles */
+       /* Slideshow Styles */
       #slideshow-container {
         position: relative;
         width: 80vw;
@@ -317,25 +317,20 @@ foreach ($topWorks as $workPath) {
         justify-content: center;
         overflow: hidden;
       }
+      #slideshow-image-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
       #slideshow-img {
         width: 100%;
         height: 100%;
         object-fit: contain;
-        cursor: pointer;
-        position: relative;
-        z-index: 1; 
       }
-      .slideshow-nav {
-        position: absolute;
-        top: 0;
-        width: 20%;
-        height: 100%;
-        z-index: 5; 
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
-      }
-      #slideshow-prev-zone { left: 0; }
-      #slideshow-next-zone { right: 0; }
+
 
       /* Responsive changes for wider screens */
       @media (min-width: 600px) {
