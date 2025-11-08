@@ -167,6 +167,8 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 </head>
 <body>
 
+    <div id="mainProfile"></div>
+
 <div class="navbar">
     <div class="navbarbtns">
          <div class="navbtn"><a href="home.php">home</a></div>
@@ -191,7 +193,25 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     <?php endif; ?>
 </div>
 
-<div id="mainProfile"></div>
+<!-- Content Section (Search, Sort, Profiles) -->
+<div class="container-container-container" style="display:grid; align-items:center; justify-items: center;">
+<div class="container-container" style="border: double; border-radius:20px; padding-top:50px; width:90%; align-items:center; justify-items: center; display:grid; background-color: #f2e9e9;">
+  <div style="display:flex; justify-content: center; align-items:center;">
+    <div>
+      <input type="text" id="artistSearchBar" placeholder="Search artists..." style="width:60vw; padding:0.6em 1em; font-size:1em; border-radius:7px; border:1px solid #ccc;">
+    </div>
+  </div>
+  <div style="display:flex; justify-content:center; align-items:center; margin:1em 0 1em 0;">
+    <button id="sortAlphaBtn" style="padding:0.7em 1.3em; font-family: monospace;">name</button>
+    <button id="sortDateBtn" style="padding:0.7em 1.3em; font-family: monospace;">date</button>
+    <button id="sortCountryBtn" style="padding:0.7em 1.3em; font-family: monospace;">country</button>
+    <button id="sortGenreBtn" style="padding:0.7em 1.3em; font-family: monospace;">genre</button>
+  </div>
+  <div id="user-profiles"></div>
+</div>
+</div>
+    
+
 
 <div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
   <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
