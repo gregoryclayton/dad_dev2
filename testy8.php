@@ -268,20 +268,25 @@ if (is_dir($baseDir_pusers2)) {
 
 <!-- Content Section (from pusers2) -->
 <div class="container-container-container" style="display:grid; align-items:center; justify-items: center;">
-<div class="container-container" style="border: double; border-radius:20px; padding-top:50px; width:90%; align-items:center; justify-items: center; display:grid; background-color: #f2e9e9;">
-  <div style="display:flex; justify-content: center; align-items:center;">
-    <div>
-      <input type="text" id="artistSearchBar" placeholder="Search artists from pusers2..." style="width:60vw; padding:0.6em 1em; font-size:1em; border-radius:7px; border:1px solid #ccc;">
+    <div class="container-container" style="border: double; border-radius:20px; padding-top:50px; padding-bottom: 20px; width:90%; align-items:center; justify-items: center; display:grid; background-color: #f2e9e9;">
+        <div style="display:flex; justify-content: center; align-items:center;">
+            <div>
+            <input type="text" id="artistSearchBar" placeholder="Search artists from pusers2..." style="width:60vw; padding:0.6em 1em; font-size:1em; border-radius:7px; border:1px solid #ccc;">
+            </div>
+        </div>
+        <div style="display:flex; justify-content:center; align-items:center; margin:1em 0 1em 0;">
+            <button id="sortAlphaBtn" style="padding:0.7em 1.3em; font-family: monospace;">name</button>
+            <button id="sortDateBtn" style="padding:0.7em 1.3em; font-family: monospace;">date</button>
+            <button id="sortCountryBtn" style="padding:0.7em 1.3em; font-family: monospace;">country</button>
+            <button id="sortGenreBtn" style="padding:0.7em 1.3em; font-family: monospace;">genre</button>
+        </div>
+        <div id="user-profiles" style="width: 100%;"></div>
+        <div style="width: 100%; padding: 20px 10px 0;">
+            <a href="editor.html" target="_blank" style="text-decoration: none; display: block;">
+                <button style="width: 100%; padding: 1em; font-size: 1em; font-family: monospace; border: 1px solid #ccc; border-radius: 7px; cursor: pointer;">Create</button>
+            </a>
+        </div>
     </div>
-  </div>
-  <div style="display:flex; justify-content:center; align-items:center; margin:1em 0 1em 0;">
-    <button id="sortAlphaBtn" style="padding:0.7em 1.3em; font-family: monospace;">name</button>
-    <button id="sortDateBtn" style="padding:0.7em 1.3em; font-family: monospace;">date</button>
-    <button id="sortCountryBtn" style="padding:0.7em 1.3em; font-family: monospace;">country</button>
-    <button id="sortGenreBtn" style="padding:0.7em 1.3em; font-family: monospace;">genre</button>
-  </div>
-  <div id="user-profiles"></div>
-</div>
 </div>
 
 <footer style="background:#222; color:#eee; padding:2em 0; text-align:center; font-size:0.95em;">
