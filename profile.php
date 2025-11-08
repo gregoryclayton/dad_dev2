@@ -170,6 +170,8 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 </head>
 <body>
 
+<div id="mainProfile"></div>
+    
 <div class="navbar">
     <div class="navbarbtns">
          <div class="navbtn"><a href="home.php">home</a></div>
@@ -194,7 +196,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     <?php endif; ?>
 </div>
 
-<div id="mainProfile"></div>
+
 
 <!-- Content Section (Search, Sort, Profiles) -->
 <div class="container-container-container" style="display:grid; align-items:center; justify-items: center; margin-top: 30px;">
