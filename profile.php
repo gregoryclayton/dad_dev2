@@ -424,11 +424,6 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                     dropdownContainer.style.display = 'none';
                     dropdownContainer.innerHTML = '';
                 } else {
-                    // Hide other dropdowns
-                    document.querySelectorAll('.profile-dropdown').forEach(d => {
-                        d.style.display = 'none';
-                        d.innerHTML = '';
-                    });
                     buildDropdownContent(dropdownContainer, profileData, profile_username, miniSrc);
                     dropdownContainer.style.display = 'block';
                 }
