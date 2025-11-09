@@ -240,6 +240,43 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit();
 }
+
+// --- Data preparation for the collection gallery ---
+if (isset($current_profile_data)) {
+    $collection_items = [];
+    if (!empty($current_profile_data['selected_works'])) {
+        foreach ($current_profile_data['selected_works'] as $work) {
+            $work['gallery_type'] = 'work';
+            $collection_items[] = $work;
+        }
+    }
+    if (!empty($current_profile_data['selected_profiles'])) {
+         foreach ($current_profile_data['selected_profiles'] as $profile) {
+            $profile['gallery_type'] = 'profile';
+            $collection_items[] = $profile;
+        }
+    }
+}
+// Function to get a profile image for the collection
+function get_profile_image_for_collection($user_folder) {
+    $baseDir = "/var/www/html/pusers";
+    $work_dir = $baseDir . '/' . $user_folder . '/work';
+    if (is_dir($work_dir)) {
+        $candidates = glob($work_dir . "/profile_image_*.*");
+        if ($candidates && count($candidates) > 0) {
+            usort($candidates, fn($a, $b) => filemtime($b) - filemtime($a));
+            return str_replace("/var/www/html", "", $candidates[0]);
+        }
+        $allImgs = glob($work_dir . "/*.{jpg,jpeg,png,gif}", GLOB_BRACE);
+        if ($allImgs && count($allImgs) > 0) {
+            usort($allImgs, fn($a, $b) => filemtime($b) - filemtime($a));
+            return str_replace("/var/www/html", "", $allImgs[0]);
+        }
+    }
+    return "";
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -364,15 +401,55 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             gap: 12px;
             padding-bottom: 15px;
         }
-        .studio-work-thumb {
+        .studio-work-thumb, .studio-audio-thumb, .studio-profile-thumb {
             width: 120px;
             height: 120px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.09);
             cursor: pointer;
             flex-shrink: 0;
-            object-fit: cover;
             background-color: #f0f2f5;
+            position: relative;
+        }
+        .studio-work-thumb {
+            object-fit: cover;
+        }
+        .studio-audio-thumb {
+             display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:10px; font-size:12px; color:#555;
+        }
+        .studio-audio-thumb::before {
+            content:'🎵'; font-size:36px; margin-bottom:8px;
+        }
+        .studio-profile-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .studio-profile-thumb .initials-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #9aa3b2;
+            background: linear-gradient(135deg,#f3f3f5,#e9eef6);
+        }
+        .thumb-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 11px;
+            padding: 4px 6px;
+            text-align: center;
+            border-radius: 0 0 8px 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         #selectedWorksModal .like-container, #selectedWorksModal .login-to-select { display: none; }
     </style>
@@ -428,25 +505,48 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                 <div class="horizontal-gallery">
                     <?php foreach ($current_profile_data['work'] as $item):
                         $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.htmlspecialchars($item['type']).'" data-title="'.htmlspecialchars($item['desc']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($_SESSION['first'].' '.$_SESSION['last']).'" data-profile="'.htmlspecialchars($profile_user_segment).'"';
-                    ?>
-                        <img src="<?php echo htmlspecialchars($item['path']); ?>" <?php echo $dataAttrs; ?> class="studio-work-thumb">
-                    <?php endforeach; ?>
+                         if ($item['type'] === 'image') {
+                            echo '<img src="'.htmlspecialchars($item['path']).'" '.$dataAttrs.' class="studio-work-thumb">';
+                        } else if ($item['type'] === 'audio') {
+                            echo '<div '.$dataAttrs.' class="studio-audio-thumb">'.htmlspecialchars($item['desc']).'</div>';
+                        }
+                    endforeach; ?>
                 </div>
             </div>
             <?php endif; ?>
 
-            <?php if (!empty($current_profile_data['selected_works'])): ?>
+            <?php if (!empty($collection_items)): ?>
             <div class="studio-gallery-container">
                 <h4>My Collection</h4>
                 <div class="horizontal-gallery">
-                    <?php foreach ($current_profile_data['selected_works'] as $item): 
-                         $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.htmlspecialchars($item['type'] ?? 'image').'" data-title="'.htmlspecialchars($item['title']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($item['artist']).'" data-profile="'.htmlspecialchars($item['user_folder']).'"';
-                    ?>
-                        <img src="<?php echo htmlspecialchars($item['path']); ?>" <?php echo $dataAttrs; ?> class="studio-work-thumb">
-                    <?php endforeach; ?>
+                    <?php foreach ($collection_items as $item):
+                        if ($item['gallery_type'] === 'work') {
+                            $item_type = $item['type'] ?? 'image';
+                            $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.$item_type.'" data-title="'.htmlspecialchars($item['title']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($item['artist']).'" data-profile="'.htmlspecialchars($item['user_folder']).'"';
+                            if ($item_type === 'image') {
+                                echo '<img src="'.htmlspecialchars($item['path']).'" '.$dataAttrs.' class="studio-work-thumb collection-item">';
+                            } else if ($item_type === 'audio') {
+                                echo '<div '.$dataAttrs.' class="studio-audio-thumb collection-item">'.htmlspecialchars($item['title']).'</div>';
+                            }
+                        } elseif ($item['gallery_type'] === 'profile') {
+                            $user_folder = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $item['first']) . '_' . preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $item['last']);
+                            $profile_link = 'profile.php?user=' . urlencode($user_folder);
+                            $profile_img = get_profile_image_for_collection($user_folder);
+                            echo '<a href="'.$profile_link.'" class="studio-profile-thumb">';
+                            if ($profile_img) {
+                                echo '<img src="'.htmlspecialchars($profile_img).'" alt="'.htmlspecialchars($item['first'].' '.$item['last']).'">';
+                            } else {
+                                $initials = strtoupper(substr($item['first'], 0, 1) . substr($item['last'], 0, 1));
+                                echo '<div class="initials-placeholder">'.$initials.'</div>';
+                            }
+                            echo '<div class="thumb-overlay">'.htmlspecialchars($item['first'].' '.$item['last']).'</div>';
+                            echo '</a>';
+                        }
+                    endforeach; ?>
                 </div>
             </div>
             <?php endif; ?>
+
 
             <div style="text-align: center; margin-bottom: 24px;">
                  <a href="<?php echo $profile_url; ?>" class="visit-profile-btn">Visit Profile</a>
@@ -605,9 +705,18 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll('.studio-work-thumb').forEach(thumb => {
+        document.querySelectorAll('.studio-work-thumb, .studio-audio-thumb, .collection-item').forEach(thumb => {
             thumb.addEventListener('click', () => {
-                openSelectedWorkModal(thumb.dataset);
+                if (thumb.classList.contains('collection-item')) {
+                    openSelectedWorkModal(thumb.dataset);
+                }
+            });
+        });
+         document.querySelectorAll('.horizontal-gallery .studio-work-thumb, .horizontal-gallery .studio-audio-thumb').forEach(thumb => {
+            thumb.addEventListener('click', (e) => {
+                if(e.currentTarget.closest('.studio-gallery-container').querySelector('h4').textContent !== 'My Collection') {
+                    openSelectedWorkModal(thumb.dataset);
+                }
             });
         });
         
