@@ -241,8 +241,17 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     exit();
 }
 
-// --- Data preparation for the collection gallery ---
-if (isset($current_profile_data)) {
+if (isset($_SESSION['email'])) {
+    $safe_first_session = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+    $safe_last_session = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+    $profile_user_segment = $safe_first_session . "_" . $safe_last_session;
+    $user_profile_path = "/var/www/html/pusers/" . $profile_user_segment . "/profile.json";
+    $current_profile_data = [];
+    if (file_exists($user_profile_path)) {
+        $current_profile_data = json_decode(file_get_contents($user_profile_path), true);
+    }
+    
+    // --- Data preparation for the collection gallery ---
     $collection_items = [];
     if (!empty($current_profile_data['selected_works'])) {
         foreach ($current_profile_data['selected_works'] as $work) {
@@ -483,14 +492,6 @@ function get_profile_image_for_collection($user_folder) {
                 <p style="text-align:center; margin-top:20px;">Don't have an account? <a href="register.php">Register here</a>.</p>
             </div>
         <?php else: 
-            $safe_first_session = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
-            $safe_last_session = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
-            $profile_user_segment = $safe_first_session . "_" . $safe_last_session;
-            $user_profile_path = "/var/www/html/pusers/" . $profile_user_segment . "/profile.json";
-            $current_profile_data = [];
-            if (file_exists($user_profile_path)) {
-                $current_profile_data = json_decode(file_get_contents($user_profile_path), true);
-            }
             $profile_url = "profile.php?user=" . urlencode($profile_user_segment);
         ?>
             <div class="welcome-header">
@@ -705,18 +706,9 @@ function get_profile_image_for_collection($user_folder) {
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll('.studio-work-thumb, .studio-audio-thumb, .collection-item').forEach(thumb => {
+        document.querySelectorAll('.studio-work-thumb, .studio-audio-thumb').forEach(thumb => {
             thumb.addEventListener('click', () => {
-                if (thumb.classList.contains('collection-item')) {
-                    openSelectedWorkModal(thumb.dataset);
-                }
-            });
-        });
-         document.querySelectorAll('.horizontal-gallery .studio-work-thumb, .horizontal-gallery .studio-audio-thumb').forEach(thumb => {
-            thumb.addEventListener('click', (e) => {
-                if(e.currentTarget.closest('.studio-gallery-container').querySelector('h4').textContent !== 'My Collection') {
-                    openSelectedWorkModal(thumb.dataset);
-                }
+                openSelectedWorkModal(thumb.dataset);
             });
         });
         
@@ -729,4 +721,3 @@ function get_profile_image_for_collection($user_folder) {
 
 </body>
 </html>
-
