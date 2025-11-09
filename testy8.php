@@ -7,6 +7,32 @@ session_start();
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
+// --- Handle Login ---
+if (isset($_POST['login'])) {
+    $email = $conn->real_escape_string($_POST['email']);
+    $pass = $_POST['password'];
+    $result = $conn->query("SELECT * FROM users WHERE email='$email'");
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+        if (password_verify($pass, $row['password'])) {
+            $_SESSION['email'] = $email;
+            $_SESSION['first'] = $row['first'];
+            $_SESSION['last'] = $row['last'];
+        }
+    }
+    // Redirect to the same page to clear POST data
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
+// --- Handle Logout ---
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
+
 // --- API endpoint for selecting a work (uses pusers) ---
 if (isset($_POST['action']) && $_POST['action'] === 'select_work' && isset($_SESSION['first']) && isset($_SESSION['last'])) {
     $workData = isset($_POST['work_data']) ? json_decode($_POST['work_data'], true) : null;
@@ -209,20 +235,20 @@ if (is_dir($baseDir_pusers2)) {
   
    <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
     <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
-    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.936)); border-radius:50%; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:10px; z-index:0;">
+    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.897)); border-radius: 14px; padding: 1em 1em 1em 1em; box-shadow: 0 4px 24px #00000024;">
       <!-- Your menu content here -->
      <!-- Add this play icon to the dot menu container -->
-<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow: 0 1px 4px #0003;">
   <span style="color:#e27979;">▶</span>
 </div>
       <!-- New buttons for changing color -->
       <div style="position: relative;">
-  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle background music"></button>
-  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle Music">🎵</button>
+  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 4px #0003;">
     <span style="color:#e27979;">▶</span>
   </div>
 </div>
-      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
+      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Change Background"></button>
       <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
     </div>
   </div>
@@ -231,7 +257,7 @@ if (is_dir($baseDir_pusers2)) {
 
 
 <!-- Pop-out menu for quick nav, hidden by default -->
-<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:50px; font-family:monospace;">
+<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:50px;">
   <div style="display:flex; flex-direction:column; gap:0.5em;">
     <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">home</a>
     <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">about</a>
