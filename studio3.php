@@ -683,17 +683,19 @@ function get_profile_image_for_collection($user_folder) {
         audioEl.style.display = 'none';
         audioEl.pause(); 
         audioEl.src = '';
+
+        const title = workDataset.title || workDataset.desc || 'Artwork';
         
         if (workDataset.type === 'audio') {
             audioEl.src = workDataset.path || '';
             audioEl.style.display = 'block';
         } else {
             imgEl.src = workDataset.path || '';
-            imgEl.alt = workDataset.title || 'Artwork';
+            imgEl.alt = title;
             imgEl.style.display = 'block';
         }
         
-        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(workDataset.title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(workDataset.date)}</div>` : ''}`;
+        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(workDataset.date)}</div>` : ''}`;
         
         if (profileBtn && workDataset.profile) {
             profileBtn.href = 'profile.php?user=' + encodeURIComponent(workDataset.profile);
