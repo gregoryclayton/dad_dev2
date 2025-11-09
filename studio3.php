@@ -246,6 +246,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
 <html>
 <head>
     <title>Studio Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="style.css">
     <style>
         body {
@@ -618,3 +619,4 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
 
 </body>
 </html>
+
