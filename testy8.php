@@ -222,6 +222,11 @@ if (is_dir($baseDir_pusers2)) {
       #slideshow-container { position: relative; width: 80vw; height: 450px; max-width: 900px; margin: 2em auto; background-color: #f4f4f4; border-radius: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; overflow: hidden; }
       #slideshow-image-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; }
       #slideshow-img { width: 100%; height: 100%; object-fit: contain; }
+      .signup-cta { text-align: center; padding: 40px 20px; background-color: #f2e9e9; margin: 2em auto; width: 90%; border-radius: 20px; }
+      .signup-cta h3 { margin-top: 0; font-size: 1.5em; }
+      .signup-cta p { margin-bottom: 25px; color: #555; }
+      .signup-cta .cta-button { background-color: #e27979; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; transition: background-color 0.3s; }
+      .signup-cta .cta-button:hover { background-color: #d66a6a; }
       @media (min-width: 600px) { .dropdown-inner { flex-direction: row; } .dropdown-header { flex-direction: column; align-items:flex-start; gap:0; } .dropdown-main-image { width: 120px; height: 120px; } }
     </style>
 </head>
@@ -350,6 +355,14 @@ if (is_dir($baseDir_pusers2)) {
         </div>
     </div>
 </div>
+
+<?php if (!isset($_SESSION['email'])): ?>
+<div class="signup-cta">
+    <h3>Join Our Community</h3>
+    <p>Sign up to create your own portfolio, select your favorite works, and connect with other artists.</p>
+    <a href="register.php" class="cta-button">Sign Up Now</a>
+</div>
+<?php endif; ?>
 
 <footer style="background:#222; color:#eee; padding:2em 0; text-align:center; font-size:0.95em;">
   <div>
