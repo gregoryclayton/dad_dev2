@@ -341,6 +341,37 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         .delete-btn:hover {
             background-color: #a53125;
         }
+        .studio-gallery-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+            padding: 15px 24px;
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
+        .studio-gallery-container h4 {
+            margin-top: 0;
+            font-size: 1.1em;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .horizontal-gallery {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding-bottom: 15px;
+        }
+        .studio-work-thumb {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.09);
+            cursor: pointer;
+            flex-shrink: 0;
+            object-fit: cover;
+            background-color: #f0f2f5;
+        }
     </style>
 </head>
 <body>
@@ -386,7 +417,32 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                 <h2>Welcome to Your Studio, <?php echo htmlspecialchars($_SESSION['first']); ?>!</h2>
                 <?php display_flash_message(); ?>
                 <p><a href="?logout=1">Logout</a></p>
-                <a href="<?php echo $profile_url; ?>" class="visit-profile-btn" style="margin-top: 10px;">Visit Profile</a>
+            </div>
+
+            <?php if (!empty($current_profile_data['work'])): ?>
+            <div class="studio-gallery-container">
+                <h4>My Work</h4>
+                <div class="horizontal-gallery">
+                    <?php foreach ($current_profile_data['work'] as $item): ?>
+                        <img src="<?php echo htmlspecialchars($item['path']); ?>" title="<?php echo htmlspecialchars($item['desc']); ?>" class="studio-work-thumb">
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (!empty($current_profile_data['selected_works'])): ?>
+            <div class="studio-gallery-container">
+                <h4>My Collection</h4>
+                <div class="horizontal-gallery">
+                    <?php foreach ($current_profile_data['selected_works'] as $item): ?>
+                        <img src="<?php echo htmlspecialchars($item['path']); ?>" title="<?php echo htmlspecialchars($item['title']); ?>" class="studio-work-thumb">
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <div style="text-align: center; margin-bottom: 24px;">
+                 <a href="<?php echo $profile_url; ?>" class="visit-profile-btn">Visit Profile</a>
             </div>
             
             <div class="studio-grid">
