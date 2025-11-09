@@ -372,6 +372,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             object-fit: cover;
             background-color: #f0f2f5;
         }
+        #selectedWorksModal .like-container, #selectedWorksModal .login-to-select { display: none; }
     </style>
 </head>
 <body>
@@ -423,8 +424,10 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             <div class="studio-gallery-container">
                 <h4>My Work</h4>
                 <div class="horizontal-gallery">
-                    <?php foreach ($current_profile_data['work'] as $item): ?>
-                        <img src="<?php echo htmlspecialchars($item['path']); ?>" title="<?php echo htmlspecialchars($item['desc']); ?>" class="studio-work-thumb">
+                    <?php foreach ($current_profile_data['work'] as $item):
+                        $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.htmlspecialchars($item['type']).'" data-title="'.htmlspecialchars($item['desc']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($_SESSION['first'].' '.$_SESSION['last']).'" data-profile="'.htmlspecialchars($profile_user_segment).'"';
+                    ?>
+                        <img src="<?php echo htmlspecialchars($item['path']); ?>" <?php echo $dataAttrs; ?> class="studio-work-thumb">
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -434,8 +437,10 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             <div class="studio-gallery-container">
                 <h4>My Collection</h4>
                 <div class="horizontal-gallery">
-                    <?php foreach ($current_profile_data['selected_works'] as $item): ?>
-                        <img src="<?php echo htmlspecialchars($item['path']); ?>" title="<?php echo htmlspecialchars($item['title']); ?>" class="studio-work-thumb">
+                    <?php foreach ($current_profile_data['selected_works'] as $item): 
+                         $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.htmlspecialchars($item['type'] ?? 'image').'" data-title="'.htmlspecialchars($item['title']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($item['artist']).'" data-profile="'.htmlspecialchars($item['user_folder']).'"';
+                    ?>
+                        <img src="<?php echo htmlspecialchars($item['path']); ?>" <?php echo $dataAttrs; ?> class="studio-work-thumb">
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -550,5 +555,66 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             </div>
         <?php endif; ?>
     </div>
+    
+<div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
+  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
+    <span id="closeSelectedWorksModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+    <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px; display:none;">
+    <audio id="selectedWorksModalAudio" controls src="" style="width: 80%; max-width: 400px; margin-bottom: 22px; display:none;"></audio>
+    <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
+    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit Artist's Profile</a>
+  </div>
+</div>
+
+<script>
+    function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'})[m]); }
+
+    function openSelectedWorkModal(workDataset) {
+        const modal = document.getElementById('selectedWorksModal');
+        const imgEl = document.getElementById('selectedWorksModalImg');
+        const audioEl = document.getElementById('selectedWorksModalAudio');
+        const infoEl = document.getElementById('selectedWorksModalInfo');
+        const profileBtn = document.getElementById('selectedWorksModalProfileBtn');
+
+        imgEl.style.display = 'none';
+        audioEl.style.display = 'none';
+        audioEl.pause(); 
+        audioEl.src = '';
+        
+        if (workDataset.type === 'audio') {
+            audioEl.src = workDataset.path || '';
+            audioEl.style.display = 'block';
+        } else {
+            imgEl.src = workDataset.path || '';
+            imgEl.alt = workDataset.title || 'Artwork';
+            imgEl.style.display = 'block';
+        }
+        
+        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(workDataset.title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(workDataset.date)}</div>` : ''}`;
+        
+        if (profileBtn && workDataset.profile) {
+            profileBtn.href = 'profile.php?user=' + encodeURIComponent(workDataset.profile);
+            profileBtn.style.display = 'inline-block';
+        } else {
+            profileBtn.style.display = 'none';
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.studio-work-thumb').forEach(thumb => {
+            thumb.addEventListener('click', () => {
+                openSelectedWorkModal(thumb.dataset);
+            });
+        });
+        
+        var modal = document.getElementById('selectedWorksModal');
+        var closeBtn = document.getElementById('closeSelectedWorksModal');
+        if(closeBtn) closeBtn.onclick = () => { modal.style.display = 'none'; document.getElementById('selectedWorksModalAudio').pause(); };
+        if(modal) modal.onclick = (e) => { if (e.target === modal) { modal.style.display = 'none'; document.getElementById('selectedWorksModalAudio').pause(); } };
+    });
+</script>
+
 </body>
 </html>
