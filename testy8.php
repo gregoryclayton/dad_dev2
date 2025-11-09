@@ -202,44 +202,8 @@ if (is_dir($baseDir_pusers2)) {
 <body>
 
 <div style="display:flex;">
-  <div class="title-container" id="mainTitleContainer" style="background-image: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background-image 0.7s; ">
-    <br>
-    <a href="index.php" style="text-decoration:none; color: white;">digital <br>artist <br>database</a>
-  </div>
-  
-   <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
-    <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
-    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.936)); border-radius:50%; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:10px; z-index:0;">
-      <!-- Your menu content here -->
-     <!-- Add this play icon to the dot menu container -->
-<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
-  <span style="color:#e27979;">▶</span>
-</div>
-      <!-- New buttons for changing color -->
-      <div style="position: relative;">
-  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle background music"></button>
-  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
-    <span style="color:#e27979;">▶</span>
-  </div>
-</div>
-      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
-      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
-    </div>
-  </div>
-  
-</div>
-
-
-<!-- Pop-out menu for quick nav, hidden by default -->
-<div id="titleMenuPopout" style="display:none; position:fixed; z-index:10000; top:65px; left:40px; background: white; border-radius:14px; box-shadow:0 4px 24px #0002; padding:1.4em 2em; min-width:50px; font-family:monospace;">
-  <div style="display:flex; flex-direction:column; gap:0.5em;">
-    <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">home</a>
-    <a href="v4.5.php" style="color:#777; text-decoration:none; font-size:1.1em;">about</a>
-       <a href="studio.php" style="color:#777; text-decoration:none; font-size:1.1em;">studio</a>
-    <a href="signup.php" style="color:#b44; text-decoration:none; font-size:1.1em;">register</a>
-    <a href="database.php" style="color:#555; text-decoration:none; font-size:1.1em;">database</a>
-   
-   
+  <div class="title-container" id="mainTitleContainer" style="background-image: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%);">
+    <br><a href="index.php" style="text-decoration:none; color: white;">digital <br>artist <br>database</a>
   </div>
 </div>
 
@@ -271,13 +235,13 @@ if (is_dir($baseDir_pusers2)) {
 </div>
 
 <!-- Top selected works gallery (from pusers) -->
-<div id="selectedWorksGallery" style="width:90vw; margin:2em auto 0 auto; display:flex; gap:40px; overflow-x:auto; padding-bottom:16px;">
+<div id="selectedWorksGallery" style="width:90vw; margin:2em auto 0 auto; display:flex; gap:20px; overflow-x:auto; padding-bottom:16px;">
 <?php foreach ($topWorks as $i => $workPath):
     $work = $workDetails[$workPath];
     ?>
-    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:260px; max-width:320px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #00000012;">
-        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:280px; max-height:220px; object-fit:cover; border-radius:14px;">
-        <div style="margin-top:12px;font-size:1.15em;font-weight:bold;"><?php echo htmlspecialchars($work['title']); ?></div>
+    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:130px; max-width:160px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #00000012;">
+        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:140px; max-height:110px; object-fit:cover; border-radius:14px;">
+        <div style="margin-top:6px;font-size:0.9em;font-weight:bold;"><?php echo htmlspecialchars($work['title']); ?></div>
     </div>
 <?php endforeach; ?>
 </div>
@@ -317,14 +281,12 @@ if (is_dir($baseDir_pusers2)) {
             <button id="sortGenreBtn" style="padding:0.7em 1.3em; font-family: monospace;">genre</button>
         </div>
         <div id="user-profiles" style="width: 100%;"></div>
-       
-    </div>
-</div>
-
- <div style="width: 100%; padding: 20px 10px 0;">
+        <div style="width: 100%; padding: 20px 10px 0;">
             <a href="editor.html" target="_blank" style="text-decoration: none; display: block;">
                 <button style="width: 100%; padding: 1em; font-size: 1em; font-family: monospace; border: 1px solid #ccc; border-radius: 7px; cursor: pointer;">Create</button>
             </a>
+        </div>
+    </div>
 </div>
 
 <footer style="background:#222; color:#eee; padding:2em 0; text-align:center; font-size:0.95em;">
