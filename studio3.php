@@ -363,15 +363,23 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             gap: 12px;
             padding-bottom: 15px;
         }
-        .studio-work-thumb {
+        .studio-work-thumb, .studio-audio-thumb {
             width: 120px;
             height: 120px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.09);
             cursor: pointer;
             flex-shrink: 0;
-            object-fit: cover;
             background-color: #f0f2f5;
+        }
+        .studio-work-thumb {
+            object-fit: cover;
+        }
+        .studio-audio-thumb {
+             display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:10px; font-size:12px; color:#555;
+        }
+        .studio-audio-thumb::before {
+            content:'🎵'; font-size:36px; margin-bottom:8px;
         }
         #selectedWorksModal .like-container, #selectedWorksModal .login-to-select { display: none; }
     </style>
@@ -427,9 +435,12 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                 <div class="horizontal-gallery">
                     <?php foreach ($current_profile_data['work'] as $item):
                         $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.htmlspecialchars($item['type']).'" data-title="'.htmlspecialchars($item['desc']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($_SESSION['first'].' '.$_SESSION['last']).'" data-profile="'.htmlspecialchars($profile_user_segment).'"';
-                    ?>
-                        <img src="<?php echo htmlspecialchars($item['path']); ?>" <?php echo $dataAttrs; ?> class="studio-work-thumb">
-                    <?php endforeach; ?>
+                        if ($item['type'] === 'image') {
+                            echo '<img src="'.htmlspecialchars($item['path']).'" '.$dataAttrs.' class="studio-work-thumb">';
+                        } else if ($item['type'] === 'audio') {
+                            echo '<div '.$dataAttrs.' class="studio-audio-thumb">'.htmlspecialchars($item['desc']).'</div>';
+                        }
+                    endforeach; ?>
                 </div>
             </div>
             <?php endif; ?>
@@ -439,10 +450,14 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
                 <h4>My Collection</h4>
                 <div class="horizontal-gallery">
                     <?php foreach ($current_profile_data['selected_works'] as $item): 
-                         $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.htmlspecialchars($item['type'] ?? 'image').'" data-title="'.htmlspecialchars($item['title']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($item['artist']).'" data-profile="'.htmlspecialchars($item['user_folder']).'"';
-                    ?>
-                        <img src="<?php echo htmlspecialchars($item['path']); ?>" <?php echo $dataAttrs; ?> class="studio-work-thumb">
-                    <?php endforeach; ?>
+                         $item_type = $item['type'] ?? 'image';
+                         $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.$item_type.'" data-title="'.htmlspecialchars($item['title']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($item['artist']).'" data-profile="'.htmlspecialchars($item['user_folder']).'"';
+                         if ($item_type === 'image') {
+                            echo '<img src="'.htmlspecialchars($item['path']).'" '.$dataAttrs.' class="studio-work-thumb">';
+                         } else if ($item_type === 'audio') {
+                            echo '<div '.$dataAttrs.' class="studio-audio-thumb">'.htmlspecialchars($item['title']).'</div>';
+                         }
+                    endforeach; ?>
                 </div>
             </div>
             <?php endif; ?>
@@ -604,7 +619,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll('.studio-work-thumb').forEach(thumb => {
+        document.querySelectorAll('.studio-work-thumb, .studio-audio-thumb').forEach(thumb => {
             thumb.addEventListener('click', () => {
                 openSelectedWorkModal(thumb.dataset);
             });
@@ -619,4 +634,3 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
 
 </body>
 </html>
-
