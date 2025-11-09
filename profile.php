@@ -36,6 +36,52 @@ if (isset($_GET['logout'])) {
     exit();
 }
 
+// --- API endpoint for selecting a profile ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'select_profile') {
+    header('Content-Type: application/json');
+    if (!isset($_SESSION['email'])) {
+        echo json_encode(['success' => false, 'message' => 'User not logged in.']);
+        exit;
+    }
+
+    $profileData = isset($_POST['profile_data']) ? json_decode($_POST['profile_data'], true) : null;
+    if (!$profileData || !isset($profileData['uuid'])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid profile data provided.']);
+        exit;
+    }
+
+    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+    $userProfilePath = __DIR__ . '/pusers/' . $safe_first . '_' . $safe_last . '/profile.json';
+
+    if (file_exists($userProfilePath)) {
+        $profile = json_decode(file_get_contents($userProfilePath), true);
+        if (!isset($profile['selected_profiles']) || !is_array($profile['selected_profiles'])) {
+            $profile['selected_profiles'] = [];
+        }
+
+        $isAlreadySelected = false;
+        foreach ($profile['selected_profiles'] as $selected) {
+            if (isset($selected['uuid']) && $selected['uuid'] === $profileData['uuid']) {
+                $isAlreadySelected = true;
+                break;
+            }
+        }
+
+        if (!$isAlreadySelected) {
+            $profile['selected_profiles'][] = $profileData;
+            file_put_contents($userProfilePath, json_encode($profile, JSON_PRETTY_PRINT));
+        }
+        
+        echo json_encode(['success' => true, 'message' => 'Profile selection updated.']);
+        exit;
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Logged-in user profile not found.']);
+        exit;
+    }
+}
+
+
 // --- API endpoint for selecting a work ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'select_work') {
     header('Content-Type: application/json');
@@ -150,7 +196,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-    #mainProfile{max-width:1100px;margin:26px auto;background:#fff;border-radius:12px;box-shadow:0 6px 24px #00000014;padding:20px;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial}.main-profile-inner{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}.profile-left{flex:0 0 240px;display:flex;flex-direction:column;align-items:center}.main-profile-image{width:240px;height:240px;border-radius:10px;object-fit:cover;background:#f4f4f4;display:block;box-shadow:0 6px 18px #00000014}.profile-placeholder{width:240px;height:240px;border-radius:10px;background:linear-gradient(135deg,#f3f3f5,#e9eef6);display:flex;align-items:center;justify-content:center;font-size:48px;color:#9aa3b2;box-shadow:0 6px 18px #0000000f}.profile-right{flex:1 1 480px;min-width:260px}.profile-header{display:flex;align-items:baseline;gap:12px}.profile-name{font-size:28px;font-weight:700;margin:0}.profile-meta{margin-top:12px;color:#444;line-height:1.5}.profile-meta .label{font-weight:600;color:#333;margin-right:8px}.horizontal-gallery{display:flex;overflow-x:auto;gap:12px;padding-bottom:15px;margin-top:10px}.work-thumb,.audio-thumb{width:140px;height:140px;border-radius:8px;box-shadow:0 4px 12px #0000000f;cursor:pointer;flex-shrink:0}.work-thumb{object-fit:cover;background:#f6f6f6}.audio-thumb{background:#f0f2f5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:14px;color:#555}.audio-thumb::before{content:'🎵';font-size:36px;margin-bottom:8px}.gallery-title{margin-top:20px;font-size:1.1em;font-weight:600}
+    #mainProfile{max-width:1100px;margin:26px auto;background:#fff;border-radius:12px;box-shadow:0 6px 24px #00000014;padding:20px;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial; position: relative;}.main-profile-inner{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}.profile-left{flex:0 0 240px;display:flex;flex-direction:column;align-items:center}.main-profile-image{width:240px;height:240px;border-radius:10px;object-fit:cover;background:#f4f4f4;display:block;box-shadow:0 6px 18px #00000014}.profile-placeholder{width:240px;height:240px;border-radius:10px;background:linear-gradient(135deg,#f3f3f5,#e9eef6);display:flex;align-items:center;justify-content:center;font-size:48px;color:#9aa3b2;box-shadow:0 6px 18px #0000000f}.profile-right{flex:1 1 480px;min-width:260px}.profile-header{display:flex;align-items:baseline;gap:12px}.profile-name{font-size:28px;font-weight:700;margin:0}.profile-meta{margin-top:12px;color:#444;line-height:1.5}.profile-meta .label{font-weight:600;color:#333;margin-right:8px}.horizontal-gallery{display:flex;overflow-x:auto;gap:12px;padding-bottom:15px;margin-top:10px}.work-thumb,.audio-thumb{width:140px;height:140px;border-radius:8px;box-shadow:0 4px 12px #0000000f;cursor:pointer;flex-shrink:0}.work-thumb{object-fit:cover;background:#f6f6f6}.audio-thumb{background:#f0f2f5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:14px;color:#555}.audio-thumb::before{content:'🎵';font-size:36px;margin-bottom:8px}.gallery-title{margin-top:20px;font-size:1.1em;font-weight:600}
     .signin-bar-container{max-width:1100px;margin:-10px auto 10px auto;padding:10px 20px;background:#fff;border-radius:0 0 12px 12px;box-shadow:0 6px 14px #0000000a;display:flex;justify-content:flex-end;align-items:center;font-size:14px;}
     .signin-bar-container form{display:flex;gap:8px;align-items:center;}
     .signin-bar-container input{padding:6px;border:1px solid #ccc;border-radius:6px;}
@@ -251,6 +297,21 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         
         var imgUrl = (profileImagesMap[profile_username] && profileImagesMap[profile_username][0]) || '';
         
+        let selectProfileHtml = '';
+        if(isLoggedIn) {
+            const profileToSelect = {
+                uuid: profileData.uuid || '',
+                first: profileData.first || '',
+                last: profileData.last || ''
+            };
+            const isSelected = loggedInUserProfile && loggedInUserProfile.selected_profiles && loggedInUserProfile.selected_profiles.some(p => p.uuid === profileData.uuid);
+            selectProfileHtml = `<div style="position: absolute; top: 20px; right: 20px;">
+                <input type="radio" id="selectProfileRadio" name="select_profile" ${isSelected ? 'checked' : ''} onclick='selectProfile(${JSON.stringify(profileToSelect)})' style="width:20px; height:20px; accent-color:#e27979; cursor:pointer;">
+            </div>`;
+        }
+        details.innerHTML += selectProfileHtml;
+
+
         var leftHtml = '';
         if (imgUrl) {
             leftHtml = `<div class="profile-left"><img src="${escapeAttr(imgUrl)}" alt="Profile image of ${escapeAttr(profileData.first)}" class="main-profile-image"></div>`;
@@ -296,7 +357,8 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         rightHtml += buildGallery('Collection', profileData.selected_works);
         rightHtml += '</div>';
 
-        details.innerHTML = `<div class="main-profile-inner">${leftHtml}${rightHtml}</div>`;
+        details.innerHTML = `<div class="main-profile-inner">${leftHtml}${rightHtml}</div>` + selectProfileHtml;
+
 
         document.querySelectorAll('#mainProfile .work-thumb, #mainProfile .audio-thumb').forEach(thumb => {
             thumb.addEventListener('click', () => openSelectedWorkModal(thumb.dataset));
@@ -305,6 +367,26 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 
     function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'})[m]); }
     function escapeAttr(s) { return escapeHtml(s); }
+
+    function selectProfile(profileData) {
+        if (!isLoggedIn) return;
+        const formData = new FormData();
+        formData.append('action', 'select_profile');
+        formData.append('profile_data', JSON.stringify(profileData));
+
+        fetch('profile.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (loggedInUserProfile.selected_profiles && !loggedInUserProfile.selected_profiles.some(p => p.uuid === profileData.uuid)) {
+                    loggedInUserProfile.selected_profiles.push(profileData);
+                } else if (!loggedInUserProfile.selected_profiles) {
+                    loggedInUserProfile.selected_profiles = [profileData];
+                }
+            }
+        });
+    }
+
 
     function selectWork(workData) {
         if (!isLoggedIn) return;
