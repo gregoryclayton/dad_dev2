@@ -348,13 +348,15 @@ if (is_dir($baseDir_pusers2)) {
             <button id="sortGenreBtn" style="padding:0.7em 1.3em; font-family: monospace;">genre</button>
         </div>
         <div id="user-profiles" style="width: 100%;"></div>
-        <div style="width: 100%; padding: 20px 10px 0;">
+        
+    </div>
+</div>
+
+<div style="width: 100%; padding: 20px 10px 0;">
             <a href="editor.html" target="_blank" style="text-decoration: none; display: block;">
                 <button style="width: 100%; padding: 1em; font-size: 1em; font-family: monospace; border: 1px solid #ccc; border-radius: 7px; cursor: pointer;">Create</button>
             </a>
         </div>
-    </div>
-</div>
 
 <?php if (!isset($_SESSION['email'])): ?>
 <div class="signup-cta">
