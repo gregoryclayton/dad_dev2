@@ -552,6 +552,12 @@ function get_profile_image_for_collection($user_folder) {
             <div style="text-align: center; margin-bottom: 24px;">
                  <a href="<?php echo $profile_url; ?>" class="visit-profile-btn">Visit Profile</a>
             </div>
+
+            <div style="background:#fff; border-radius:12px; box-shadow:0 6px 24px rgba(0,0,0,0.08); padding: 20px; max-width: 500px; margin: 0 auto 24px auto; text-align: center;">
+                <h4 style="margin-top:0; font-size: 1.1em; border-bottom: 1px solid #e5e5e5; padding-bottom: 10px; margin-bottom: 15px;">Your Information</h4>
+                <p><strong>Name:</strong> <?php echo htmlspecialchars($_SESSION['first'] . ' ' . $_SESSION['last']); ?></p>
+                <p><strong>Email:</strong> <?php echo htmlspecialchars($_SESSION['email']); ?></p>
+            </div>
             
             <div class="studio-grid">
                 <div class="form-container">
