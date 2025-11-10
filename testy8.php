@@ -202,6 +202,7 @@ if (is_dir($baseDir_pusers2)) {
     </script>
     <style>
       * { box-sizing: border-box; }
+      body { margin: 0; }
       .user-row { display:flex; flex-direction: column; align-items:flex-start; padding: 10px 0; border-bottom:1px solid #eee; cursor:pointer; }
       .user-row:hover { background:#f9f9f9; }
       .user-row-main { display:flex; width:100%; align-items:center; padding: 0 10px; }
@@ -239,11 +240,11 @@ if (is_dir($baseDir_pusers2)) {
   </div>
   
    <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
-    <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s; border-radius: 50%;"></div>
+    <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: all 0.3s; border-radius: 50%;"></div>
     <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.902)); border-radius:14px; padding:1em 1.3em 1.3em 1.3em;">
-      <button id="revertColorsBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Revert Colors"></button>
-      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
-      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
+      <button id="revertColorsBtn" style="margin-top:1em; background:white; color:#333; border: 1px solid #ccc; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:100%; padding: 8px 12px;" title="Revert Colors">Revert</button>
+      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:100%; padding: 8px 12px;">Random</button>
+      <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding: 8px 12px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:100%;">B&W</button>
     </div>
   </div>
   
@@ -279,8 +280,10 @@ if (is_dir($baseDir_pusers2)) {
     <button name="login">Login</button>
 </form>
 <?php else: ?>
-    <h2>Welcome, <?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?>!</h2>
-    <a href="?logout=1">Logout</a>
+    <div style="padding: 10px; text-align: right;">
+        Welcome, <strong><?php echo htmlspecialchars($_SESSION['first'] . " " . $_SESSION['last']); ?></strong>!
+        <a href="?logout=1" style="margin-left: 10px;">Logout</a>
+    </div>
 <?php endif; ?>
 
 <!-- Slideshow (from pusers) -->
@@ -439,6 +442,13 @@ function renderProfiles(profiles) {
                 dropdownContainer.style.display = 'none';
                 dropdownContainer.innerHTML = '';
             } else {
+                // NEW: Close other dropdowns before opening a new one
+                document.querySelectorAll('.profile-dropdown').forEach(d => {
+                    if (d !== dropdownContainer) {
+                        d.style.display = 'none';
+                        d.innerHTML = '';
+                    }
+                });
                 buildDropdownContent(dropdownContainer, profileData, profile_username, miniSrc);
                 dropdownContainer.style.display = 'block';
             }
