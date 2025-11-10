@@ -197,7 +197,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
     * { box-sizing: border-box; }
-    #mainProfile{max-width:1100px;margin:26px auto;background:#fff;border-radius:12px;box-shadow:0 6px 24px #00000014;padding:20px;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial; position: relative;}.main-profile-inner{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}.profile-left{flex:0 0 240px;display:flex;flex-direction:column;align-items:center}.main-profile-image{width:240px;height:240px;border-radius:10px;object-fit:cover;background:#f4f4f4;display:block;box-shadow:0 6px 18px #00000014}.profile-placeholder{width:240px;height:240px;border-radius:10px;background:linear-gradient(135deg,#f3f3f5,#e9eef6);display:flex;align-items:center;justify-content:center;font-size:48px;color:#9aa3b2;box-shadow:0 6px 18px #0000000f}.profile-right{flex:1 1 480px;min-width:260px}.profile-header{display:flex;align-items:baseline;gap:12px}.profile-name{font-size:28px;font-weight:700;margin:0}.profile-meta{margin-top:12px;color:#444;line-height:1.5}.profile-meta .label{font-weight:600;color:#333;margin-right:8px}.horizontal-gallery{display:flex;overflow-x:auto;gap:12px;padding-bottom:15px;margin-top:10px}.work-thumb,.audio-thumb{width:140px;height:140px;border-radius:8px;box-shadow:0 4px 12px #0000000f;cursor:pointer;flex-shrink:0}.work-thumb{object-fit:cover;background:#f6f6f6}.audio-thumb{background:#f0f2f5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:14px;color:#555}.audio-thumb::before{content:'🎵';font-size:36px;margin-bottom:8px}.gallery-title{margin-top:20px;font-size:1.1em;font-weight:600}
+    #mainProfile{max-width:1100px;margin:26px auto;background:#fff;border-radius:12px;box-shadow:0 6px 24px #00000014;padding:20px;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial; position: relative;}.main-profile-inner{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}.profile-left{flex:0 0 240px;display:flex;flex-direction:column;align-items:center}.main-profile-image{width:240px;height:240px;border-radius:10px;object-fit:cover;background:#f4f4f4;display:block;box-shadow:0 6px 18px #00000014}.profile-placeholder{width:240px;height:240px;border-radius:10px;background:linear-gradient(135deg,#f3f3f5,#e9eef6);display:flex;align-items:center;justify-content:center;font-size:48px;color:#9aa3b2;box-shadow:0 6px 18px #0000000f}.profile-right{flex:1 1 480px;min-width:260px}.profile-header{display:flex;align-items:baseline;gap:12px; flex-wrap: wrap;}.profile-name{font-size:28px;font-weight:700;margin:0}.profile-meta{margin-top:12px;color:#444;line-height:1.5}.profile-meta .label{font-weight:600;color:#333;margin-right:8px}.horizontal-gallery{display:flex;overflow-x:auto;gap:12px;padding-bottom:15px;margin-top:10px}.work-thumb,.audio-thumb{width:140px;height:140px;border-radius:8px;box-shadow:0 4px 12px #0000000f;cursor:pointer;flex-shrink:0}.work-thumb{object-fit:cover;background:#f6f6f6}.audio-thumb{background:#f0f2f5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:14px;color:#555}.audio-thumb::before{content:'🎵';font-size:36px;margin-bottom:8px}.gallery-title{margin-top:20px;font-size:1.1em;font-weight:600}
     .signin-bar-container{max-width:1100px;margin:-10px auto 10px auto;padding:10px 20px;background:#fff;border-radius:0 0 12px 12px;box-shadow:0 6px 14px #0000000a;display:flex;justify-content:flex-end;align-items:center;font-size:14px;}
     .signin-bar-container form{display:flex;gap:8px;align-items:center;}
     .signin-bar-container input{padding:6px;border:1px solid #ccc;border-radius:6px;}
@@ -308,7 +308,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         var imgUrl = (profileImagesMap[profile_username] && profileImagesMap[profile_username][0]) || '';
         
         let selectProfileHtml = '';
-        if(isLoggedIn) {
+        if (isLoggedIn) {
             const profileToSelect = {
                 uuid: profileData.uuid || '',
                 first: profileData.first || '',
@@ -319,8 +319,6 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                 <input type="radio" id="selectProfileRadio" name="select_profile" ${isSelected ? 'checked' : ''} onclick='selectProfile(${JSON.stringify(profileToSelect)})' style="width:20px; height:20px; accent-color:#e27979; cursor:pointer;">
             </div>`;
         }
-        details.innerHTML += selectProfileHtml;
-
 
         var leftHtml = '';
         if (imgUrl) {
@@ -331,12 +329,27 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         }
 
         var rightHtml = '<div class="profile-right">';
-        rightHtml += `<div class="profile-header"><h1 class="profile-name">${escapeHtml(profileData.first)} ${escapeHtml(profileData.last)}</h1>`;
-        if (profileData.country) rightHtml += `<div style="margin-left:8px;color:#777;font-size:0.95em;">${escapeHtml(profileData.country)}</div>`;
+        rightHtml += '<div class="profile-header">';
+        rightHtml += `<h1 class="profile-name">${escapeHtml(profileData.first)} ${escapeHtml(profileData.last)}</h1>`;
+        if (profileData.nickname) rightHtml += `<div style="color:#777;font-size:1.1em; align-self: baseline;">"${escapeHtml(profileData.nickname)}"</div>`;
+        
+        let locationParts = [];
+        if (profileData.city) locationParts.push(escapeHtml(profileData.city));
+        if (profileData.country) locationParts.push(escapeHtml(profileData.country));
+        if (locationParts.length > 0) rightHtml += `<div style="margin-left:8px;color:#777;font-size:0.95em; flex-basis: 100%;">${locationParts.join(', ')}</div>`;
+        
         rightHtml += '</div>';
         rightHtml += '<div class="profile-meta">';
+        if (profileData.genre) rightHtml += `<div><span class="label">Genre:</span> ${escapeHtml(profileData.genre)}</div>`;
+        if (profileData.subgenre) rightHtml += `<div><span class="label">Subgenre:</span> ${escapeHtml(profileData.subgenre)}</div>`;
         if (profileData.bio) rightHtml += `<div><span class="label">Bio:</span> ${escapeHtml(profileData.bio)}</div>`;
+        if (profileData.bio2) rightHtml += `<div><span class="label">Bio 2:</span> ${escapeHtml(profileData.bio2)}</div>`;
         if (profileData.dob) rightHtml += `<div><span class="label">DOB:</span> ${escapeHtml(profileData.dob)}</div>`;
+
+        if (profileData.fact1) rightHtml += `<div><span class="label">Fact 1:</span> ${escapeHtml(profileData.fact1)}</div>`;
+        if (profileData.fact2) rightHtml += `<div><span class="label">Fact 2:</span> ${escapeHtml(profileData.fact2)}</div>`;
+        if (profileData.fact3) rightHtml += `<div><span class="label">Fact 3:</span> ${escapeHtml(profileData.fact3)}</div>`;
+
         if (profileData.email) rightHtml += `<div><span class="label">Email:</span> <a href="mailto:${encodeURIComponent(profileData.email)}">${escapeHtml(profileData.email)}</a></div>`;
         rightHtml += '</div>';
 
@@ -368,7 +381,6 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         rightHtml += '</div>';
 
         details.innerHTML = `<div class="main-profile-inner">${leftHtml}${rightHtml}</div>` + selectProfileHtml;
-
 
         document.querySelectorAll('#mainProfile .work-thumb, #mainProfile .audio-thumb').forEach(thumb => {
             thumb.addEventListener('click', () => openSelectedWorkModal(thumb.dataset));
