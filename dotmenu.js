@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (menuOpen) {
       // Expand dot and show menu
       dot.style.transform = 'scale(3)';
-      dot.style.borderRadius = '50%';
+      dot.style.borderRadius = '50%'; // Keep it circular
       setTimeout(() => {
         dotMenu.style.display = 'block';
       }, 150); // Show menu after dot starts expanding
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Hide menu and shrink dot
       dotMenu.style.display = 'none';
       dot.style.transform = 'scale(1)';
-      dot.style.borderRadius = '0';
+      dot.style.borderRadius = '50%'; // FIX: Was '0', now stays circular
     }
   });
 
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
       menuOpen = false;
       dotMenu.style.display = 'none';
       dot.style.transform = 'scale(1)';
-      dot.style.borderRadius = '0';
+      dot.style.borderRadius = '50%'; // FIX: Was '0', now stays circular
     }
   });
 });
