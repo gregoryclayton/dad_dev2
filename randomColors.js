@@ -83,6 +83,19 @@ function setBWTheme() {
   });
 }
 
+function revertOriginalColors() {
+    const titleDiv = document.getElementById('mainTitleContainer');
+    const dotDiv = document.getElementById('dot');
+    const dotMenuDiv = document.getElementById('dotMenu');
+
+    const originalTitleGradient = "linear-gradient(135deg, #e27979 60%, #ed8fd1 100%)";
+    const originalDotGradient = "linear-gradient(135deg, #e27979 60%, #ed8fd1 100%)";
+
+    if (titleDiv) titleDiv.style.backgroundImage = originalTitleGradient;
+    if (dotDiv) dotDiv.style.background = originalDotGradient;
+    if (dotMenuDiv) dotMenuDiv.style.background = "linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.902))";
+}
+
 // Attach click handler to the circular dot menu buttons
 document.addEventListener('DOMContentLoaded', function() {
   var btn = document.getElementById('changeTitleBgBtn');
@@ -98,5 +111,12 @@ document.addEventListener('DOMContentLoaded', function() {
       setBWTheme();
       e.stopPropagation();
     });
+  }
+  var revertBtn = document.getElementById('revertColorsBtn');
+  if(revertBtn) {
+      revertBtn.addEventListener('click', function(e){
+          revertOriginalColors();
+          e.stopPropagation();
+      });
   }
 });
