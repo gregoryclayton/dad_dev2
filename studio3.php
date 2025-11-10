@@ -178,6 +178,13 @@ if (isset($_SESSION['email']) && isset($_POST['update_profile_extra'])) {
 // Handle image upload (if logged in)
 if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        $max_file_size = 5 * 1024 * 1024; // 5 MB
+        if ($_FILES['image']['size'] > $max_file_size) {
+            set_flash_message("File is too large. Maximum size is 5MB.", 'error');
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit();
+        }
+
         $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
         $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
         $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
@@ -209,6 +216,13 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
     $date = $_POST['work_date'] ?? "";
     
     if (isset($_FILES['work_file']) && $_FILES['work_file']['error'] == 0) {
+        $max_file_size = 5 * 1024 * 1024; // 5 MB
+        if ($_FILES['work_file']['size'] > $max_file_size) {
+            set_flash_message("File is too large. Maximum size is 5MB.", 'error');
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit();
+        }
+
         $allowed_mimes = ['image/jpeg' => 'image', 'image/png' => 'image', 'image/gif' => 'image', 'audio/mpeg' => 'audio'];
         $mime_type = mime_content_type($_FILES['work_file']['tmp_name']);
         
@@ -729,3 +743,4 @@ function get_profile_image_for_collection($user_folder) {
 
 </body>
 </html>
+
