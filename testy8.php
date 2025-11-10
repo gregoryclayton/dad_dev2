@@ -243,9 +243,7 @@ if (is_dir($baseDir_pusers2)) {
     <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.897)); border-radius: 14px; padding: 1em 1em 1em 1em; box-shadow: 0 4px 24px #00000024;">
       <!-- Your menu content here -->
      <!-- Add this play icon to the dot menu container -->
-<div id="musicPlayIcon" style="display:none; position:absolute; top:7px; right:41px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow: 0 1px 4px #0003;">
-  <span style="color:#e27979;">▶</span>
-</div>
+
       <!-- New buttons for changing color -->
       <div style="position: relative;">
   <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle Music">🎵</button>
