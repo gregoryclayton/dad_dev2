@@ -1,7 +1,8 @@
 <?php
 
 function logWork($uuid, $desc, $date, $path, $type, $artist, $user_folder) {
-    $log_file = __DIR__ . '/works.json'; // Store works.json in the same directory as this script
+    // Corrected path: Store the log file in the 'pusers' directory, which is writable.
+    $log_file = '/var/www/html/pusers/works.json';
 
     $works = [];
     if (file_exists($log_file)) {
