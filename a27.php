@@ -4,7 +4,7 @@ session_start();
 // --- Basic Auth: Only allow 'gregoryclayton' to access this page ---
 $allowed_user = 'gregoryclayton';
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    if (isset($_POST['password']) && $_POST['username'] === $allowed_user) {
+    if (isset($_POST['password']) && isset($_POST['username']) === $allowed_user) {
         // In a real-world scenario, use a securely stored, hashed password.
         // For this example, we'll use a simple password.
         if ($_POST['password'] === 'admin_pass') { // Replace 'admin_pass' with a secure password
@@ -25,6 +25,20 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         echo '</form></body></html>';
         exit;
     }
+}
+
+// --- API Endpoint for fetching JSON ---
+if (isset($_GET['action']) && $_GET['action'] === 'get_json' && isset($_GET['user_folder'])) {
+    header('Content-Type: application/json');
+    $user_folder = basename($_GET['user_folder']); // Sanitize folder name
+    $profile_path = "/var/www/html/pusers/" . $user_folder . "/profile.json";
+    
+    if (file_exists($profile_path)) {
+        echo file_get_contents($profile_path);
+    } else {
+        echo json_encode(['error' => 'Profile not found.']);
+    }
+    exit;
 }
 
 
@@ -59,9 +73,8 @@ function generateUUID() {
 if (isset($_POST['create_user'])) {
     $first = trim($_POST['first_name']);
     $last = trim($_POST['last_name']);
-    $email = trim($_POST['email']);
 
-    if (!empty($first) && !empty($last) && !empty($email)) {
+    if (!empty($first) && !empty($last)) {
         $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
         $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
         $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
@@ -72,7 +85,7 @@ if (isset($_POST['create_user'])) {
                 "uuid" => generateUUID(),
                 "first" => $first,
                 "last" => $last,
-                "email" => $email,
+                "email" => "", // Email is no longer required, so set to empty
                 "created_at" => date("Y-m-d H:i:s"),
                 "work" => [],
                 "selected_works" => [],
@@ -84,7 +97,7 @@ if (isset($_POST['create_user'])) {
             set_flash_message("Error: Directory for {$first} {$last} already exists.", 'error');
         }
     } else {
-        set_flash_message("Error: All fields are required for user creation.", 'error');
+        set_flash_message("Error: First and Last name are required for user creation.", 'error');
     }
     header("Location: a27.php");
     exit();
@@ -146,12 +159,42 @@ if (isset($_POST['upload_file'])) {
     exit();
 }
 
+// 3. Handle JSON Profile Save
+if (isset($_POST['save_profile_json'])) {
+    $user_folder = $_POST['user_folder_to_edit'];
+    $json_content = $_POST['json_editor_content'];
+
+    if (!empty($user_folder) && !empty($json_content)) {
+        $profile_path = "/var/www/html/pusers/" . $user_folder . "/profile.json";
+        
+        if (file_exists($profile_path)) {
+            $data = json_decode($json_content);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                // Pretty-print the JSON before saving
+                file_put_contents($profile_path, json_encode($data, JSON_PRETTY_PRINT));
+                set_flash_message("Successfully updated profile.json for {$user_folder}.");
+            } else {
+                set_flash_message("Error: Invalid JSON format. Changes were not saved.", 'error');
+            }
+        } else {
+            set_flash_message("Error: Profile for selected user '{$user_folder}' not found.", 'error');
+        }
+    } else {
+        set_flash_message("Error: No user selected or content was empty.", 'error');
+    }
+    header("Location: a27.php");
+    exit();
+}
+
 
 // --- Data for Forms ---
 $pusers_dir = "/var/www/html/pusers";
 $user_folders = [];
 if (is_dir($pusers_dir)) {
-    $user_folders = array_diff(scandir($pusers_dir), ['.', '..']);
+    $user_folders = array_filter(scandir($pusers_dir), function($item) use ($pusers_dir) {
+        return is_dir($pusers_dir . '/' . $item) && !in_array($item, ['.', '..']);
+    });
+    sort($user_folders);
 }
 
 ?>
@@ -164,12 +207,15 @@ if (is_dir($pusers_dir)) {
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background-color: #f0f2f5; color: #333; margin: 0; }
         .container { max-width: 800px; margin: 2em auto; padding: 2em; background: #fff; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.1); }
         h1, h2 { border-bottom: 1px solid #e5e5e5; padding-bottom: 10px; }
-        .form-section { margin-bottom: 2em; }
+        .form-section { margin-bottom: 2em; padding-bottom: 1em; border-bottom: 1px solid #e5e5e5;}
+        .form-section:last-child { border-bottom: none; }
         .form-row { margin-bottom: 1em; }
         .form-row label { display: block; font-weight: 600; margin-bottom: 5px; }
         .form-row input, .form-row select, .form-row textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1em; box-sizing: border-box; }
+        textarea#json-editor-content { min-height: 400px; font-family: monospace; font-size: 0.9em; }
         button { background-color: #e27979; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 1em; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
         button:hover { background-color: #d66a6a; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
         .form-message-success { padding: 1em; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 6px; margin-bottom: 1em; }
         .form-message-error { padding: 1em; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 6px; margin-bottom: 1em; }
         .logout-btn { position: absolute; top: 20px; right: 20px; text-decoration: none; background: #555; color: white; padding: 8px 12px; border-radius: 6px; }
@@ -194,11 +240,27 @@ if (is_dir($pusers_dir)) {
                     <label for="last_name">Last Name</label>
                     <input id="last_name" type="text" name="last_name" required>
                 </div>
-                <div class="form-row">
-                    <label for="email">Email</label>
-                    <input id="email" type="email" name="email" required>
-                </div>
                 <button type="submit" name="create_user">Create User</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Edit User Profile (profile.json)</h2>
+            <form method="POST" id="edit-profile-form">
+                <div class="form-row">
+                    <label for="select-user-to-edit">Select User to Edit</label>
+                    <select id="select-user-to-edit" name="user_folder_to_edit" required>
+                        <option value="">-- Choose a user --</option>
+                        <?php foreach ($user_folders as $folder): ?>
+                            <option value="<?php echo htmlspecialchars($folder); ?>"><?php echo htmlspecialchars($folder); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="json-editor-content">profile.json</label>
+                    <textarea id="json-editor-content" name="json_editor_content" disabled></textarea>
+                </div>
+                <button type="submit" name="save_profile_json" id="save-json-btn" disabled>Save Changes</button>
             </form>
         </div>
 
@@ -230,6 +292,45 @@ if (is_dir($pusers_dir)) {
             </form>
         </div>
     </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userSelect = document.getElementById('select-user-to-edit');
+        const jsonEditor = document.getElementById('json-editor-content');
+        const saveButton = document.getElementById('save-json-btn');
+
+        userSelect.addEventListener('change', function() {
+            const userFolder = this.value;
+            if (userFolder) {
+                // Fetch the JSON content
+                fetch(`a27.php?action=get_json&user_folder=${encodeURIComponent(userFolder)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            jsonEditor.value = `Error: ${data.error}`;
+                            jsonEditor.disabled = true;
+                            saveButton.disabled = true;
+                        } else {
+                            // Pretty-print the JSON
+                            jsonEditor.value = JSON.stringify(data, null, 2);
+                            jsonEditor.disabled = false;
+                            saveButton.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching profile:', error);
+                        jsonEditor.value = 'Failed to load profile data.';
+                        jsonEditor.disabled = true;
+                        saveButton.disabled = true;
+                    });
+            } else {
+                jsonEditor.value = '';
+                jsonEditor.disabled = true;
+                saveButton.disabled = true;
+            }
+        });
+    });
+    </script>
 
 </body>
 </html>
