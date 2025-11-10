@@ -613,5 +613,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     
     <script src="dotmenu.js"></script>
+    <script src="randomColors.js"></script>
 </body>
 </html>
