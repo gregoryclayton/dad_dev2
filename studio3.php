@@ -1,6 +1,7 @@
 <?php
 // Database credentials
 include 'connection.php';
+include 'workSupervisor.php'; // Include the new work supervisor
 
 // Start session for login/logout and flash messages
 session_start();
@@ -231,7 +232,8 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
         } else {
             $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
             $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
-            $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
+            $user_folder_name = $safe_first . "_" . $safe_last;
+            $user_dir = "/var/www/html/pusers/" . $user_folder_name;
             $work_dir = $user_dir . "/work";
             if (!is_dir($work_dir)) mkdir($work_dir, 0755, true);
 
@@ -241,8 +243,13 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             $target_file = $work_dir . "/work_" . $uuid . "." . $ext;
             
             if (move_uploaded_file($_FILES['work_file']['tmp_name'], $target_file)) {
-                $web_path = str_replace("/var/www/html/", "", $target_file);
+                $web_path = str_replace("/var/www/html", "", $target_file);
                 add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $web_path, $uuid, $file_type);
+
+                // Log the work to the central supervisor file
+                $artist_name = $_SESSION['first'] . ' ' . $_SESSION['last'];
+                logWork($uuid, $desc, $date, $web_path, $file_type, $artist_name, $user_folder_name);
+                
                 set_flash_message("Work uploaded successfully!");
             } else {
                 set_flash_message("Failed to upload work file.", 'error');
@@ -743,4 +750,3 @@ function get_profile_image_for_collection($user_folder) {
 
 </body>
 </html>
-
