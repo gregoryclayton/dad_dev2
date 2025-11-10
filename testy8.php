@@ -246,7 +246,7 @@ if (is_dir($baseDir_pusers2)) {
 
       <!-- New buttons for changing color -->
        <div style="position: relative;">
-  //<button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle Music">🎵</button>
+  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle Music">🎵</button>
   <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 4px #0003;">
     <span style="color:#e27979;">▶</span>
   </div>
