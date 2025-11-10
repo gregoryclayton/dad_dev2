@@ -219,7 +219,7 @@ if (is_dir($baseDir_pusers2)) {
       .dropdown-work-item { display:flex; flex-direction:column; flex-shrink:0; width:120px; }
       .work-image { width:120px; height:120px; object-fit:cover; border-radius:8px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
       .work-info { font-size:0.85em; padding-top:6px; } .work-info .desc { font-weight:600; color:#333; } .work-info .date { color:#777; } .dropdown-body { overflow: hidden; }
-      #slideshow-container { position: relative; width: 80vw; height: 450px; max-width: 900px; margin: 2em auto; background-color: #f4f4f4; border-radius: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+      #slideshow-container { position: relative; width: 80vw; height: 450px; max-width: 900px; margin: 2em auto; background-color: #f4f4f4; border-radius: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.08); overflow: hidden; }
       #slideshow-image-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; }
       #slideshow-img { width: 100%; height: 100%; object-fit: contain; }
       .signup-cta { text-align: center; padding: 40px 20px; background-color: #f2e9e9; margin: 2em auto; width: 90%; border-radius: 20px; }
@@ -227,7 +227,7 @@ if (is_dir($baseDir_pusers2)) {
       .signup-cta p { margin-bottom: 25px; color: #555; }
       .signup-cta .cta-button { background-color: #e27979; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; transition: background-color 0.3s; }
       .signup-cta .cta-button:hover { background-color: #d66a6a; }
-      @media (min-width: 600px) { .dropdown-inner { flex-direction: row; } .dropdown-header { flex-direction: column; align-items:flex-start; gap:0; } .dropdown-main-image { width: 120px; height: 120px; } }
+      @media (min-width: 600px) { .dropdown-inner { flex-direction: row; } .dropdown-header { flex-direction: column; align-items:flex-start; gap:0; } .dropdown-main-image { width: 120px; height: 120px; } .dropdown-body { min-width: 0; flex-grow: 1; } }
     </style>
 </head>
 <body>
@@ -240,18 +240,18 @@ if (is_dir($baseDir_pusers2)) {
   
    <div id="dotMenuContainer" style="position:relative; align-self:end; margin-bottom:50px; margin-left:-30px;">
     <div id="dot" style="color:black; background: linear-gradient(135deg, #e27979 60%, #ed8fd1 100%); transition: background 0.7s;"></div>
-    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.897)); border-radius: 14px; padding: 1em 1em 1em 1em; box-shadow: 0 4px 24px #00000024;">
+    <div id="dotMenu" style="display:none; position:absolute; left:80px; top:-380%; transform:translateX(-50%); background-image: linear-gradient(to bottom right, rgba(226, 121, 121, 0.936), rgba(237, 143, 209, 0.902)); border-radius:14px; padding:1em 1.3em 1.3em 1.3em;">
       <!-- Your menu content here -->
      <!-- Add this play icon to the dot menu container -->
 
       <!-- New buttons for changing color -->
        <div style="position: relative;">
-  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle Music">🎵</button>
-  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; box-shadow:0 1px 4px #0003;">
+  <button id="musicBtn" style="margin-top:1em; background:white; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Toggle Music"></button>
+  <div id="musicPlayIcon" style="display:none; position:absolute; top:-12px; right:-5px; background: white; border-radius:50%; padding:2px; font-size:10px; width:16px; height:16px; text-align:center; pointer-events: none;">
     <span style="color:#e27979;">▶</span>
   </div>
 </div>
-      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;" title="Change Background"></button>
+      <button id="changeTitleBgBtn" style="margin-top:1em; background:grey; color:#fff; border:none; border-radius:8px; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
       <button id="bwThemeBtn" style="margin-top:0.7em; background:lightgrey; color:#fff; border:none; border-radius:8px; padding:0.6em 1.1em; font-family:monospace; font-size:1em; cursor:pointer; display:block; width:10px;"></button>
     </div>
   </div>
@@ -282,7 +282,7 @@ if (is_dir($baseDir_pusers2)) {
 </div>
 
 <?php if (!isset($_SESSION['email'])): ?>
-<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-right-radius:10px;">
+<form method="POST" style="display:flex; max-width:80vw; justify-content: flex-end; padding:10px; border-bottom: 1px solid #e2e2e2; background: #ffffff00; border-bottom-right-radius:10px; border-top-right-radius:10px; margin-left:auto;">
     <input style="width:80px; margin-right:20px;" type="email" name="email" placeholder="email" required><br>
     <input style="width:80px; margin-right:20px;" type="password" name="password"  placeholder="password" required><br>
     <button name="login">Login</button>
@@ -304,8 +304,8 @@ if (is_dir($baseDir_pusers2)) {
 <?php foreach ($topWorks as $i => $workPath):
     $work = $workDetails[$workPath];
     ?>
-    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:130px; max-width:160px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #00000012;">
-        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:140px; max-height:110px; object-fit:cover; border-radius:14px;">
+    <div class="selected-work-card" data-idx="<?php echo $i; ?>" style="cursor:pointer; min-width:130px; max-width:160px; flex:0 0 auto; background:#f9f9f9; border-radius:14px; box-shadow:0 4px 14px #0001; padding:8px;">
+        <img src="<?php echo htmlspecialchars($work['path']); ?>" alt="<?php echo htmlspecialchars($work['title']); ?>" style="width:100%; max-width:140px; max-height:110px; object-fit:cover; border-radius:10px;">
         <div style="margin-top:6px;font-size:0.9em;font-weight:bold;"><?php echo htmlspecialchars($work['title']); ?></div>
     </div>
 <?php endforeach; ?>
@@ -317,7 +317,7 @@ if (is_dir($baseDir_pusers2)) {
     <span id="closeUniversalModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
     <img id="universalModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
     <div id="universalModalInfo" style="text-align:center; width:100%;"></div>
-    <a id="universalModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit profile</a>
+    <a id="universalModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit profile page</a>
     <div style="position:absolute; bottom:36px; right:28px;">
       <?php if (isset($_SESSION['email'])): ?>
         <input type="radio" name="universalWorkLike" id="universalWorkLikeRadio" style="width:20px; height:20px; accent-color: #e27979; cursor:pointer;">
@@ -355,14 +355,6 @@ if (is_dir($baseDir_pusers2)) {
                 <button style="width: 100%; padding: 1em; font-size: 1em; font-family: monospace; border: 1px solid #ccc; border-radius: 7px; cursor: pointer;">Create</button>
             </a>
         </div>
-
-<?php if (!isset($_SESSION['email'])): ?>
-<div class="signup-cta">
-    <h3>Join Our Community</h3>
-    <p>Sign up to create your own portfolio, select your favorite works, and connect with other artists.</p>
-    <a href="register.php" class="cta-button">Sign Up Now</a>
-</div>
-<?php endif; ?>
 
 <footer style="background:#222; color:#eee; padding:2em 0; text-align:center; font-size:0.95em;">
   <div>
