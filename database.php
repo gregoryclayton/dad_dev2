@@ -345,13 +345,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                     dropdownContainer.style.display = 'none';
                     dropdownContainer.innerHTML = '';
                 } else {
-                    // Close other dropdowns
-                    document.querySelectorAll('.profile-dropdown').forEach(d => {
-                        if (d !== dropdownContainer) {
-                            d.style.display = 'none';
-                            d.innerHTML = '';
-                        }
-                    });
+                    // This is the only part that changes. The loop to close other dropdowns is removed.
                     buildDropdownContent(dropdownContainer, profileData, profile_username, miniSrc);
                     dropdownContainer.style.display = 'block';
                 }
