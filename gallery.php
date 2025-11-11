@@ -33,31 +33,37 @@ if (isset($_GET['logout'])) {
 
 // --- Data Preparation for Slideshows & Gallery ---
 
-// Function to gather images from a specified directory
-function get_slideshow_images($base_dir) {
-    $images = [];
-    if (is_dir($base_dir)) {
-        $user_folders = scandir($base_dir);
-        foreach ($user_folders as $user_folder) {
-            if ($user_folder === '.' || $user_folder === '..') continue;
-            $work_dir = $base_dir . '/' . $user_folder . '/work';
-            if (is_dir($work_dir)) {
-                foreach (scandir($work_dir) as $file) {
-                    if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $file)) {
-                        $web_path = str_replace('/var/www/html/', '', $work_dir) . '/' . $file;
-                        $images[] = $web_path;
+// NEW: Function to gather detailed work data from a directory
+function get_slideshow_data($base_dir) {
+    $works = [];
+    if (!is_dir($base_dir)) return $works;
+
+    foreach (glob($base_dir . '/*', GLOB_ONLYDIR) as $user_dir) {
+        $profile_path = $user_dir . '/profile.json';
+        if (file_exists($profile_path)) {
+            $profile_data = json_decode(file_get_contents($profile_path), true);
+            if (is_array($profile_data) && !empty($profile_data['work'])) {
+                $artist_name = trim(($profile_data['first'] ?? '') . ' ' . ($profile_data['last'] ?? ''));
+                foreach ($profile_data['work'] as $work_item) {
+                    if (!empty($work_item['path'])) {
+                        $works[] = [
+                            'path' => str_replace('/var/www/html/', '', $work_item['path']),
+                            'desc' => $work_item['desc'] ?? 'Untitled',
+                            'artist' => $artist_name,
+                            'date' => $work_item['date'] ?? 'N/A'
+                        ];
                     }
                 }
             }
         }
     }
-    shuffle($images);
-    return $images;
+    shuffle($works);
+    return $works;
 }
 
-// Gather images for the two slideshows
-$pusers_images = get_slideshow_images('/var/www/html/pusers');
-$pusers2_images = get_slideshow_images('/var/www/html/pusers2');
+// Gather detailed data for the two slideshows
+$pusers_slideshow_data = get_slideshow_data('/var/www/html/pusers');
+$pusers2_slideshow_data = get_slideshow_data('/var/www/html/pusers2');
 
 // --- Data Preparation for Collection Gallery from works.json ---
 $works_collection = [];
@@ -87,7 +93,7 @@ if (file_exists($works_json_path)) {
       
       /* Slideshow Styles */
       .slideshow-container { position: relative; width: 100%; height: 500px; margin: 1em auto; background-color: #fff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); overflow: hidden; }
-      .slideshow-image-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+      .slideshow-image-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
       .slideshow-img { width: 100%; height: 100%; object-fit: contain; }
       .slideshow-nav { position: absolute; top: 50%; transform: translateY(-50%); background-color: rgba(0,0,0,0.4); color: white; border: none; font-size: 24px; cursor: pointer; padding: 10px; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; transition: background-color 0.3s; z-index: 10; }
       .slideshow-nav:hover { background-color: rgba(0,0,0,0.7); }
@@ -139,11 +145,11 @@ if (file_exists($works_json_path)) {
     <div class="slideshow-wrapper">
         <h2 class="section-title">Featured Works: Gallery 1</h2>
         <div id="slideshow1" class="slideshow-container">
-            <div class="slideshow-image-wrapper">
-                <img class="slideshow-img" src="<?php echo !empty($pusers_images) ? htmlspecialchars($pusers_images[0]) : ''; ?>" alt="Artwork from Gallery 1" />
+            <div class="slideshow-image-wrapper" onclick="openCurrentSlideModal('slideshow1')">
+                <img class="slideshow-img" src="<?php echo !empty($pusers_slideshow_data) ? htmlspecialchars($pusers_slideshow_data[0]['path']) : ''; ?>" alt="Artwork from Gallery 1" />
             </div>
-            <button class="slideshow-nav prev" onclick="changeSlide('slideshow1', -1)">&#10094;</button>
-            <button class="slideshow-nav next" onclick="changeSlide('slideshow1', 1)">&#10095;</button>
+            <button class="slideshow-nav prev" onclick="event.stopPropagation(); changeSlide('slideshow1', -1)">&#10094;</button>
+            <button class="slideshow-nav next" onclick="event.stopPropagation(); changeSlide('slideshow1', 1)">&#10095;</button>
         </div>
     </div>
 
@@ -151,11 +157,11 @@ if (file_exists($works_json_path)) {
     <div class="slideshow-wrapper">
         <h2 class="section-title">Featured Works: Gallery 2</h2>
         <div id="slideshow2" class="slideshow-container">
-            <div class="slideshow-image-wrapper">
-                <img class="slideshow-img" src="<?php echo !empty($pusers2_images) ? htmlspecialchars($pusers2_images[0]) : ''; ?>" alt="Artwork from Gallery 2" />
+            <div class="slideshow-image-wrapper" onclick="openCurrentSlideModal('slideshow2')">
+                <img class="slideshow-img" src="<?php echo !empty($pusers2_slideshow_data) ? htmlspecialchars($pusers2_slideshow_data[0]['path']) : ''; ?>" alt="Artwork from Gallery 2" />
             </div>
-            <button class="slideshow-nav prev" onclick="changeSlide('slideshow2', -1)">&#10094;</button>
-            <button class="slideshow-nav next" onclick="changeSlide('slideshow2', 1)">&#10095;</button>
+            <button class="slideshow-nav prev" onclick="event.stopPropagation(); changeSlide('slideshow2', -1)">&#10094;</button>
+            <button class="slideshow-nav next" onclick="event.stopPropagation(); changeSlide('slideshow2', 1)">&#10095;</button>
         </div>
     </div>
 
@@ -166,7 +172,6 @@ if (file_exists($works_json_path)) {
             <?php if (!empty($works_collection)): ?>
                 <?php foreach ($works_collection as $work): ?>
                     <?php
-                        // Prepare data for the modal
                         $work_data_json = htmlspecialchars(json_encode([
                             'path' => $work['path'] ?? '',
                             'desc' => $work['desc'] ?? 'Untitled',
@@ -206,18 +211,20 @@ if (file_exists($works_json_path)) {
 
 <script>
     const slideshowData = {
-        slideshow1: { images: <?php echo json_encode($pusers_images, JSON_UNESCAPED_SLASHES); ?>, currentIndex: 0 },
-        slideshow2: { images: <?php echo json_encode($pusers2_images, JSON_UNESCAPED_SLASHES); ?>, currentIndex: 0 }
+        slideshow1: { works: <?php echo json_encode($pusers_slideshow_data, JSON_UNESCAPED_SLASHES); ?>, currentIndex: 0 },
+        slideshow2: { works: <?php echo json_encode($pusers2_slideshow_data, JSON_UNESCAPED_SLASHES); ?>, currentIndex: 0 }
     };
 
     function showSlide(slideshowId) {
         const data = slideshowData[slideshowId];
-        if (!data || !data.images || data.images.length === 0) return;
+        if (!data || !data.works || data.works.length === 0) return;
         const slideshowElement = document.getElementById(slideshowId);
         const imgElement = slideshowElement.querySelector('.slideshow-img');
-        if (data.currentIndex >= data.images.length) data.currentIndex = 0;
-        if (data.currentIndex < 0) data.currentIndex = data.images.length - 1;
-        imgElement.src = data.images[data.currentIndex];
+        if (data.currentIndex >= data.works.length) data.currentIndex = 0;
+        if (data.currentIndex < 0) data.currentIndex = data.works.length - 1;
+
+        imgElement.src = data.works[data.currentIndex].path;
+        imgElement.alt = data.works[data.currentIndex].desc;
     }
 
     function changeSlide(slideshowId, n) {
@@ -243,6 +250,14 @@ if (file_exists($works_json_path)) {
             <div style="color:#888; margin-top:6px; font-size:0.95em;">Created: ${workData.date || 'N/A'}</div>
         `;
         modal.style.display = 'flex';
+    }
+
+    function openCurrentSlideModal(slideshowId) {
+        const data = slideshowData[slideshowId];
+        if (data && data.works.length > 0) {
+            const currentWork = data.works[data.currentIndex];
+            openWorkModal(currentWork);
+        }
     }
 
     document.addEventListener("DOMContentLoaded", function() {
