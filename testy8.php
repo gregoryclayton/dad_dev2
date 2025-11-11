@@ -228,6 +228,8 @@ if (is_dir($baseDir_pusers2)) {
       .signup-cta p { margin-bottom: 25px; color: #555; }
       .signup-cta .cta-button { background-color: #e27979; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; transition: background-color 0.3s; }
       .signup-cta .cta-button:hover { background-color: #d66a6a; }
+      .gallery-link-container a { font-size: 1.2em; font-weight: bold; text-decoration: none; color: #e27979; padding: 10px 20px; border: 2px solid #e27979; border-radius: 8px; transition: background-color 0.3s, color 0.3s; }
+      .gallery-link-container a:hover { background-color: #e27979; color: white; }
       @media (min-width: 600px) { .dropdown-inner { flex-direction: row; } .dropdown-header { flex-direction: column; align-items:flex-start; gap:0; } .dropdown-main-image { width: 120px; height: 120px; } .dropdown-body { min-width: 0; flex-grow: 1; } }
     </style>
 </head>
@@ -291,6 +293,11 @@ if (is_dir($baseDir_pusers2)) {
     <div id="slideshow-image-wrapper">
         <img id="slideshow-img" src="<?php echo count($slideshow_images) ? htmlspecialchars($slideshow_images[0]) : ''; ?>" alt="Artwork Slideshow" />
     </div>
+</div>
+
+<!-- Gallery Link -->
+<div class="gallery-link-container" style="text-align: center; margin: 2.5em 0;">
+    <a href="gallery.php">Visit the Full Gallery</a>
 </div>
 
 <!-- Top selected works gallery (from pusers) -->
