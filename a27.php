@@ -3,28 +3,53 @@ session_start();
 
 // --- Basic Auth: Only allow 'gregoryclayton' to access this page ---
 $allowed_user = 'gregoryclayton';
+$admin_password = 'admin_pass'; // Replace with a secure password in production
+
+// Handle logout (works when clicking the "Logout" link)
+if (isset($_GET['logout'])) {
+    unset($_SESSION['admin_logged_in']);
+    session_regenerate_id(true);
+    header("Location: a27.php");
+    exit;
+}
+
+// If not logged in, show login form and handle login attempts
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    if (isset($_POST['password']) && isset($_POST['username']) === $allowed_user) {
-        // In a real-world scenario, use a securely stored, hashed password.
-        // For this example, we'll use a simple password.
-        if ($_POST['password'] === 'admin_pass') { // Replace 'admin_pass' with a secure password
+    // Check for form submission
+    if (isset($_POST['username']) && isset($_POST['password'])) {
+        $posted_user = trim((string)$_POST['username']);
+        $posted_pass = (string)$_POST['password'];
+
+        if ($posted_user === $allowed_user && $posted_pass === $admin_password) {
+            // Successful login
             $_SESSION['admin_logged_in'] = true;
+            // regenerate session id for safety
+            session_regenerate_id(true);
             header("Location: a27.php");
             exit;
         } else {
-            $login_error = "Invalid password.";
+            // Login failed: show login form with error
+            $login_error = "Invalid username or password.";
         }
-    } else {
-        // Display login form
-        echo '<!DOCTYPE html><html><head><title>Admin Login</title><style>body{font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5;} form{background: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}</style></head><body>';
-        echo '<form method="POST"><h2>Admin Login</h2>';
-        if (isset($login_error)) echo '<p style="color:red;">'.$login_error.'</p>';
-        echo '<p><label>Username: <input type="text" name="username" required></label></p>';
-        echo '<p><label>Password: <input type="password" name="password" required></label></p>';
-        echo '<p><button type="submit">Login</button></p>';
-        echo '</form></body></html>';
-        exit;
     }
+
+    // Display login form
+    $username_val = isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '';
+    echo '<!DOCTYPE html><html><head><title>Admin Login</title><style>body{font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5;} .login-box{background:#fff;padding:24px;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.08); width:380px} h2{margin:0 0 12px;font-size:18px} label{display:block;margin:8px 0 6px;font-weight:600} input{width:100%;padding:8px;border:1px solid #ddd;border-radius:6px} button{margin-top:12px;padding:8px 12px;background:#e27979;border:none;color:#fff;border-radius:6px;cursor:pointer} .error{background:#f8d7da;color:#721c24;padding:8px;border-radius:6px;margin-bottom:8px}</style></head><body>';
+    echo '<div class="login-box">';
+    echo '<form method="POST" action="a27.php">';
+    echo '<h2>Admin Login</h2>';
+    if (isset($login_error)) {
+        echo '<div class="error">' . htmlspecialchars($login_error) . '</div>';
+    }
+    echo '<label>Username</label>';
+    echo '<input type="text" name="username" required value="' . $username_val . '">';
+    echo '<label>Password</label>';
+    echo '<input type="password" name="password" required>';
+    echo '<button type="submit">Login</button>';
+    echo '</form>';
+    echo '</div></body></html>';
+    exit;
 }
 
 // --- API Endpoint for fetching JSON ---
@@ -32,7 +57,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_json' && isset($_GET['use
     header('Content-Type: application/json');
     $user_folder = basename($_GET['user_folder']); // Sanitize folder name
     $profile_path = "/var/www/html/pusers/" . $user_folder . "/profile.json";
-    
+
     if (file_exists($profile_path)) {
         echo file_get_contents($profile_path);
     } else {
@@ -112,7 +137,7 @@ if (isset($_POST['upload_file'])) {
     if (!empty($user_folder) && isset($_FILES['work_file']) && $_FILES['work_file']['error'] == 0) {
         $user_dir = "/var/www/html/pusers/" . $user_folder;
         $profile_path = $user_dir . "/profile.json";
-        
+
         if (file_exists($profile_path)) {
             $work_dir = $user_dir . "/work";
             if (!is_dir($work_dir)) {
@@ -134,7 +159,7 @@ if (isset($_POST['upload_file'])) {
                 if (!isset($profile['work']) || !is_array($profile['work'])) {
                     $profile['work'] = [];
                 }
-                
+
                 $web_path = str_replace("/var/www/html/", "/", $target_file);
 
                 $profile['work'][] = [
@@ -166,7 +191,7 @@ if (isset($_POST['save_profile_json'])) {
 
     if (!empty($user_folder) && !empty($json_content)) {
         $profile_path = "/var/www/html/pusers/" . $user_folder . "/profile.json";
-        
+
         if (file_exists($profile_path)) {
             $data = json_decode($json_content);
             if (json_last_error() === JSON_ERROR_NONE) {
