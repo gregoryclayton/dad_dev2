@@ -442,13 +442,6 @@ function renderProfiles(profiles) {
                 dropdownContainer.style.display = 'none';
                 dropdownContainer.innerHTML = '';
             } else {
-                // NEW: Close other dropdowns before opening a new one
-                document.querySelectorAll('.profile-dropdown').forEach(d => {
-                    if (d !== dropdownContainer) {
-                        d.style.display = 'none';
-                        d.innerHTML = '';
-                    }
-                });
                 buildDropdownContent(dropdownContainer, profileData, profile_username, miniSrc);
                 dropdownContainer.style.display = 'block';
             }
