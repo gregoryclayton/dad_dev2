@@ -1,4 +1,36 @@
 <?php
+// --- Session and Database Setup ---
+include 'connection.php';
+session_start();
+
+// Connect to MySQL
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
+
+// --- Handle Login ---
+if (isset($_POST['login'])) {
+    $email = $conn->real_escape_string($_POST['email']);
+    $pass = $_POST['password'];
+    $result = $conn->query("SELECT * FROM users WHERE email='$email'");
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+        if (password_verify($pass, $row['password'])) {
+            $_SESSION['email'] = $email;
+            $_SESSION['first'] = $row['first'];
+            $_SESSION['last'] = $row['last'];
+        }
+    }
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
+// --- Handle Logout ---
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
 // --- Data Preparation for Slideshows & Gallery ---
 
 // Function to gather images from a specified directory
@@ -12,7 +44,6 @@ function get_slideshow_images($base_dir) {
             if (is_dir($work_dir)) {
                 foreach (scandir($work_dir) as $file) {
                     if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $file)) {
-                        // Create a web-accessible path by removing the server root
                         $web_path = str_replace('/var/www/html/', '', $work_dir) . '/' . $file;
                         $images[] = $web_path;
                     }
@@ -65,7 +96,7 @@ if (file_exists($works_json_path)) {
       
       /* Collection Gallery Styles */
       .collection-gallery { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; padding-top: 1em; }
-      .work-card { background: #fff; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); overflow: hidden; width: 280px; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
+      .work-card { background: #fff; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); overflow: hidden; width: 280px; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
       .work-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
       .work-card-image { width: 100%; height: 200px; object-fit: cover; background-color: #eee; }
       .work-card-info { padding: 15px; }
@@ -85,6 +116,22 @@ if (file_exists($works_json_path)) {
     <a href="database.php">Database</a>
     <a href="gallery.php">Gallery</a>
 </div>
+
+<?php if (!isset($_SESSION['email'])): ?>
+    <div style="padding: 10px; text-align: right; background: #fdfdfd; border-bottom: 1px solid #eee;">
+        <form method="POST" style="display: inline-block;">
+            Email: <input type="email" name="email" required>
+            Password: <input type="password" name="password" required>
+            <button name="login">Login</button>
+        </form>
+    </div>
+<?php else: ?>
+    <div style="padding: 10px; text-align: right; background: #fdfdfd; border-bottom: 1px solid #eee;">
+        Welcome, <strong><?php echo htmlspecialchars($_SESSION['first']); ?></strong>!
+        <a href="?logout=1" style="margin-left: 10px;">Logout</a>
+    </div>
+<?php endif; ?>
+
 
 <div class="gallery-container">
 
@@ -118,14 +165,21 @@ if (file_exists($works_json_path)) {
         <div class="collection-gallery">
             <?php if (!empty($works_collection)): ?>
                 <?php foreach ($works_collection as $work): ?>
-                    <div class="work-card">
-                        <?php
-                            $work_path = htmlspecialchars($work['path'] ?? '');
-                            // Correct the path for display if needed
-                            if (strpos($work_path, '/var/www/html/') === 0) {
-                               $work_path = str_replace('/var/www/html/', '', $work_path);
-                            }
-                        ?>
+                    <?php
+                        // Prepare data for the modal
+                        $work_data_json = htmlspecialchars(json_encode([
+                            'path' => $work['path'] ?? '',
+                            'desc' => $work['desc'] ?? 'Untitled',
+                            'artist' => $work['artist'] ?? 'Unknown',
+                            'date' => $work['date'] ?? 'N/A'
+                        ]), ENT_QUOTES, 'UTF-8');
+                        
+                        $work_path = htmlspecialchars($work['path'] ?? '');
+                        if (strpos($work_path, '/var/www/html/') === 0) {
+                           $work_path = str_replace('/var/www/html/', '', $work_path);
+                        }
+                    ?>
+                    <div class="work-card" onclick="openWorkModal(<?php echo $work_data_json; ?>)">
                         <img class="work-card-image" src="<?php echo $work_path; ?>" alt="<?php echo htmlspecialchars($work['desc'] ?? 'Artwork'); ?>">
                         <div class="work-card-info">
                             <h3 class="work-card-title"><?php echo htmlspecialchars($work['desc'] ?? 'Untitled'); ?></h3>
@@ -139,31 +193,30 @@ if (file_exists($works_json_path)) {
             <?php endif; ?>
         </div>
     </div>
+</div>
 
+<!-- Modal for Work Details -->
+<div id="workModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
+    <span id="closeWorkModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+    <img id="workModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
+    <div id="workModalInfo" style="text-align:center; width:100%;"></div>
+  </div>
 </div>
 
 <script>
     const slideshowData = {
-        slideshow1: {
-            images: <?php echo json_encode($pusers_images, JSON_UNESCAPED_SLASHES); ?>,
-            currentIndex: 0
-        },
-        slideshow2: {
-            images: <?php echo json_encode($pusers2_images, JSON_UNESCAPED_SLASHES); ?>,
-            currentIndex: 0
-        }
+        slideshow1: { images: <?php echo json_encode($pusers_images, JSON_UNESCAPED_SLASHES); ?>, currentIndex: 0 },
+        slideshow2: { images: <?php echo json_encode($pusers2_images, JSON_UNESCAPED_SLASHES); ?>, currentIndex: 0 }
     };
 
     function showSlide(slideshowId) {
         const data = slideshowData[slideshowId];
         if (!data || !data.images || data.images.length === 0) return;
-
         const slideshowElement = document.getElementById(slideshowId);
         const imgElement = slideshowElement.querySelector('.slideshow-img');
-        
         if (data.currentIndex >= data.images.length) data.currentIndex = 0;
         if (data.currentIndex < 0) data.currentIndex = data.images.length - 1;
-
         imgElement.src = data.images[data.currentIndex];
     }
 
@@ -171,10 +224,40 @@ if (file_exists($works_json_path)) {
         slideshowData[slideshowId].currentIndex += n;
         showSlide(slideshowId);
     }
+    
+    function openWorkModal(workData) {
+        const modal = document.getElementById('workModal');
+        const img = document.getElementById('workModalImg');
+        const info = document.getElementById('workModalInfo');
+
+        let path = workData.path || '';
+        if (path.startsWith('/var/www/html/')) {
+            path = path.replace('/var/www/html/', '');
+        }
+
+        img.src = path;
+        img.alt = workData.desc || 'Artwork';
+        info.innerHTML = `
+            <div style="font-weight:bold; font-size:1.2em;">${workData.desc || 'Untitled'}</div>
+            <div style="color:#555; font-size:1em; margin-top:8px;">By: ${workData.artist || 'Unknown'}</div>
+            <div style="color:#888; margin-top:6px; font-size:0.95em;">Created: ${workData.date || 'N/A'}</div>
+        `;
+        modal.style.display = 'flex';
+    }
 
     document.addEventListener("DOMContentLoaded", function() {
         showSlide('slideshow1');
         showSlide('slideshow2');
+        
+        const modal = document.getElementById('workModal');
+        const closeModalBtn = document.getElementById('closeWorkModal');
+        
+        closeModalBtn.onclick = () => { modal.style.display = 'none'; };
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
     });
 </script>
 
