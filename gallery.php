@@ -31,9 +31,55 @@ if (isset($_GET['logout'])) {
     exit();
 }
 
+// --- API endpoint for selecting a work ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'select_work') {
+    header('Content-Type: application/json');
+    if (!isset($_SESSION['email'])) {
+        echo json_encode(['success' => false, 'message' => 'User not logged in.']);
+        exit;
+    }
+
+    $workData = isset($_POST['work_data']) ? json_decode($_POST['work_data'], true) : null;
+    if (!$workData || !isset($workData['path'])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid work data provided.']);
+        exit;
+    }
+
+    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+    $userProfilePath = __DIR__ . '/pusers/' . $safe_first . '_' . $safe_last . '/profile.json';
+
+    if (file_exists($userProfilePath)) {
+        $profile = json_decode(file_get_contents($userProfilePath), true);
+        if (!isset($profile['selected_works']) || !is_array($profile['selected_works'])) {
+            $profile['selected_works'] = [];
+        }
+
+        $isAlreadySelected = false;
+        foreach ($profile['selected_works'] as $selected) {
+            if (isset($selected['path']) && $selected['path'] === $workData['path']) {
+                $isAlreadySelected = true;
+                break;
+            }
+        }
+
+        if (!$isAlreadySelected) {
+            $profile['selected_works'][] = $workData;
+            file_put_contents($userProfilePath, json_encode($profile, JSON_PRETTY_PRINT));
+        }
+        
+        echo json_encode(['success' => true, 'message' => 'Work selection updated.']);
+        exit;
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Logged-in user profile not found.']);
+        exit;
+    }
+}
+
+
 // --- Data Preparation for Slideshows & Gallery ---
 
-// NEW: Function to gather detailed work data from a directory
+// Function to gather detailed work data from a directory
 function get_slideshow_data($base_dir) {
     $works = [];
     if (!is_dir($base_dir)) return $works;
@@ -73,6 +119,17 @@ if (file_exists($works_json_path)) {
     $decoded_json = json_decode($json_content, true);
     if (is_array($decoded_json)) {
         $works_collection = $decoded_json;
+    }
+}
+
+// Get logged-in user's profile for the selection feature
+$loggedInUserProfile = null;
+if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
+    $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
+    $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
+    $profile_json_path = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last . "/profile.json";
+    if (file_exists($profile_json_path)) {
+        $loggedInUserProfile = json_decode(file_get_contents($profile_json_path), true);
     }
 }
 ?>
@@ -206,10 +263,14 @@ if (file_exists($works_json_path)) {
     <span id="closeWorkModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
     <img id="workModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px;">
     <div id="workModalInfo" style="text-align:center; width:100%;"></div>
+    <div id="workModalSelection" style="position:absolute; bottom:36px; right:28px;"></div>
   </div>
 </div>
 
 <script>
+    const isLoggedIn = <?php echo json_encode(isset($_SESSION['email'])); ?>;
+    let loggedInUserProfile = <?php echo json_encode($loggedInUserProfile); ?>;
+
     const slideshowData = {
         slideshow1: { works: <?php echo json_encode($pusers_slideshow_data, JSON_UNESCAPED_SLASHES); ?>, currentIndex: 0 },
         slideshow2: { works: <?php echo json_encode($pusers2_slideshow_data, JSON_UNESCAPED_SLASHES); ?>, currentIndex: 0 }
@@ -236,6 +297,7 @@ if (file_exists($works_json_path)) {
         const modal = document.getElementById('workModal');
         const img = document.getElementById('workModalImg');
         const info = document.getElementById('workModalInfo');
+        const selectionUI = document.getElementById('workModalSelection');
 
         let path = workData.path || '';
         if (path.startsWith('/var/www/html/')) {
@@ -249,6 +311,21 @@ if (file_exists($works_json_path)) {
             <div style="color:#555; font-size:1em; margin-top:8px;">By: ${workData.artist || 'Unknown'}</div>
             <div style="color:#888; margin-top:6px; font-size:0.95em;">Created: ${workData.date || 'N/A'}</div>
         `;
+        
+        // Render selection UI
+        if (isLoggedIn) {
+            const isSelected = loggedInUserProfile?.selected_works?.some(w => w.path === workData.path);
+            selectionUI.innerHTML = `<input type="radio" id="workLikeRadio" style="width:20px; height:20px; accent-color:#e27979; cursor:pointer;" ${isSelected ? 'checked' : ''}>`;
+            document.getElementById('workLikeRadio').onclick = () => selectWork(workData);
+        } else {
+            selectionUI.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; opacity:0.6;">
+                  <input type="radio" style="width:20px; height:20px; cursor:not-allowed;" disabled>
+                  <span style="font-size:9px; color:#888; margin-top:4px;">login to select</span>
+                </div>
+            `;
+        }
+
         modal.style.display = 'flex';
     }
 
@@ -258,6 +335,30 @@ if (file_exists($works_json_path)) {
             const currentWork = data.works[data.currentIndex];
             openWorkModal(currentWork);
         }
+    }
+
+    function selectWork(workData) {
+        if (!isLoggedIn || loggedInUserProfile?.selected_works?.some(w => w.path === workData.path)) return;
+
+        const formData = new FormData();
+        formData.append('action', 'select_work');
+        formData.append('work_data', JSON.stringify(workData));
+
+        fetch('gallery.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (!loggedInUserProfile.selected_works) {
+                    loggedInUserProfile.selected_works = [];
+                }
+                loggedInUserProfile.selected_works.push(workData);
+                // Visually confirm selection
+                const radio = document.getElementById('workLikeRadio');
+                if (radio) radio.checked = true;
+            } else {
+                console.error('Failed to select work:', data.message);
+            }
+        });
     }
 
     document.addEventListener("DOMContentLoaded", function() {
