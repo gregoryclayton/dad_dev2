@@ -128,7 +128,41 @@ if (isset($_POST['create_user'])) {
     exit();
 }
 
-// 2. Handle File Upload
+// 2. Handle Profile Image Upload
+if (isset($_POST['upload_profile_image'])) {
+    $user_folder = $_POST['profile_image_user_folder'] ?? null;
+
+    if (!empty($user_folder) && isset($_FILES['profile_image_file']) && $_FILES['profile_image_file']['error'] == 0) {
+        $user_dir = "/var/www/html/pusers/" . basename($user_folder);
+        
+        if (is_dir($user_dir)) {
+            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+            $mime_type = mime_content_type($_FILES['profile_image_file']['tmp_name']);
+
+            if (in_array($mime_type, $allowed_types)) {
+                $ext = pathinfo($_FILES['profile_image_file']['name'], PATHINFO_EXTENSION);
+                $target_file = $user_dir . "/profile_image_" . time() . "." . $ext;
+
+                if (move_uploaded_file($_FILES['profile_image_file']['tmp_name'], $target_file)) {
+                    set_flash_message("Profile image uploaded successfully for {$user_folder}.");
+                } else {
+                    set_flash_message("Error: Failed to move uploaded file.", 'error');
+                }
+            } else {
+                set_flash_message("Error: Invalid file type. Only JPG, PNG, and GIF are allowed.", 'error');
+            }
+        } else {
+            set_flash_message("Error: Directory for user '{$user_folder}' not found.", 'error');
+        }
+    } else {
+        set_flash_message("Error: You must select a user and a file to upload.", 'error');
+    }
+    header("Location: a27.php");
+    exit();
+}
+
+
+// 3. Handle Work File Upload
 if (isset($_POST['upload_file'])) {
     $user_folder = $_POST['user_folder'];
     $desc = $_POST['work_desc'] ?? "";
@@ -184,7 +218,7 @@ if (isset($_POST['upload_file'])) {
     exit();
 }
 
-// 3. Handle JSON Profile Save
+// 4. Handle JSON Profile Save
 if (isset($_POST['save_profile_json'])) {
     $user_folder = $_POST['user_folder_to_edit'];
     $json_content = $_POST['json_editor_content'];
@@ -266,6 +300,26 @@ if (is_dir($pusers_dir)) {
                     <input id="last_name" type="text" name="last_name" required>
                 </div>
                 <button type="submit" name="create_user">Create User</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Upload Profile Image</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-row">
+                    <label for="profile_image_user_folder">Select User</label>
+                    <select id="profile_image_user_folder" name="profile_image_user_folder" required>
+                        <option value="">-- Choose a user --</option>
+                        <?php foreach ($user_folders as $folder): ?>
+                            <option value="<?php echo htmlspecialchars($folder); ?>"><?php echo htmlspecialchars($folder); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="profile_image_file">Profile Image (JPG, PNG, GIF)</label>
+                    <input id="profile_image_file" type="file" name="profile_image_file" accept="image/jpeg,image/png,image/gif" required>
+                </div>
+                <button type="submit" name="upload_profile_image">Upload Profile Image</button>
             </form>
         </div>
 
