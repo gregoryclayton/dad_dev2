@@ -246,13 +246,15 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         audioEl.pause(); audioEl.src = '';
         
         const type = workDataset.type || 'image';
+        const title = workDataset.title || 'Artwork';
+
         if (type === 'audio') {
             audioEl.src = workDataset.path || ''; audioEl.style.display = 'block';
         } else {
-            imgEl.src = workDataset.path || ''; imgEl.alt = workDataset.title || 'Artwork'; imgEl.style.display = 'block';
+            imgEl.src = workDataset.path || ''; imgEl.alt = title; imgEl.style.display = 'block';
         }
         
-        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(workDataset.title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(workDataset.date)}</div>` : ''}`;
+        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(workDataset.date)}</div>` : ''}`;
         
         profileBtn.style.display = workDataset.profile ? 'inline-block' : 'none';
         if(workDataset.profile) profileBtn.href = 'profile.php?user=' + encodeURIComponent(workDataset.profile);
@@ -281,7 +283,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                 if(workImgSrc) {
                     const workData = {
                         path: workImgSrc,
-                        title: work_item.desc || '',
+                        title: work_item.title || work_item.desc || '',
                         date: work_item.date || '',
                         artist: `${profileData.first || ''} ${profileData.last || ''}`,
                         profile: profile_username,
@@ -290,7 +292,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                     workHtml += `<div class="dropdown-work-item">
                                     <img src="${escapeHtml(workImgSrc)}" class="work-image" onclick='openSelectedWorkModal(${JSON.stringify(workData)})'>
                                     <div class="work-info">
-                                        <div class="desc">${escapeHtml(work_item.desc || '')}</div>
+                                        <div class="desc">${escapeHtml(work_item.title || work_item.desc || '')}</div>
                                         <div class="date">${escapeHtml(work_item.date || '')}</div>
                                     </div>
                                  </div>`;
