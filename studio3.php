@@ -483,6 +483,24 @@ function get_profile_image_for_collection($user_folder) {
             text-overflow: ellipsis;
         }
         #selectedWorksModal .like-container, #selectedWorksModal .login-to-select { display: none; }
+        .inspireButton {
+            text-align: center;
+            margin: -10px 0 20px 0;
+        }
+        .inspireButton a {
+            display: inline-block;
+            background: #9b59b6;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+        .inspireButton a:hover {
+            background: #8e44ad;
+        }
     </style>
 </head>
 <body>
@@ -495,6 +513,8 @@ function get_profile_image_for_collection($user_folder) {
     </div>
 
     <div class="createButton"><a href="editor.html" target="_blank">CREATE</a></div>
+    <div class="inspireButton"><a href="inspire.php" target="_blank">INSPIRE</a></div>
+    
     <div class="studio-container">
         <?php if (!isset($_SESSION['email'])): ?>
             <div class="form-container login-form-container">
@@ -692,12 +712,12 @@ function get_profile_image_for_collection($user_folder) {
     </div>
     
 <div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
-  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
+  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; [...]
     <span id="closeSelectedWorksModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
     <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px; display:none;">
     <audio id="selectedWorksModalAudio" controls src="" style="width: 80%; max-width: 400px; margin-bottom: 22px; display:none;"></audio>
     <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
-    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit Artist's Profile</a>
+    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit Art[...]
   </div>
 </div>
 
@@ -727,7 +747,7 @@ function get_profile_image_for_collection($user_folder) {
             imgEl.style.display = 'block';
         }
         
-        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(workDataset.date)}</div>` : ''}`;
+        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.dat[...]
         
         if (profileBtn && workDataset.profile) {
             profileBtn.href = 'profile.php?user=' + encodeURIComponent(workDataset.profile);
@@ -755,4 +775,6 @@ function get_profile_image_for_collection($user_folder) {
 
 </body>
 </html>
+
+
 
