@@ -190,15 +190,14 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
         $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
         $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
         $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
-        $work_dir = $user_dir . "/work";
-        if (!is_dir($work_dir)) mkdir($work_dir, 0755, true);
         
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
         if (!in_array(mime_content_type($_FILES['image']['tmp_name']), $allowed_types)) {
             set_flash_message("Only JPG, PNG, and GIF files are allowed.", 'error');
         } else {
             $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-            $target_file = $work_dir . "/profile_image_" . time() . "." . $ext;
+            // Save directly in the user's root folder, not the 'work' subfolder
+            $target_file = $user_dir . "/profile_image_" . time() . "." . $ext;
             if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
                 set_flash_message("Image uploaded successfully!");
             } else {
@@ -646,9 +645,9 @@ function get_profile_image_for_collection($user_folder) {
                         </form>
                         <?php
                         $user_dir_path = "/var/www/html/pusers/" . $profile_user_segment;
-                        $work_dir_path = $user_dir_path . "/work";
-                        if (is_dir($work_dir_path)) {
-                            $images = glob($work_dir_path . "/profile_image_*.*");
+                        // Display profile images from the user's root folder
+                        if (is_dir($user_dir_path)) {
+                            $images = glob($user_dir_path . "/profile_image_*.*");
                             if ($images && count($images) > 0) {
                                 usort($images, fn($a, $b) => filemtime($b) <=> filemtime($a));
                                 $web_path = str_replace("/var/www/html", "", $images[0]);
@@ -756,3 +755,4 @@ function get_profile_image_for_collection($user_folder) {
 
 </body>
 </html>
+
