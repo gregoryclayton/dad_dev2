@@ -112,7 +112,7 @@ function update_user_profile_extra($first, $last, $bio, $dob, $country, $genre, 
 }
 
 // Helper: add work to profile.json
-function add_user_work($first, $last, $desc, $date, $file_path, $uuid, $file_type) {
+function add_user_work($first, $last, $title, $desc, $date, $file_path, $uuid, $file_type) {
     $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $first);
     $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $last);
     $user_dir = "/var/www/html/pusers/" . $safe_first . "_" . $safe_last;
@@ -123,6 +123,7 @@ function add_user_work($first, $last, $desc, $date, $file_path, $uuid, $file_typ
             $profile['work'] = [];
         }
         $profile['work'][] = [
+            "title" => $title,
             "desc" => $desc,
             "date" => $date,
             "path" => $file_path,
@@ -213,6 +214,7 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
 
 // Handle work upload
 if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
+    $title = $_POST['work_title'] ?? "Untitled";
     $desc = $_POST['work_desc'] ?? "";
     $date = $_POST['work_date'] ?? "";
     
@@ -244,11 +246,11 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             
             if (move_uploaded_file($_FILES['work_file']['tmp_name'], $target_file)) {
                 $web_path = str_replace("/var/www/html", "", $target_file);
-                add_user_work($_SESSION['first'], $_SESSION['last'], $desc, $date, $web_path, $uuid, $file_type);
+                add_user_work($_SESSION['first'], $_SESSION['last'], $title, $desc, $date, $web_path, $uuid, $file_type);
 
                 // Log the work to the central supervisor file
                 $artist_name = $_SESSION['first'] . ' ' . $_SESSION['last'];
-                logWork($uuid, $desc, $date, $web_path, $file_type, $artist_name, $user_folder_name);
+                logWork($uuid, $title, $desc, $date, $web_path, $file_type, $artist_name, $user_folder_name);
                 
                 set_flash_message("Work uploaded successfully!");
             } else {
@@ -526,11 +528,11 @@ function get_profile_image_for_collection($user_folder) {
                 <h4>My Work</h4>
                 <div class="horizontal-gallery">
                     <?php foreach ($current_profile_data['work'] as $item):
-                        $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.htmlspecialchars($item['type']).'" data-title="'.htmlspecialchars($item['desc']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($_SESSION['first'].' '.$_SESSION['last']).'" data-profile="'.htmlspecialchars($profile_user_segment).'"';
+                        $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.htmlspecialchars($item['type']).'" data-title="'.htmlspecialchars($item['title'] ?? $item['desc']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($_SESSION['first'].' '.$_SESSION['last']).'"';
                          if ($item['type'] === 'image') {
                             echo '<img src="'.htmlspecialchars($item['path']).'" '.$dataAttrs.' class="studio-work-thumb">';
                         } else if ($item['type'] === 'audio') {
-                            echo '<div '.$dataAttrs.' class="studio-audio-thumb">'.htmlspecialchars($item['desc']).'</div>';
+                            echo '<div '.$dataAttrs.' class="studio-audio-thumb">'.htmlspecialchars($item['title'] ?? $item['desc']).'</div>';
                         }
                     endforeach; ?>
                 </div>
@@ -544,7 +546,7 @@ function get_profile_image_for_collection($user_folder) {
                     <?php foreach ($collection_items as $item):
                         if ($item['gallery_type'] === 'work') {
                             $item_type = $item['type'] ?? 'image';
-                            $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.$item_type.'" data-title="'.htmlspecialchars($item['title']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($item['artist']).'" data-profile="'.htmlspecialchars($item['user_folder']).'"';
+                            $dataAttrs = 'data-path="'.htmlspecialchars($item['path']).'" data-type="'.$item_type.'" data-title="'.htmlspecialchars($item['title']).'" data-date="'.htmlspecialchars($item['date']).'" data-artist="'.htmlspecialchars($item['artist']).'"';
                             if ($item_type === 'image') {
                                 echo '<img src="'.htmlspecialchars($item['path']).'" '.$dataAttrs.' class="studio-work-thumb collection-item">';
                             } else if ($item_type === 'audio') {
@@ -660,8 +662,12 @@ function get_profile_image_for_collection($user_folder) {
                         <h3>Upload New Work</h3>
                         <form method="POST" enctype="multipart/form-data">
                             <div class="form-row">
+                                <label for="work_title">Title</label>
+                                <input id="work_title" type="text" name="work_title" required>
+                            </div>
+                            <div class="form-row">
                                 <label for="work_desc">Description</label>
-                                <textarea id="work_desc" name="work_desc" rows="2" required></textarea>
+                                <textarea id="work_desc" name="work_desc" rows="2"></textarea>
                             </div>
                             <div class="form-row">
                                 <label for="work_date">Date of Work</label>
