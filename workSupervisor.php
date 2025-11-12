@@ -1,6 +1,6 @@
 <?php
 
-function logWork($uuid, $desc, $date, $path, $type, $artist, $user_folder) {
+function logWork($uuid, $title, $desc, $date, $path, $type, $artist, $user_folder) {
     // Corrected path: Store the log file in the 'pusers' directory, which is writable.
     $log_file = '/var/www/html/pusers/works.json';
 
@@ -18,6 +18,7 @@ function logWork($uuid, $desc, $date, $path, $type, $artist, $user_folder) {
 
     $new_work = [
         'uuid' => $uuid,
+        'title' => $title,
         'desc' => $desc,
         'date' => $date,
         'path' => $path,
