@@ -197,22 +197,8 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
     * { box-sizing: border-box; }
-    /* Fix: Basic layout helpers for profile section */
-    .main-profile-inner { display: flex; gap: 20px; }
-    .profile-left { width: 300px; flex-shrink: 0; }
-    .profile-right { flex: 1; min-width: 0; /* Prevents overflow */ }
-    .main-profile-image, .profile-placeholder { width: 100%; border-radius: 12px; }
-    .profile-placeholder { aspect-ratio: 1; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 3em; color: #888; }
-    
-    /* Fix: Horizontal Gallery Scrolling to prevent page overflow */
-    .horizontal-gallery { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; max-width: 100%; }
-    .work-thumb, .audio-thumb { height: 120px; width: auto; flex-shrink: 0; margin-right: 10px; }
-    .audio-thumb { width: 120px; display: flex; align-items: center; justify-content: center; background: #f0f0f0; }
-    .gallery-title { font-weight: bold; margin: 15px 0 10px 0; }
-
-    /* Existing styles */
-    #mainProfile{max-width:1100px;margin:26px auto;background:#fff;border-radius:12px;box-shadow:0 6px 24px #00000014;padding:20px;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; position:relative;}
-    .signin-bar-container{max-width:1100px;margin:-10px auto 10px auto;padding:10px 20px;background:#fff;border-radius:0 0 12px 12px;box-shadow:0 6px 14px #0000000a;display:flex;justify-content:flex-end;align-items:center;}
+    #mainProfile{max-width:1100px;margin:26px auto;background:#fff;border-radius:12px;box-shadow:0 6px 24px #00000014;padding:20px;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial; position: relative;}.main-profile-inner{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}.profile-left{flex:0 0 240px;display:flex;flex-direction:column;align-items:center}.main-profile-image{width:240px;height:240px;border-radius:10px;object-fit:cover;background:#f4f4f4;display:block;box-shadow:0 6px 18px #00000014}.profile-placeholder{width:240px;height:240px;border-radius:10px;background:linear-gradient(135deg,#f3f3f5,#e9eef6);display:flex;align-items:center;justify-content:center;font-size:48px;color:#9aa3b2;box-shadow:0 6px 18px #0000000f}.profile-right{flex:1 1 480px;min-width:500px}.profile-header{display:flex;align-items:baseline;gap:12px; flex-wrap: wrap;}.profile-name{font-size:28px;font-weight:700;margin:0}.profile-meta{margin-top:12px;color:#444;line-height:1.5}.profile-meta .label{font-weight:600;color:#333;margin-right:8px}.horizontal-gallery{display:flex;overflow-x:auto;gap:12px;padding-bottom:15px;margin-top:10px}.work-thumb,.audio-thumb{width:140px;height:140px;border-radius:8px;box-shadow:0 4px 12px #0000000f;cursor:pointer;flex-shrink:0}.work-thumb{object-fit:cover;background:#f6f6f6}.audio-thumb{background:#f0f2f5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:14px;color:#555}.audio-thumb::before{content:'🎵';font-size:36px;margin-bottom:8px}.gallery-title{margin-top:20px;font-size:1.1em;font-weight:600}
+    .signin-bar-container{max-width:1100px;margin:-10px auto 10px auto;padding:10px 20px;background:#fff;border-radius:0 0 12px 12px;box-shadow:0 6px 14px #0000000a;display:flex;justify-content:flex-end;align-items:center;font-size:14px;}
     .signin-bar-container form{display:flex;gap:8px;align-items:center;}
     .signin-bar-container input{padding:6px;border:1px solid #ccc;border-radius:6px;}
     .signin-bar-container button{padding:6px 12px;border:none;background:#e27979;color:white;border-radius:6px;cursor:pointer;}
@@ -220,8 +206,8 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     .user-row{display:flex;flex-direction:column;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer}.user-row:hover{background:#f9f9f9}.user-row-main{display:flex;width:100%;align-items:center;padding:0 10px}.mini-profile{width:40px;height:40px;object-fit:cover;border-radius:8px;margin-right:10px;box-shadow:0 2px 8px #0000001f;flex-shrink:0}.user-name{font-size:14px;font-family:monospace}.user-submeta{color:#666;font-size:.9em;margin-top:4px}.profile-dropdown{display:none;width:100%;padding:15px 10px 0}.dropdown-inner{display:flex;flex-direction:column;gap:15px}.dropdown-header{display:flex;gap:15px;align-items:center}.dropdown-main-image{width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f4f4f4;flex-shrink:0}.dropdown-name{font-size:1.4em;font-weight:700;margin:0}.dropdown-meta{margin-top:8px;color:#555;line-height:1.5;font-size:.9em}.dropdown-gallery-title{margin-top:15px;font-weight:600;font-size:1em}.dropdown-work-gallery{display:flex;overflow-x:auto;gap:10px;padding:5px 0 10px}.dropdown-work-item{display:flex;flex-direction:column;flex-shrink:0;width:120px}.work-image{width:120px;height:120px;object-fit:cover;border-radius:8px;cursor:pointer;box-shadow:0 2px 8px #00000014}.work-info{font-size:.85em;padding-top:6px}.work-info .desc{font-weight:600;color:#333}.work-info .date{color:#777}.dropdown-body{overflow:hidden}
     @media (max-width:760px){
         .main-profile-inner{flex-direction:column;align-items:center}
-        .profile-left{flex-basis:auto; width: 100%;}
-        .profile-right{width:100%;}
+        .profile-left{flex-basis:auto}
+        .profile-right{width:100%}
         .signin-bar-container { flex-direction: column; align-items: stretch; gap: 10px; }
         .signin-bar-container form { flex-direction: column; align-items: stretch; }
         .signin-bar-container .welcome-msg { text-align: center; }
@@ -288,12 +274,12 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 
 
 <div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
-  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; [...]
+  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
     <span id="closeSelectedWorksModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
     <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px; display:none;">
     <audio id="selectedWorksModalAudio" controls src="" style="width: 80%; max-width: 400px; margin-bottom: 22px; display:none;"></audio>
     <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
-    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit Art[...]
+    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit Artist's Profile</a>
     <div class="like-container" style="position:absolute; bottom:36px; right:28px;">
       <?php if (isset($_SESSION['email'])): ?>
         <input type="radio" name="selectedWorkLike" id="selectedWorkLikeRadio" style="width:20px; height:20px; accent-color:#e27979; cursor:pointer;">
@@ -330,7 +316,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
             };
             const isSelected = loggedInUserProfile && loggedInUserProfile.selected_profiles && loggedInUserProfile.selected_profiles.some(p => p.uuid === profileData.uuid);
             selectProfileHtml = `<div style="position: absolute; top: 20px; right: 20px;">
-                <input type="radio" id="selectProfileRadio" name="select_profile" ${isSelected ? 'checked' : ''} onclick='selectProfile(${JSON.stringify(profileToSelect)})' style="width:20px; height:2[...]
+                <input type="radio" id="selectProfileRadio" name="select_profile" ${isSelected ? 'checked' : ''} onclick='selectProfile(${JSON.stringify(profileToSelect)})' style="width:20px; height:20px; accent-color:#e27979; cursor:pointer;">
             </div>`;
         }
 
@@ -379,7 +365,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                 const userFolder = item.user_folder || profile_username;
                 
                 if (path) {
-                    const dataAttrs = `data-path="${escapeAttr(path)}" data-type="${escapeAttr(type)}" data-title="${escapeAttr(title)}" data-date="${escapeAttr(date)}" data-artist="${escapeAttr(artis[...]
+                    const dataAttrs = `data-path="${escapeAttr(path)}" data-type="${escapeAttr(type)}" data-title="${escapeAttr(title)}" data-date="${escapeAttr(date)}" data-artist="${escapeAttr(artist)}" data-profile="${escapeAttr(userFolder)}"`;
                     if (type === 'audio') {
                         galleryHtml += `<div class="audio-thumb" ${dataAttrs}>${escapeHtml(title)}</div>`;
                     } else {
@@ -458,7 +444,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
             imgEl.src = workDataset.path || ''; imgEl.alt = workDataset.title || 'Artwork'; imgEl.style.display = 'block';
         }
         
-        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(workDataset.title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${wor[...]
+        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(workDataset.title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(workDataset.date)}</div>` : ''}`;
         
         if (profileBtn && workDataset.profile) {
             profileBtn.href = 'profile.php?user=' + encodeURIComponent(workDataset.profile);
@@ -483,7 +469,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
             profileData.work.forEach(function(work_item) {
                 var workImgSrc = work_item.image ? work_item.image.replace("/var/www/html", "") : '';
                 if(workImgSrc) {
-                    const dataAttrs = `data-path="${escapeAttr(workImgSrc)}" data-type="image" data-title="${escapeAttr(work_item.desc || '')}" data-date="${escapeAttr(work_item.date || '')}" data-art[...]
+                    const dataAttrs = `data-path="${escapeAttr(workImgSrc)}" data-type="image" data-title="${escapeAttr(work_item.desc || '')}" data-date="${escapeAttr(work_item.date || '')}" data-artist="${escapeAttr((profileData.first || '') + ' ' + (profileData.last || ''))}" data-profile="${escapeAttr(profile_username)}"`;
                     workHtml += `<div class="dropdown-work-item">
                                     <img src="${escapeAttr(workImgSrc)}" class="work-image" ${dataAttrs}>
                                     <div class="work-info">
@@ -501,7 +487,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                 <img src="${imgSrc || 'placeholder.png'}" class="dropdown-main-image">
                 <div>
                     <div class="dropdown-name">${escapeHtml(profileData.first)} ${escapeHtml(profileData.last)}</div>
-                    <button class="profile-btn" style="margin-top:10px;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(profile_username)}'">Visit Full P[...]
+                    <button class="profile-btn" style="margin-top:10px;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(profile_username)}'">Visit Full Profile</button>
                 </div>
             </div>
             <div class="dropdown-body">
@@ -638,3 +624,4 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 
 </body>
 </html>
+
