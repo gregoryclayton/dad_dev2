@@ -197,144 +197,30 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
     * { box-sizing: border-box; }
-    /* Prevent horizontal scroll on the whole page */
-    body {
-        overflow-x: hidden; 
-        margin: 0;
-    }
+    /* Fix: Basic layout helpers for profile section */
+    .main-profile-inner { display: flex; gap: 20px; }
+    .profile-left { width: 300px; flex-shrink: 0; }
+    .profile-right { flex: 1; min-width: 0; /* Prevents overflow */ }
+    .main-profile-image, .profile-placeholder { width: 100%; border-radius: 12px; }
+    .profile-placeholder { aspect-ratio: 1; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 3em; color: #888; }
     
-    #mainProfile {
-        max-width:1100px;
-        margin:26px auto;
-        background:#fff;
-        border-radius:12px;
-        box-shadow:0 6px 24px #00000014;
-        padding:20px;
-        color:#222;
-        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-        position: relative;
-    }
-    .main-profile-inner {
-        display: flex;
-        gap: 30px;
-    }
-    .profile-left {
-        flex-basis: 300px;
-        flex-shrink: 0;
-        text-align: center;
-    }
-    /* Make sure main image doesn't overflow */
-    .main-profile-image {
-        width: 100%;
-        height: auto;
-        border-radius: 12px;
-        object-fit: cover;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .profile-placeholder {
-        width: 100%;
-        aspect-ratio: 1;
-        background: linear-gradient(135deg, #f3f3f5, #e9eef6);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 80px;
-        color: #9aa3b2;
-        font-weight: bold;
-    }
-    
-    /* Ensure the right side doesn't force width */
-    .profile-right {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        min-width: 0; /* IMPORTANT: Prevents flex child from overflowing parent */
-    }
-    
-    .profile-header {
-        border-bottom: 1px solid #eee;
-        padding-bottom: 15px;
-        margin-bottom: 15px;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        gap: 10px;
-    }
-    .profile-name {
-        margin: 0;
-        font-size: 2.2em;
-        line-height: 1.2;
-        overflow-wrap: break-word; /* Break long names */
-    }
-    .profile-meta {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 10px;
-        margin-bottom: 20px;
-        font-size: 0.95em;
-        overflow-wrap: break-word; /* Break long emails */
-    }
-    .profile-meta .label {
-        font-weight: 600;
-        color: #555;
-        margin-right: 5px;
-    }
-    .profile-meta a {
-        color: #e27979;
-        text-decoration: none;
-    }
-    
-    /* --- FIX: Horizontal Gallery Scrolling --- */
-    .horizontal-gallery {
-        display: flex;
-        overflow-x: auto;
-        gap: 12px;
-        padding-bottom: 15px;
-        width: 100%; /* Constrain width */
-        -webkit-overflow-scrolling: touch; /* Smooth scroll on mobile */
-    }
-    
-    /* --- FIX: Thumbnails inside Gallery --- */
-    .work-thumb, .audio-thumb {
-        height: 130px;
-        width: auto; /* Allow auto width based on aspect ratio */
-        flex-shrink: 0; /* Prevent squishing */
-        border-radius: 8px;
-        cursor: pointer;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        max-width: 90vw; /* Safety for very wide images */
-    }
-    
-    .audio-thumb {
-        width: 130px;
-        background: #f4f4f4;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        border: 1px solid #ddd;
-    }
-    
-    .gallery-title {
-        font-size: 1.1em;
-        font-weight: 600;
-        margin-top: 20px;
-        margin-bottom: 10px;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 5px;
-    }
+    /* Fix: Horizontal Gallery Scrolling to prevent page overflow */
+    .horizontal-gallery { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; max-width: 100%; }
+    .work-thumb, .audio-thumb { height: 120px; width: auto; flex-shrink: 0; margin-right: 10px; }
+    .audio-thumb { width: 120px; display: flex; align-items: center; justify-content: center; background: #f0f0f0; }
+    .gallery-title { font-weight: bold; margin: 15px 0 10px 0; }
 
+    /* Existing styles */
+    #mainProfile{max-width:1100px;margin:26px auto;background:#fff;border-radius:12px;box-shadow:0 6px 24px #00000014;padding:20px;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; position:relative;}
     .signin-bar-container{max-width:1100px;margin:-10px auto 10px auto;padding:10px 20px;background:#fff;border-radius:0 0 12px 12px;box-shadow:0 6px 14px #0000000a;display:flex;justify-content:flex-end;align-items:center;}
     .signin-bar-container form{display:flex;gap:8px;align-items:center;}
     .signin-bar-container input{padding:6px;border:1px solid #ccc;border-radius:6px;}
     .signin-bar-container button{padding:6px 12px;border:none;background:#e27979;color:white;border-radius:6px;cursor:pointer;}
     .signin-bar-container .welcome-msg a{color:#c0392b;text-decoration:none;margin-left:12px;}
     .user-row{display:flex;flex-direction:column;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer}.user-row:hover{background:#f9f9f9}.user-row-main{display:flex;width:100%;align-items:center;padding:0 10px}.mini-profile{width:40px;height:40px;object-fit:cover;border-radius:8px;margin-right:10px;box-shadow:0 2px 8px #0000001f;flex-shrink:0}.user-name{font-size:14px;font-family:monospace}.user-submeta{color:#666;font-size:.9em;margin-top:4px}.profile-dropdown{display:none;width:100%;padding:15px 10px 0}.dropdown-inner{display:flex;flex-direction:column;gap:15px}.dropdown-header{display:flex;gap:15px;align-items:center}.dropdown-main-image{width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f4f4f4;flex-shrink:0}.dropdown-name{font-size:1.4em;font-weight:700;margin:0}.dropdown-meta{margin-top:8px;color:#555;line-height:1.5;font-size:.9em}.dropdown-gallery-title{margin-top:15px;font-weight:600;font-size:1em}.dropdown-work-gallery{display:flex;overflow-x:auto;gap:10px;padding:5px 0 10px}.dropdown-work-item{display:flex;flex-direction:column;flex-shrink:0;width:120px}.work-image{width:120px;height:120px;object-fit:cover;border-radius:8px;cursor:pointer;box-shadow:0 2px 8px #00000014}.work-info{font-size:.85em;padding-top:6px}.work-info .desc{font-weight:600;color:#333}.work-info .date{color:#777}.dropdown-body{overflow:hidden}
-    
     @media (max-width:760px){
         .main-profile-inner{flex-direction:column;align-items:center}
-        .profile-left{flex-basis:auto; width: 100%;} /* Allow full width on mobile */
+        .profile-left{flex-basis:auto; width: 100%;}
         .profile-right{width:100%;}
         .signin-bar-container { flex-direction: column; align-items: stretch; gap: 10px; }
         .signin-bar-container form { flex-direction: column; align-items: stretch; }
