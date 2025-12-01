@@ -636,17 +636,17 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
             renderProfiles(sorted);
         } else {
             let sorted = allWorks.slice();
-            if (criteria === 'alpha') { // Sort by Title
+            if (criteria === 'alpha') { 
                 sorted.sort((a, b) => (a.title||"").toLowerCase().localeCompare((b.title||"").toLowerCase()));
-            } else if (criteria === 'date') { // Sort by Work Date
+            } else if (criteria === 'date') { 
                 sorted.sort((a, b) => {
                     const da = a.date ? new Date(a.date) : new Date(0);
                     const db = b.date ? new Date(b.date) : new Date(0);
                     return da - db;
                 });
-            } else if (criteria === 'country') { // Sort by Artist Country
+            } else if (criteria === 'country') { 
                 sorted.sort((a, b) => (a.country||"").toLowerCase().localeCompare((b.country||"").toLowerCase()));
-            } else if (criteria === 'genre') { // Sort by Artist Genre
+            } else if (criteria === 'genre') { 
                 sorted.sort((a, b) => (a.genre||"").toLowerCase().localeCompare((b.genre||"").toLowerCase()));
             }
             renderWorks(sorted);
