@@ -83,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 $baseDir = "/var/www/html/pusers";
 $userProfiles = [];
 $profile_images_map = [];
+$allWorks = []; // Container for the "Works" view
 
 if (is_dir($baseDir)) {
     $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
@@ -93,12 +94,24 @@ if (is_dir($baseDir)) {
             if ($profileData) {
                 $userProfiles[] = $profileData;
                 
-                // --- Image Map Logic (copied from profile.php) ---
                 $safe_first = isset($profileData['first']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['first']) : '';
                 $safe_last = isset($profileData['last']) ? preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $profileData['last']) : '';
                 $user_folder = $safe_first . "_" . $safe_last;
                 $work_dir = $baseDir . '/' . $user_folder . '/work';
                 $img = "";
+                
+                // Collect individual works for the global list
+                if (isset($profileData['work']) && is_array($profileData['work'])) {
+                    foreach ($profileData['work'] as $work) {
+                        if (isset($work['path'])) {
+                            $work['artist'] = $profileData['first'] . " " . $profileData['last'];
+                            $work['profile_user'] = $user_folder;
+                            $allWorks[] = $work;
+                        }
+                    }
+                }
+
+                // --- Image Map Logic ---
                 if (is_dir($work_dir)) {
                     // Prioritize profile_image_*
                     $candidates = glob($work_dir . "/profile_image_*.*");
@@ -119,6 +132,9 @@ if (is_dir($baseDir)) {
         }
     }
 }
+
+// Shuffle works for variety
+shuffle($allWorks);
 
 // Get logged-in user's profile for the selection feature
 $loggedInUserProfile = null;
@@ -142,16 +158,44 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         * { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
         .user-row{display:flex;flex-direction:column;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer}.user-row:hover{background:#f9f9f9}.user-row-main{display:flex;width:100%;align-items:center;padding:0 10px}.mini-profile{width:40px;height:40px;object-fit:cover;border-radius:8px;margin-right:10px;box-shadow:0 2px 8px #0000001f;flex-shrink:0}.user-name{font-size:14px;font-family:monospace}.user-submeta{color:#666;font-size:.9em;margin-top:4px}.profile-dropdown{display:none;width:100%;padding:15px 10px 0}.dropdown-inner{display:flex;flex-direction:column;gap:15px}.dropdown-header{display:flex;gap:15px;align-items:center}.dropdown-main-image{width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f4f4f4;flex-shrink:0}.dropdown-name{font-size:1.4em;font-weight:700;margin:0}.dropdown-meta{margin-top:8px;color:#555;line-height:1.5;font-size:.9em}.dropdown-gallery-title{margin-top:15px;font-weight:600;font-size:1em}.dropdown-work-gallery{display:flex;overflow-x:auto;gap:10px;padding:5px 0 10px}.dropdown-work-item{display:flex;flex-direction:column;flex-shrink:0;width:120px}.work-image{width:120px;height:120px;object-fit:cover;border-radius:8px;cursor:pointer;box-shadow:0 2px 8px #00000014}.work-info{font-size:.85em;padding-top:6px}.work-info .desc{font-weight:600;color:#333}.work-info .date{color:#777}.dropdown-body{overflow:hidden}
+        
+        /* Works Grid Styles */
+        .works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 10px; width: 100%; }
+        .work-grid-item { position: relative; cursor: pointer; overflow: hidden; border-radius: 8px; aspect-ratio: 1; background: #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .work-grid-item:hover { transform: scale(1.02); }
+        .work-grid-item img { width: 100%; height: 100%; object-fit: cover; }
+        .work-grid-item .audio-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; font-size: 0.8em; padding: 10px; text-align: center; background: #e9e9e9; }
+        .work-grid-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: white; padding: 5px; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
         .container-container-container { display:grid; align-items:center; justify-items: center; margin-top: 30px; }
-        .container-container { border: double; border-radius:20px; padding: 20px; width:90%; display:grid; background-color: #f2e9e9; }
+        .container-container { border: double; border-radius:20px; padding: 20px; width:90%; display:grid; background-color: #f2e9e9; position: relative; }
+        
+        .view-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            background-color: #e27979;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            z-index: 10;
+        }
+        .view-toggle-btn:hover { background-color: #d66a6a; }
+
         @media (min-width: 600px) { .dropdown-inner { flex-direction: row; } .dropdown-header { flex-basis: 220px; flex-shrink: 0; flex-direction: column; align-items: flex-start; gap: 0; } .dropdown-main-image { width: 120px; height: 120px; } .dropdown-body { min-width: 0; flex-grow: 1; } }
-        @media (max-width: 760px) { .container-container { padding-left: 15px; padding-right: 15px; } #artistSearchBar { width: 100%; } }
+        @media (max-width: 760px) { .container-container { padding-left: 15px; padding-right: 15px; } #artistSearchBar { width: 100%; } .view-toggle-btn { position: static; margin-bottom: 15px; justify-self: end; } }
     </style>
     <script>
         var userProfiles = <?php echo json_encode($userProfiles, JSON_UNESCAPED_SLASHES); ?>;
+        var allWorks = <?php echo json_encode($allWorks, JSON_UNESCAPED_SLASHES); ?>;
         var profileImagesMap = <?php echo json_encode($profile_images_map, JSON_UNESCAPED_SLASHES); ?>;
         var isLoggedIn = <?php echo json_encode(isset($_SESSION['email'])); ?>;
         var loggedInUserProfile = <?php echo json_encode($loggedInUserProfile); ?>;
+        var currentView = 'profiles'; // 'profiles' or 'works'
     </script>
 </head>
 <body>
@@ -183,16 +227,18 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 <!-- Content Section (Search, Sort, Profiles) -->
 <div class="container-container-container">
     <div class="container-container">
+        <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()">Switch to Works</button>
+        
         <div style="display:flex; justify-content: center; align-items:center;">
             <input type="text" id="artistSearchBar" placeholder="Search artists..." style="width:60vw; padding:0.6em 1em; font-size:1em; border-radius:7px; border:1px solid #ccc;">
         </div>
-        <div style="display:flex; justify-content:center; align-items:center; margin:1em 0; flex-wrap: wrap; gap: 5px;">
+        <div style="display:flex; justify-content:center; align-items:center; margin:1em 0; flex-wrap: wrap; gap: 5px;" id="sortButtons">
             <button id="sortAlphaBtn" style="padding:0.7em 1.3em; font-family: monospace;">name</button>
             <button id="sortDateBtn" style="padding:0.7em 1.3em; font-family: monospace;">date</button>
             <button id="sortCountryBtn" style="padding:0.7em 1.3em; font-family: monospace;">country</button>
             <button id="sortGenreBtn" style="padding:0.7em 1.3em; font-family: monospace;">genre</button>
         </div>
-        <div id="user-profiles" style="width: 100%;"></div>
+        <div id="database-content" style="width: 100%;"></div>
     </div>
 </div>
 
@@ -211,6 +257,27 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 
 <script>
     function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'})[m]); }
+
+    function toggleView() {
+        const btn = document.getElementById('viewToggleBtn');
+        const searchInput = document.getElementById('artistSearchBar');
+        const sortButtons = document.getElementById('sortButtons');
+        
+        if (currentView === 'profiles') {
+            currentView = 'works';
+            btn.innerText = "Switch to Artists";
+            searchInput.placeholder = "Search works...";
+            // Hide sort buttons for now in works view (or implement work-specific sorting later)
+            sortButtons.style.display = 'none'; 
+            renderWorks(allWorks);
+        } else {
+            currentView = 'profiles';
+            btn.innerText = "Switch to Works";
+            searchInput.placeholder = "Search artists...";
+            sortButtons.style.display = 'flex';
+            renderProfiles(userProfiles);
+        }
+    }
 
     function selectWork(workData) {
         if (!isLoggedIn) return;
@@ -317,8 +384,10 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     }
 
     function renderProfiles(profiles) {
-        var container = document.getElementById('user-profiles');
+        var container = document.getElementById('database-content');
         container.innerHTML = '';
+        container.className = ''; // Clear grid class
+        
         profiles.forEach(function(profileData) {
             var safe_first = (profileData.first || '').replace(/[^a-zA-Z0-9_\-\.]/g, '_');
             var safe_last = (profileData.last || '').replace(/[^a-zA-Z0-9_\-\.]/g, '_');
@@ -355,22 +424,76 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         });
     }
 
-    function searchProfiles() {
+    function renderWorks(works) {
+        var container = document.getElementById('database-content');
+        container.innerHTML = '';
+        container.className = 'works-grid';
+
+        works.forEach(function(work) {
+            var workImgSrc = work.path || (work.image ? work.image.replace("/var/www/html", "") : '');
+            if (!workImgSrc && work.type !== 'audio') return;
+
+            var workData = {
+                path: workImgSrc,
+                title: work.title || work.desc || '',
+                date: work.date || '',
+                artist: work.artist || 'Unknown',
+                profile: work.profile_user || '',
+                type: work.type || 'image'
+            };
+
+            var item = document.createElement('div');
+            item.className = 'work-grid-item';
+            
+            var contentHtml = '';
+            if (workData.type === 'audio') {
+                contentHtml = `<div class="audio-placeholder">🎵<br>${escapeHtml(workData.title)}</div>`;
+            } else {
+                contentHtml = `<img src="${escapeHtml(workImgSrc)}" loading="lazy" alt="${escapeHtml(workData.title)}">`;
+            }
+
+            item.innerHTML = `${contentHtml}
+                <div class="work-grid-overlay">
+                    <strong>${escapeHtml(workData.title)}</strong><br>
+                    ${escapeHtml(workData.artist)}
+                </div>`;
+            
+            item.onclick = () => openSelectedWorkModal(workData);
+            container.appendChild(item);
+        });
+        
+        if(works.length === 0) {
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #777; padding: 20px;">No works found matching your search.</div>';
+        }
+    }
+
+    function searchDatabase() {
         var search = (document.getElementById('artistSearchBar').value || "").toLowerCase();
-        if (!search) { renderProfiles(userProfiles); return; }
-        var filtered = userProfiles.filter(p => 
-            (p.first && p.first.toLowerCase().includes(search)) ||
-            (p.last && p.last.toLowerCase().includes(search)) ||
-            (p.country && p.country.toLowerCase().includes(search)) ||
-            (p.genre && p.genre.toLowerCase().includes(search))
-        );
-        renderProfiles(filtered);
+        
+        if (currentView === 'profiles') {
+            if (!search) { renderProfiles(userProfiles); return; }
+            var filtered = userProfiles.filter(p => 
+                (p.first && p.first.toLowerCase().includes(search)) ||
+                (p.last && p.last.toLowerCase().includes(search)) ||
+                (p.country && p.country.toLowerCase().includes(search)) ||
+                (p.genre && p.genre.toLowerCase().includes(search))
+            );
+            renderProfiles(filtered);
+        } else {
+            if (!search) { renderWorks(allWorks); return; }
+            var filtered = allWorks.filter(w => 
+                (w.title && w.title.toLowerCase().includes(search)) ||
+                (w.desc && w.desc.toLowerCase().includes(search)) ||
+                (w.artist && w.artist.toLowerCase().includes(search))
+            );
+            renderWorks(filtered);
+        }
     }
     
     document.addEventListener("DOMContentLoaded", function() {
         renderProfiles(userProfiles);
 
-        document.getElementById('artistSearchBar').addEventListener('input', searchProfiles);
+        document.getElementById('artistSearchBar').addEventListener('input', searchDatabase);
         
         document.getElementById('sortAlphaBtn').addEventListener('click', () => {
             renderProfiles(userProfiles.slice().sort((a, b) => ((a.first||"")+" "+(a.last||"")).toLowerCase().localeCompare(((b.first||"")+" "+(b.last||"")).toLowerCase())));
