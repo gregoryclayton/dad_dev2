@@ -234,17 +234,22 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             $safe_first = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['first']);
             $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
             $user_folder_name = $safe_first . "_" . $safe_last;
-            $user_dir = "/var/www/html/pusers/" . $user_folder_name;
-            $work_dir = $user_dir . "/work";
-            if (!is_dir($work_dir)) mkdir($work_dir, 0755, true);
+            
+            // Change: Save to central work directory instead of user's work folder
+            $central_work_dir = "/var/www/html/work";
+            if (!is_dir($central_work_dir)) mkdir($central_work_dir, 0755, true);
 
             $file_type = $allowed_mimes[$mime_type];
             $ext = pathinfo($_FILES['work_file']['name'], PATHINFO_EXTENSION);
             $uuid = generateUUID();
-            $target_file = $work_dir . "/work_" . $uuid . "." . $ext;
+            
+            // Save to central dir with UUID filename to avoid collisions
+            $target_file = $central_work_dir . "/work_" . $uuid . "." . $ext;
             
             if (move_uploaded_file($_FILES['work_file']['tmp_name'], $target_file)) {
-                $web_path = str_replace("/var/www/html", "", $target_file);
+                // Web path now points to /work/ instead of pusers/...
+                $web_path = "/work/work_" . $uuid . "." . $ext;
+                
                 add_user_work($_SESSION['first'], $_SESSION['last'], $title, $desc, $date, $web_path, $uuid, $file_type);
 
                 // Log the work to the central supervisor file
@@ -712,12 +717,12 @@ function get_profile_image_for_collection($user_folder) {
     </div>
     
 <div id="selectedWorksModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
-  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; [...]
+  <div id="selectedWorksModalContent" style="background:#fff; border-radius:14px; padding:36px 28px; max-width:90vw; max-height:90vh; box-shadow:0 8px 32px #0005; display:flex; flex-direction:column; align-items:center; position:relative;">
     <span id="closeSelectedWorksModal" style="position:absolute; top:16px; right:24px; color:#333; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
     <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px; display:none;">
     <audio id="selectedWorksModalAudio" controls src="" style="width: 80%; max-width: 400px; margin-bottom: 22px; display:none;"></audio>
     <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
-    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit Art[...]
+    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit Artist's Profile</a>
   </div>
 </div>
 
@@ -747,7 +752,7 @@ function get_profile_image_for_collection($user_folder) {
             imgEl.style.display = 'block';
         }
         
-        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.dat[...]
+        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(workDataset.date)}</div>` : ''}`;
         
         if (profileBtn && workDataset.profile) {
             profileBtn.href = 'profile.php?user=' + encodeURIComponent(workDataset.profile);
@@ -775,6 +780,3 @@ function get_profile_image_for_collection($user_folder) {
 
 </body>
 </html>
-
-
-
