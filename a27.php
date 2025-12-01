@@ -35,7 +35,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
     // Display login form
     $username_val = isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '';
-    echo '<!DOCTYPE html><html><head><title>Admin Login</title><style>body{font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5;} .login-box{background:#fff;padding:24px;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.08); width:380px} h2{margin:0 0 12px;font-size:18px} label{display:block;margin:8px 0 6px;font-weight:600} input{width:100%;padding:8px;border:1px solid #ddd;border-radius:6px} button{margin-top:12px;padding:8px 12px;background:#e27979;border:none;color:#fff;border-radius:6px;cursor:pointer} .error{background:#f8d7da;color:#721c24;padding:8px;border-radius:6px;margin-bottom:8px}</style></head><body>';
+    echo '<!DOCTYPE html><html><head><title>Admin Login</title><style>body{font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5;} .login-box{background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 300px;} input{width: 100%; padding: 8px; margin: 5px 0 15px 0; box-sizing: border-box;} button{width: 100%; padding: 10px; background: #e27979; color: white; border: none; border-radius: 4px; cursor: pointer;} .error{color: red; margin-bottom: 10px; font-size: 0.9em;}</style></head><body>';
     echo '<div class="login-box">';
     echo '<form method="POST" action="a27.php">';
     echo '<h2>Admin Login</h2>';
@@ -128,31 +128,50 @@ if (isset($_POST['create_user'])) {
     exit();
 }
 
-// 2. Handle Profile Image Upload
+// 2. Handle Profile Image Upload (To Central Directory)
 if (isset($_POST['upload_profile_image'])) {
     $user_folder = $_POST['profile_image_user_folder'] ?? null;
 
     if (!empty($user_folder) && isset($_FILES['profile_image_file']) && $_FILES['profile_image_file']['error'] == 0) {
         $user_dir = "/var/www/html/pusers/" . basename($user_folder);
+        $profile_path = $user_dir . "/profile.json";
         
-        if (is_dir($user_dir)) {
+        // Check if user exists
+        if (is_dir($user_dir) && file_exists($profile_path)) {
             $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
             $mime_type = mime_content_type($_FILES['profile_image_file']['tmp_name']);
 
             if (in_array($mime_type, $allowed_types)) {
-                $ext = pathinfo($_FILES['profile_image_file']['name'], PATHINFO_EXTENSION);
-                $target_file = $user_dir . "/profile_image_" . time() . "." . $ext;
+                // Setup central directory
+                $central_work_dir = "/var/www/html/work";
+                if (!is_dir($central_work_dir)) {
+                    mkdir($central_work_dir, 0755, true);
+                }
 
+                $ext = pathinfo($_FILES['profile_image_file']['name'], PATHINFO_EXTENSION);
+                $uuid = generateUUID();
+                
+                // Save to central /work/ folder
+                $target_file = $central_work_dir . "/profile_image_" . $uuid . "." . $ext;
+                
                 if (move_uploaded_file($_FILES['profile_image_file']['tmp_name'], $target_file)) {
+                    // Calculate Web Path
+                    $web_path = "/work/profile_image_" . $uuid . "." . $ext;
+
+                    // Update Profile JSON
+                    $profile = json_decode(file_get_contents($profile_path), true);
+                    $profile['profile_image'] = $web_path;
+                    file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
+
                     set_flash_message("Profile image uploaded successfully for {$user_folder}.");
                 } else {
-                    set_flash_message("Error: Failed to move uploaded file.", 'error');
+                    set_flash_message("Error: Failed to move uploaded file. Check permissions for /var/www/html/work.", 'error');
                 }
             } else {
                 set_flash_message("Error: Invalid file type. Only JPG, PNG, and GIF are allowed.", 'error');
             }
         } else {
-            set_flash_message("Error: Directory for user '{$user_folder}' not found.", 'error');
+            set_flash_message("Error: Directory or profile for user '{$user_folder}' not found.", 'error');
         }
     } else {
         set_flash_message("Error: You must select a user and a file to upload.", 'error');
@@ -162,7 +181,7 @@ if (isset($_POST['upload_profile_image'])) {
 }
 
 
-// 3. Handle Work File Upload
+// 3. Handle Work File Upload (To Central Directory)
 if (isset($_POST['upload_file'])) {
     $user_folder = $_POST['user_folder'];
     $desc = $_POST['work_desc'] ?? "";
@@ -173,9 +192,10 @@ if (isset($_POST['upload_file'])) {
         $profile_path = $user_dir . "/profile.json";
 
         if (file_exists($profile_path)) {
-            $work_dir = $user_dir . "/work";
-            if (!is_dir($work_dir)) {
-                mkdir($work_dir, 0755, true);
+            // Setup central directory
+            $central_work_dir = "/var/www/html/work";
+            if (!is_dir($central_work_dir)) {
+                mkdir($central_work_dir, 0755, true);
             }
 
             $file_type = 'image'; // Default to image
@@ -186,7 +206,9 @@ if (isset($_POST['upload_file'])) {
 
             $ext = pathinfo($_FILES['work_file']['name'], PATHINFO_EXTENSION);
             $uuid = generateUUID();
-            $target_file = $work_dir . "/work_" . $uuid . "." . $ext;
+            
+            // Save to central /work/ folder
+            $target_file = $central_work_dir . "/work_" . $uuid . "." . $ext;
 
             if (move_uploaded_file($_FILES['work_file']['tmp_name'], $target_file)) {
                 $profile = json_decode(file_get_contents($profile_path), true);
@@ -194,7 +216,8 @@ if (isset($_POST['upload_file'])) {
                     $profile['work'] = [];
                 }
 
-                $web_path = str_replace("/var/www/html/", "/", $target_file);
+                // The web path is now relative to root
+                $web_path = "/work/work_" . $uuid . "." . $ext;
 
                 $profile['work'][] = [
                     "uuid" => $uuid,
@@ -206,7 +229,7 @@ if (isset($_POST['upload_file'])) {
                 file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
                 set_flash_message("File uploaded successfully to {$user_folder}'s profile.");
             } else {
-                set_flash_message("Error: Failed to move uploaded file.", 'error');
+                set_flash_message("Error: Failed to move uploaded file. Check permissions for /var/www/html/work.", 'error');
             }
         } else {
             set_flash_message("Error: Profile for selected user '{$user_folder}' not found.", 'error');
@@ -305,6 +328,7 @@ if (is_dir($pusers_dir)) {
 
         <div class="form-section">
             <h2>Upload Profile Image</h2>
+            <p style="font-size:0.9em; color:#666;">Images will be saved to central storage and linked in profile.json.</p>
             <form method="POST" enctype="multipart/form-data">
                 <div class="form-row">
                     <label for="profile_image_user_folder">Select User</label>
@@ -344,7 +368,8 @@ if (is_dir($pusers_dir)) {
         </div>
 
         <div class="form-section">
-            <h2>Upload File to User's Work Directory</h2>
+            <h2>Upload File to Central Work Storage</h2>
+            <p style="font-size:0.9em; color:#666;">Files will be saved to central storage and linked in the user's profile.json.</p>
             <form method="POST" enctype="multipart/form-data">
                 <div class="form-row">
                     <label for="user_folder">Select User</label>
