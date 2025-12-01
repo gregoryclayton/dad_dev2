@@ -195,13 +195,32 @@ if (isset($_SESSION['email']) && isset($_POST['upload_image'])) {
         if (!in_array(mime_content_type($_FILES['image']['tmp_name']), $allowed_types)) {
             set_flash_message("Only JPG, PNG, and GIF files are allowed.", 'error');
         } else {
+            // Central work directory for profile images too
+            $central_work_dir = "/var/www/html/work";
+            if (!is_dir($central_work_dir)) {
+                mkdir($central_work_dir, 0755, true);
+            }
+
             $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-            // Save directly in the user's root folder, not the 'work' subfolder
-            $target_file = $user_dir . "/profile_image_" . time() . "." . $ext;
+            $uuid = generateUUID();
+            
+            // Save directly in the central work folder
+            $target_file = $central_work_dir . "/profile_image_" . $uuid . "." . $ext;
+            
             if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+                $web_path = "/work/profile_image_" . $uuid . "." . $ext;
+                
+                // Update profile.json with the new profile image path
+                $profile_path = $user_dir . "/profile.json";
+                if (file_exists($profile_path)) {
+                    $profile = json_decode(file_get_contents($profile_path), true);
+                    $profile['profile_image'] = $web_path;
+                    file_put_contents($profile_path, json_encode($profile, JSON_PRETTY_PRINT));
+                }
+
                 set_flash_message("Image uploaded successfully!");
             } else {
-                set_flash_message("Failed to upload image.", 'error');
+                set_flash_message("Failed to upload image. Check permissions.", 'error');
             }
         }
     } else {
@@ -237,8 +256,14 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             
             // Define the central work directory
             $central_work_dir = "/var/www/html/work";
+            
+            // Note: The web server user (e.g., www-data) needs write permissions to this directory.
             if (!is_dir($central_work_dir)) {
-                mkdir($central_work_dir, 0755, true);
+                if (!mkdir($central_work_dir, 0755, true)) {
+                    set_flash_message("Error: Could not create work directory. Please check server permissions.", 'error');
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit();
+                }
             }
 
             $file_type = $allowed_mimes[$mime_type];
@@ -247,19 +272,16 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             $target_file = $central_work_dir . "/work_" . $uuid . "." . $ext;
             
             if (move_uploaded_file($_FILES['work_file']['tmp_name'], $target_file)) {
-                // The web path is now relative to the root, pointing to the /work/ directory
                 $web_path = "/work/work_" . $uuid . "." . $ext;
                 
-                // Add the work metadata to the user's profile.json in their pusers folder
                 add_user_work($_SESSION['first'], $_SESSION['last'], $title, $desc, $date, $web_path, $uuid, $file_type);
 
-                // Log the work to the central supervisor file (workSupervisor.php)
                 $artist_name = $_SESSION['first'] . ' ' . $_SESSION['last'];
                 logWork($uuid, $title, $desc, $date, $web_path, $file_type, $artist_name, $user_folder_name);
                 
                 set_flash_message("Work uploaded successfully!");
             } else {
-                set_flash_message("Failed to upload work file.", 'error');
+                set_flash_message("Failed to upload work file. Check directory permissions.", 'error');
             }
         }
     } else {
@@ -296,20 +318,45 @@ if (isset($_SESSION['email'])) {
 }
 // Function to get a profile image for the collection
 function get_profile_image_for_collection($user_folder) {
-    $baseDir = "/var/www/html/pusers";
-    $work_dir = $baseDir . '/' . $user_folder . '/work';
-    if (is_dir($work_dir)) {
-        $candidates = glob($work_dir . "/profile_image_*.*");
+    $user_dir = "/var/www/html/pusers/" . $user_folder;
+    $profile_path = $user_dir . "/profile.json";
+    
+    // 1. Check profile.json for explicit path
+    if (file_exists($profile_path)) {
+        $profile = json_decode(file_get_contents($profile_path), true);
+        if (isset($profile['profile_image']) && !empty($profile['profile_image'])) {
+            return $profile['profile_image'];
+        }
+    }
+
+    // 2. Fallback: Check for files in the user's folder (Backward Compatibility)
+    if (is_dir($user_dir)) {
+        $candidates = glob($user_dir . "/profile_image_*.*");
         if ($candidates && count($candidates) > 0) {
             usort($candidates, fn($a, $b) => filemtime($b) - filemtime($a));
             return str_replace("/var/www/html", "", $candidates[0]);
         }
-        $allImgs = glob($work_dir . "/*.{jpg,jpeg,png,gif}", GLOB_BRACE);
-        if ($allImgs && count($allImgs) > 0) {
-            usort($allImgs, fn($a, $b) => filemtime($b) - filemtime($a));
-            return str_replace("/var/www/html", "", $allImgs[0]);
+    }
+    
+    // 3. Fallback: Check works for an image
+    if (file_exists($profile_path)) {
+        $profile = json_decode(file_get_contents($profile_path), true);
+        if (!empty($profile['work'])) {
+            $latest_image = null;
+            $latest_time = 0;
+            foreach($profile['work'] as $item) {
+                if ($item['type'] === 'image') {
+                    $filepath = "/var/www/html" . $item['path'];
+                    if (file_exists($filepath) && filemtime($filepath) > $latest_time) {
+                        $latest_time = filemtime($filepath);
+                        $latest_image = $item['path'];
+                    }
+                }
+            }
+            if ($latest_image) return $latest_image;
         }
     }
+    
     return "";
 }
 
@@ -671,8 +718,10 @@ function get_profile_image_for_collection($user_folder) {
                         </form>
                         <?php
                         $user_dir_path = "/var/www/html/pusers/" . $profile_user_segment;
-                        // Display profile images from the user's root folder
-                        if (is_dir($user_dir_path)) {
+                        // Display profile images: Check JSON first, then fallback to glob
+                        if (isset($current_profile_data['profile_image']) && !empty($current_profile_data['profile_image'])) {
+                             echo '<div style="margin-top:15px;"><img src="' . htmlspecialchars($current_profile_data['profile_image']) . '" alt="Profile Image" style="max-width:150px; border-radius:8px;"></div>';
+                        } else if (is_dir($user_dir_path)) {
                             $images = glob($user_dir_path . "/profile_image_*.*");
                             if ($images && count($images) > 0) {
                                 usort($images, fn($a, $b) => filemtime($b) <=> filemtime($a));
@@ -723,7 +772,7 @@ function get_profile_image_for_collection($user_folder) {
     <img id="selectedWorksModalImg" src="" alt="" style="max-width:80vw; max-height:60vh; border-radius:8px; margin-bottom:22px; display:none;">
     <audio id="selectedWorksModalAudio" controls src="" style="width: 80%; max-width: 400px; margin-bottom: 22px; display:none;"></audio>
     <div id="selectedWorksModalInfo" style="text-align:center; width:100%;"></div>
-    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit Artist's Profile</a>
+    <a id="selectedWorksModalProfileBtn" href="#" style="display:inline-block; margin-top:18px; background:#e8bebe; color:#000; padding:0.6em 1.2em; border-radius:8px; text-decoration:none;">Visit Art[...]
   </div>
 </div>
 
@@ -753,7 +802,7 @@ function get_profile_image_for_collection($user_folder) {
             imgEl.style.display = 'block';
         }
         
-        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.date ? `<div style="color:#888;margin-top:6px;">${escapeHtml(workDataset.date)}</div>` : ''}`;
+        infoEl.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${escapeHtml(title)}</div><div style="color:#666;margin-top:6px;">by ${escapeHtml(workDataset.artist)}</div>${workDataset.dat[...]
         
         if (profileBtn && workDataset.profile) {
             profileBtn.href = 'profile.php?user=' + encodeURIComponent(workDataset.profile);
@@ -781,3 +830,4 @@ function get_profile_image_for_collection($user_folder) {
 
 </body>
 </html>
+
