@@ -278,7 +278,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         
         .dropdown-work-gallery { 
             display:flex; overflow-x:scroll; gap:10px; padding:5px 0 10px; 
-           
+           max-width: 100%; /* Constrain width */
             -webkit-overflow-scrolling: touch; 
         }
         
