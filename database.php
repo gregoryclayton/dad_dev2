@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 $baseDir = "/var/www/html/pusers";
 $userProfiles = [];
 $profile_images_map = [];
-$allWorks = []; // Container for the "Works" view
+$allWorks = []; // Array to hold all works for the list view
 
 if (is_dir($baseDir)) {
     $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
@@ -100,7 +100,7 @@ if (is_dir($baseDir)) {
                 $work_dir = $baseDir . '/' . $user_folder . '/work';
                 $img = "";
                 
-                // Collect individual works for the global list
+                // Collect individual works for the toggle view
                 if (isset($profileData['work']) && is_array($profileData['work'])) {
                     foreach ($profileData['work'] as $work) {
                         if (isset($work['path'])) {
@@ -159,14 +159,6 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
         .user-row{display:flex;flex-direction:column;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer}.user-row:hover{background:#f9f9f9}.user-row-main{display:flex;width:100%;align-items:center;padding:0 10px}.mini-profile{width:40px;height:40px;object-fit:cover;border-radius:8px;margin-right:10px;box-shadow:0 2px 8px #0000001f;flex-shrink:0}.user-name{font-size:14px;font-family:monospace}.user-submeta{color:#666;font-size:.9em;margin-top:4px}.profile-dropdown{display:none;width:100%;padding:15px 10px 0}.dropdown-inner{display:flex;flex-direction:column;gap:15px}.dropdown-header{display:flex;gap:15px;align-items:center}.dropdown-main-image{width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f4f4f4;flex-shrink:0}.dropdown-name{font-size:1.4em;font-weight:700;margin:0}.dropdown-meta{margin-top:8px;color:#555;line-height:1.5;font-size:.9em}.dropdown-gallery-title{margin-top:15px;font-weight:600;font-size:1em}.dropdown-work-gallery{display:flex;overflow-x:auto;gap:10px;padding:5px 0 10px}.dropdown-work-item{display:flex;flex-direction:column;flex-shrink:0;width:120px}.work-image{width:120px;height:120px;object-fit:cover;border-radius:8px;cursor:pointer;box-shadow:0 2px 8px #00000014}.work-info{font-size:.85em;padding-top:6px}.work-info .desc{font-weight:600;color:#333}.work-info .date{color:#777}.dropdown-body{overflow:hidden}
         
-        /* Works Grid Styles */
-        .works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 10px; width: 100%; }
-        .work-grid-item { position: relative; cursor: pointer; overflow: hidden; border-radius: 8px; aspect-ratio: 1; background: #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
-        .work-grid-item:hover { transform: scale(1.02); }
-        .work-grid-item img { width: 100%; height: 100%; object-fit: cover; }
-        .work-grid-item .audio-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; font-size: 0.8em; padding: 10px; text-align: center; background: #e9e9e9; }
-        .work-grid-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: white; padding: 5px; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
         .container-container-container { display:grid; align-items:center; justify-items: center; margin-top: 30px; }
         .container-container { border: double; border-radius:20px; padding: 20px; width:90%; display:grid; background-color: #f2e9e9; position: relative; }
         
@@ -267,8 +259,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
             currentView = 'works';
             btn.innerText = "Switch to Artists";
             searchInput.placeholder = "Search works...";
-            // Hide sort buttons for now in works view (or implement work-specific sorting later)
-            sortButtons.style.display = 'none'; 
+            sortButtons.style.display = 'none'; // Simple sort hiding for now
             renderWorks(allWorks);
         } else {
             currentView = 'profiles';
@@ -294,7 +285,6 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
                 } else if (!loggedInUserProfile.selected_works) {
                     loggedInUserProfile.selected_works = [workData];
                 }
-                // Re-render the like button state in the modal
                 const radio = document.getElementById('selectedWorkLikeRadio');
                 if (radio) radio.checked = true;
             }
@@ -383,10 +373,44 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         </div>`;
     }
 
+    // New function to build content for a single work item dropdown
+    function buildWorkDropdownContent(container, workData) {
+        var imgHtml = '';
+        if (workData.type === 'audio') {
+            imgHtml = '<div class="dropdown-main-image" style="display:flex;align-items:center;justify-content:center;font-size:2em;color:#555;">🎵</div>';
+        } else {
+            // Clicking the image opens the full modal for selection/likes
+            imgHtml = `<img src="${escapeHtml(workData.path)}" class="dropdown-main-image" style="cursor:pointer;" onclick='openSelectedWorkModal(${JSON.stringify(workData)})'>`;
+        }
+
+        var descHtml = workData.desc ? `<div><strong>Description:</strong> ${escapeHtml(workData.desc)}</div>` : '';
+        
+        container.innerHTML = `
+            <div class="dropdown-inner">
+                <div class="dropdown-header">
+                    ${imgHtml}
+                    <div>
+                        <div class="dropdown-name">${escapeHtml(workData.title)}</div>
+                        <div class="dropdown-meta">by ${escapeHtml(workData.artist)}</div>
+                        <button class="profile-btn" style="margin-top:10px; padding: 5px 10px; font-size: 0.9em;" onclick="event.stopPropagation(); window.location.href='profile.php?user=${encodeURIComponent(workData.profile)}'">Visit Artist</button>
+                    </div>
+                </div>
+                <div class="dropdown-body">
+                    <div class="dropdown-meta">
+                        ${descHtml}
+                        <div style="margin-top:10px; font-size:0.9em; color:#777;">Date: ${escapeHtml(workData.date)}</div>
+                        <div style="margin-top:15px;">
+                            <button style="padding:6px 12px; border-radius:4px; border:1px solid #ccc; background:#fff; cursor:pointer; font-weight:bold;" onclick='openSelectedWorkModal(${JSON.stringify(workData)})'>View Full / Select</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     function renderProfiles(profiles) {
         var container = document.getElementById('database-content');
         container.innerHTML = '';
-        container.className = ''; // Clear grid class
         
         profiles.forEach(function(profileData) {
             var safe_first = (profileData.first || '').replace(/[^a-zA-Z0-9_\-\.]/g, '_');
@@ -424,10 +448,15 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         });
     }
 
+    // New function to render works in a list style similar to renderProfiles
     function renderWorks(works) {
         var container = document.getElementById('database-content');
         container.innerHTML = '';
-        container.className = 'works-grid';
+
+        if (works.length === 0) {
+            container.innerHTML = '<div style="padding: 20px; text-align:center; color:#777;">No works found.</div>';
+            return;
+        }
 
         works.forEach(function(work) {
             var workImgSrc = work.path || (work.image ? work.image.replace("/var/www/html", "") : '');
@@ -435,36 +464,49 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 
             var workData = {
                 path: workImgSrc,
-                title: work.title || work.desc || '',
+                title: work.title || work.desc || 'Untitled',
                 date: work.date || '',
                 artist: work.artist || 'Unknown',
                 profile: work.profile_user || '',
-                type: work.type || 'image'
+                type: work.type || 'image',
+                desc: work.desc || ''
             };
 
-            var item = document.createElement('div');
-            item.className = 'work-grid-item';
-            
-            var contentHtml = '';
+            var row = document.createElement('div');
+            row.className = 'user-row'; // Reuse standard row class
+
+            var thumbHtml = '';
             if (workData.type === 'audio') {
-                contentHtml = `<div class="audio-placeholder">🎵<br>${escapeHtml(workData.title)}</div>`;
+                thumbHtml = '<div class="mini-profile" style="background:#eee; display:flex; align-items:center; justify-content:center; font-size:1.2em;">🎵</div>';
             } else {
-                contentHtml = `<img src="${escapeHtml(workImgSrc)}" loading="lazy" alt="${escapeHtml(workData.title)}">`;
+                thumbHtml = `<img src="${escapeHtml(workData.path)}" class="mini-profile" alt="work thumb">`;
             }
 
-            item.innerHTML = `${contentHtml}
-                <div class="work-grid-overlay">
-                    <strong>${escapeHtml(workData.title)}</strong><br>
-                    ${escapeHtml(workData.artist)}
-                </div>`;
-            
-            item.onclick = () => openSelectedWorkModal(workData);
-            container.appendChild(item);
+            row.innerHTML = `
+                <div class="user-row-main">
+                    ${thumbHtml}
+                    <div>
+                        <div class="user-name">${escapeHtml(workData.title)}</div>
+                        <div class="user-submeta">by ${escapeHtml(workData.artist)} &bull; ${escapeHtml(workData.date)}</div>
+                    </div>
+                </div>
+                <div class="profile-dropdown"></div>
+            `;
+
+            var dropdownContainer = row.querySelector('.profile-dropdown');
+            row.querySelector('.user-row-main').addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (dropdownContainer.style.display === 'block') {
+                    dropdownContainer.style.display = 'none';
+                    dropdownContainer.innerHTML = '';
+                } else {
+                    buildWorkDropdownContent(dropdownContainer, workData);
+                    dropdownContainer.style.display = 'block';
+                }
+            });
+
+            container.appendChild(row);
         });
-        
-        if(works.length === 0) {
-            container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #777; padding: 20px;">No works found matching your search.</div>';
-        }
     }
 
     function searchDatabase() {
