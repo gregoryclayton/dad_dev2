@@ -9,6 +9,75 @@ session_start();
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
+// --- Handle Safe SQL Download (From JSON Profile Data) ---
+if (isset($_GET['download_sql'])) {
+    $filename = "artist_profiles_export_" . date("Y-m-d") . ".sql";
+    
+    // Headers to force download
+    header('Content-Type: application/sql');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Pragma: no-cache');
+    
+    echo "-- Artist Profile Export (Generated from JSON)\n";
+    echo "-- Date: " . date("Y-m-d H:i:s") . "\n";
+    echo "-- This file contains public profile information only.\n\n";
+    
+    // 1. Create the Table Structure
+    echo "CREATE TABLE IF NOT EXISTS `artist_profiles` (\n";
+    echo "  `id` int(11) NOT NULL AUTO_INCREMENT,\n";
+    echo "  `first_name` varchar(255) DEFAULT NULL,\n";
+    echo "  `last_name` varchar(255) DEFAULT NULL,\n";
+    echo "  `nickname` varchar(255) DEFAULT NULL,\n";
+    echo "  `bio` text,\n";
+    echo "  `bio2` text,\n";
+    echo "  `country` varchar(100) DEFAULT NULL,\n";
+    echo "  `city` varchar(100) DEFAULT NULL,\n";
+    echo "  `genre` varchar(100) DEFAULT NULL,\n";
+    echo "  `subgenre` varchar(100) DEFAULT NULL,\n";
+    echo "  `dob` date DEFAULT NULL,\n";
+    echo "  `fact1` text,\n";
+    echo "  `fact2` text,\n";
+    echo "  `fact3` text,\n";
+    echo "  PRIMARY KEY (`id`)\n";
+    echo ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;\n\n";
+
+    echo "LOCK TABLES `artist_profiles` WRITE;\n";
+
+    // 2. Populate Data from JSON files
+    $baseDir = "/var/www/html/pusers";
+    if (is_dir($baseDir)) {
+        $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
+        foreach ($dirs as $dir) {
+            $profilePath = $dir . "/profile.json";
+            if (file_exists($profilePath)) {
+                $data = json_decode(file_get_contents($profilePath), true);
+                if ($data) {
+                    // Escape data for SQL
+                    $first = isset($data['first']) ? $conn->real_escape_string($data['first']) : '';
+                    $last = isset($data['last']) ? $conn->real_escape_string($data['last']) : '';
+                    $nick = isset($data['nickname']) ? $conn->real_escape_string($data['nickname']) : '';
+                    $bio = isset($data['bio']) ? $conn->real_escape_string($data['bio']) : '';
+                    $bio2 = isset($data['bio2']) ? $conn->real_escape_string($data['bio2']) : '';
+                    $country = isset($data['country']) ? $conn->real_escape_string($data['country']) : '';
+                    $city = isset($data['city']) ? $conn->real_escape_string($data['city']) : '';
+                    $genre = isset($data['genre']) ? $conn->real_escape_string($data['genre']) : '';
+                    $subgenre = isset($data['subgenre']) ? $conn->real_escape_string($data['subgenre']) : '';
+                    $dob = (isset($data['dob']) && !empty($data['dob'])) ? "'" . $conn->real_escape_string($data['dob']) . "'" : "NULL";
+                    $f1 = isset($data['fact1']) ? $conn->real_escape_string($data['fact1']) : '';
+                    $f2 = isset($data['fact2']) ? $conn->real_escape_string($data['fact2']) : '';
+                    $f3 = isset($data['fact3']) ? $conn->real_escape_string($data['fact3']) : '';
+
+                    // Generate INSERT statement (Excluding Email/Sensitive data)
+                    echo "INSERT INTO `artist_profiles` (`first_name`, `last_name`, `nickname`, `bio`, `bio2`, `country`, `city`, `genre`, `subgenre`, `dob`, `fact1`, `fact2`, `fact3`) VALUES ('$first', '$last', '$nick', '$bio', '$bio2', '$country', '$city', '$genre', '$subgenre', $dob, '$f1', '$f2', '$f3');\n";
+                }
+            }
+        }
+    }
+    
+    echo "UNLOCK TABLES;\n";
+    exit();
+}
+
 // --- Handle Login ---
 if (isset($_POST['login'])) {
     $email = $conn->real_escape_string($_POST['email']);
@@ -106,6 +175,9 @@ if (is_dir($baseDir)) {
                         if (isset($work['path'])) {
                             $work['artist'] = $profileData['first'] . " " . $profileData['last'];
                             $work['profile_user'] = $user_folder;
+                            // Add metadata to work items for sorting
+                            $work['country'] = isset($profileData['country']) ? $profileData['country'] : '';
+                            $work['genre'] = isset($profileData['genre']) ? $profileData['genre'] : '';
                             $allWorks[] = $work;
                         }
                     }
@@ -162,24 +234,40 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         .container-container-container { display:grid; align-items:center; justify-items: center; margin-top: 30px; }
         .container-container { border: double; border-radius:20px; padding: 20px; width:90%; display:grid; background-color: #f2e9e9; position: relative; }
         
-        .view-toggle-btn {
+        /* Top controls wrapper */
+        .top-controls {
             position: absolute;
             top: 20px;
             right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .view-toggle-btn, .download-sql-btn {
             padding: 8px 12px;
-            background-color: #e27979;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.9em;
-            z-index: 10;
+            text-decoration: none;
+            white-space: nowrap;
         }
+        
+        .view-toggle-btn { background-color: #e27979; }
         .view-toggle-btn:hover { background-color: #d66a6a; }
+        
+        .download-sql-btn { background-color: #3498db; }
+        .download-sql-btn:hover { background-color: #2980b9; }
 
         @media (min-width: 600px) { .dropdown-inner { flex-direction: row; } .dropdown-header { flex-basis: 220px; flex-shrink: 0; flex-direction: column; align-items: flex-start; gap: 0; } .dropdown-main-image { width: 120px; height: 120px; } .dropdown-body { min-width: 0; flex-grow: 1; } }
-        @media (max-width: 760px) { .container-container { padding-left: 15px; padding-right: 15px; } #artistSearchBar { width: 100%; } .view-toggle-btn { position: static; margin-bottom: 15px; justify-self: end; } }
+        @media (max-width: 760px) { 
+            .container-container { padding-left: 15px; padding-right: 15px; } 
+            #artistSearchBar { width: 100%; } 
+            .top-controls { position: static; margin-bottom: 15px; justify-self: end; }
+        }
     </style>
     <script>
         var userProfiles = <?php echo json_encode($userProfiles, JSON_UNESCAPED_SLASHES); ?>;
@@ -219,7 +307,10 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
 <!-- Content Section (Search, Sort, Profiles) -->
 <div class="container-container-container">
     <div class="container-container">
-        <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()">Switch to Works</button>
+        <div class="top-controls">
+            <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()">Switch to Works</button>
+            <a href="?download_sql=1" class="download-sql-btn">Download SQL</a>
+        </div>
         
         <div style="display:flex; justify-content: center; align-items:center;">
             <input type="text" id="artistSearchBar" placeholder="Search artists..." style="width:60vw; padding:0.6em 1em; font-size:1em; border-radius:7px; border:1px solid #ccc;">
@@ -253,19 +344,16 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     function toggleView() {
         const btn = document.getElementById('viewToggleBtn');
         const searchInput = document.getElementById('artistSearchBar');
-        const sortButtons = document.getElementById('sortButtons');
         
         if (currentView === 'profiles') {
             currentView = 'works';
             btn.innerText = "Switch to Artists";
             searchInput.placeholder = "Search works...";
-            sortButtons.style.display = 'none'; // Simple sort hiding for now
             renderWorks(allWorks);
         } else {
             currentView = 'profiles';
             btn.innerText = "Switch to Works";
             searchInput.placeholder = "Search artists...";
-            sortButtons.style.display = 'flex';
             renderProfiles(userProfiles);
         }
     }
@@ -373,13 +461,11 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         </div>`;
     }
 
-    // New function to build content for a single work item dropdown
     function buildWorkDropdownContent(container, workData) {
         var imgHtml = '';
         if (workData.type === 'audio') {
             imgHtml = '<div class="dropdown-main-image" style="display:flex;align-items:center;justify-content:center;font-size:2em;color:#555;">🎵</div>';
         } else {
-            // Clicking the image opens the full modal for selection/likes
             imgHtml = `<img src="${escapeHtml(workData.path)}" class="dropdown-main-image" style="cursor:pointer;" onclick='openSelectedWorkModal(${JSON.stringify(workData)})'>`;
         }
 
@@ -448,7 +534,6 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         });
     }
 
-    // New function to render works in a list style similar to renderProfiles
     function renderWorks(works) {
         var container = document.getElementById('database-content');
         container.innerHTML = '';
@@ -532,27 +617,51 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         }
     }
     
+    function sortAndRender(criteria) {
+        if (currentView === 'profiles') {
+            let sorted = userProfiles.slice();
+            if (criteria === 'alpha') {
+                sorted.sort((a, b) => ((a.first||"")+" "+(a.last||"")).toLowerCase().localeCompare(((b.first||"")+" "+(b.last||"")).toLowerCase()));
+            } else if (criteria === 'date') {
+                sorted.sort((a, b) => {
+                    const da = a.dob ? new Date(a.dob) : new Date(0);
+                    const db = b.dob ? new Date(b.dob) : new Date(0);
+                    return da - db;
+                });
+            } else if (criteria === 'country') {
+                sorted.sort((a, b) => (a.country||"").toLowerCase().localeCompare((b.country||"").toLowerCase()));
+            } else if (criteria === 'genre') {
+                sorted.sort((a, b) => (a.genre||"").toLowerCase().localeCompare((b.genre||"").toLowerCase()));
+            }
+            renderProfiles(sorted);
+        } else {
+            let sorted = allWorks.slice();
+            if (criteria === 'alpha') { // Sort by Title
+                sorted.sort((a, b) => (a.title||"").toLowerCase().localeCompare((b.title||"").toLowerCase()));
+            } else if (criteria === 'date') { // Sort by Work Date
+                sorted.sort((a, b) => {
+                    const da = a.date ? new Date(a.date) : new Date(0);
+                    const db = b.date ? new Date(b.date) : new Date(0);
+                    return da - db;
+                });
+            } else if (criteria === 'country') { // Sort by Artist Country
+                sorted.sort((a, b) => (a.country||"").toLowerCase().localeCompare((b.country||"").toLowerCase()));
+            } else if (criteria === 'genre') { // Sort by Artist Genre
+                sorted.sort((a, b) => (a.genre||"").toLowerCase().localeCompare((b.genre||"").toLowerCase()));
+            }
+            renderWorks(sorted);
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         renderProfiles(userProfiles);
 
         document.getElementById('artistSearchBar').addEventListener('input', searchDatabase);
         
-        document.getElementById('sortAlphaBtn').addEventListener('click', () => {
-            renderProfiles(userProfiles.slice().sort((a, b) => ((a.first||"")+" "+(a.last||"")).toLowerCase().localeCompare(((b.first||"")+" "+(b.last||"")).toLowerCase())));
-        });
-        document.getElementById('sortDateBtn').addEventListener('click', () => {
-            renderProfiles(userProfiles.slice().sort((a, b) => {
-                const dobA = a.dob ? new Date(a.dob) : null, dobB = b.dob ? new Date(b.dob) : null;
-                if (!dobA && !dobB) return 0; if (!dobA) return 1; if (!dobB) return -1;
-                return dobA - dobB;
-            }));
-        });
-        document.getElementById('sortCountryBtn').addEventListener('click', () => {
-            renderProfiles(userProfiles.slice().sort((a, b) => (a.country||"").toLowerCase().localeCompare((b.country||"").toLowerCase())));
-        });
-        document.getElementById('sortGenreBtn').addEventListener('click', () => {
-            renderProfiles(userProfiles.slice().sort((a, b) => (a.genre||"").toLowerCase().localeCompare((b.genre||"").toLowerCase())));
-        });
+        document.getElementById('sortAlphaBtn').addEventListener('click', () => sortAndRender('alpha'));
+        document.getElementById('sortDateBtn').addEventListener('click', () => sortAndRender('date'));
+        document.getElementById('sortCountryBtn').addEventListener('click', () => sortAndRender('country'));
+        document.getElementById('sortGenreBtn').addEventListener('click', () => sortAndRender('genre'));
 
         // Modal close logic
         const modal = document.getElementById('selectedWorksModal');
