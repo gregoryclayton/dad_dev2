@@ -230,135 +230,78 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         * { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; overflow-x: hidden; }
         
-        .user-row{display:flex;flex-direction:column;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer;width:100%;}
-        .user-row:hover{background:#f9f9f9}
-        .user-row-main{display:flex;width:100%;align-items:center;padding:0 10px}
-        .mini-profile{width:40px;height:40px;object-fit:cover;border-radius:8px;margin-right:10px;box-shadow:0 2px 8px #0000001f;flex-shrink:0}
-        .user-name{font-size:14px;font-family:monospace}
-        .user-submeta{color:#666;font-size:.9em;margin-top:4px}
+        .user-row {
+            display:flex; flex-direction:column; align-items:flex-start; padding:10px 0;
+            border-bottom:1px solid #eee; cursor:pointer; width:100%;
+        }
+        .user-row:hover { background:#f9f9f9; }
+        .user-row-main { display:flex; width:100%; align-items:center; padding:0 10px; }
         
-        /* --- Dropdown Styles Fixed for Mobile --- */
-        .profile-dropdown {
-            display:none;
-            width:100%;
-            padding:15px 10px 0;
-            box-sizing: border-box; /* Crucial */
+        .mini-profile {
+            width:40px; height:40px; object-fit:cover; border-radius:8px;
+            margin-right:10px; box-shadow:0 2px 8px #0000001f; flex-shrink:0;
         }
-        .dropdown-inner {
-            display:flex;
-            flex-direction:column;
-            gap:15px;
-            width: 100%;
-        }
-        .dropdown-header {
-            display:flex;
-            gap:15px;
-            align-items:center;
-            width: 100%;
-        }
-        /* Constraint text width in header to prevent overflow */
-        .dropdown-header > div {
-            min-width: 0;
-            flex: 1;
-        }
-        .dropdown-main-image {
-            width:80px;
-            height:80px;
-            border-radius:10px;
-            object-fit:cover;
-            background:#f4f4f4;
-            flex-shrink:0;
-        }
-        .dropdown-name {
-            font-size:1.4em;
-            font-weight:700;
-            margin:0;
-            overflow-wrap: break-word; /* Break long names */
-        }
-        .dropdown-meta {
-            margin-top:8px;
-            color:#555;
-            line-height:1.5;
-            font-size:.9em;
-            overflow-wrap: break-word; /* Break long bios */
-        }
-        .dropdown-gallery-title {
-            margin-top:15px;
-            font-weight:600;
-            font-size:1em;
+        .user-name { font-size:14px; font-family:monospace; }
+        .user-submeta { color:#666; font-size:.9em; margin-top:4px; }
+        
+        /* --- DROPDOWN CSS FIXES FOR MOBILE OVERFLOW --- */
+        .profile-dropdown { display:none; width:100%; padding:15px 10px 0; box-sizing: border-box; }
+        
+        .dropdown-inner { 
+            display:flex; flex-direction:column; gap:15px; 
+            width: 100%; min-width: 0; /* Fix for flex overflow */
         }
         
-        /* Horizontal Scroll Gallery Fix */
-        .dropdown-work-gallery {
-            display:flex;
-            overflow-x:auto;
-            gap:10px;
-            padding:5px 0 10px;
-            width: 100%; /* Limit width to parent */
-            -webkit-overflow-scrolling: touch;
+        .dropdown-header { 
+            display:flex; gap:15px; align-items:center; width: 100%; 
         }
-        .dropdown-work-item {
-            display:flex;
-            flex-direction:column;
-            flex-shrink:0; /* Prevent squishing */
-            width:120px;
+        .dropdown-header > div { 
+            flex: 1; min-width: 0; /* Fix for text overflow */
         }
-        .work-image {
-            width:120px;
-            height:120px;
-            object-fit:cover;
-            border-radius:8px;
-            cursor:pointer;
-            box-shadow:0 2px 8px #00000014;
+        
+        .dropdown-main-image { 
+            width:80px; height:80px; border-radius:10px; object-fit:cover; 
+            background:#f4f4f4; flex-shrink:0; 
         }
-        .work-info {
-            font-size:.85em;
-            padding-top:6px;
+        
+        .dropdown-name { 
+            font-size:1.4em; font-weight:700; margin:0; 
+            word-wrap: break-word; overflow-wrap: break-word; 
         }
-        .work-info .desc {
-            font-weight:600;
-            color:#333;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        
+        .dropdown-meta { 
+            margin-top:8px; color:#555; line-height:1.5; font-size:.9em; 
+            word-wrap: break-word; overflow-wrap: break-word; 
         }
+        
+        .dropdown-gallery-title { margin-top:15px; font-weight:600; font-size:1em; }
+        
+        .dropdown-work-gallery { 
+            display:flex; overflow-x:auto; gap:10px; padding:5px 0 10px; 
+            width: 100%; /* Constrain width */
+            -webkit-overflow-scrolling: touch; 
+        }
+        
+        .dropdown-work-item { display:flex; flex-direction:column; flex-shrink:0; width:120px; }
+        .work-image { 
+            width:120px; height:120px; object-fit:cover; border-radius:8px; 
+            cursor:pointer; box-shadow:0 2px 8px #00000014; 
+        }
+        
+        .work-info { font-size:.85em; padding-top:6px; }
+        .work-info .desc { font-weight:600; color:#333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .work-info .date { color:#777; }
         
-        .dropdown-body {
-            min-width: 0; /* Allow flex items to shrink */
-            width: 100%;
-        }
-        
-        .container-container-container { display:grid; align-items:center; justify-items: center; margin-top: 30px; }
-        .container-container { border: double; border-radius:20px; padding: 20px; width:90%; display:grid; background-color: #f2e9e9; position: relative; }
-        
-        /* Top controls wrapper */
-        .top-controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-        }
+        .dropdown-body { width: 100%; min-width: 0; }
+        /* ---------------------------------------------- */
 
-        .view-toggle-btn, .download-sql-btn {
-            padding: 8px 12px;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9em;
-            text-decoration: none;
-            white-space: nowrap;
-        }
+        .container-container-container { display:grid; align-items:center; justify-items: center; margin-top: 30px; }
+        .container-container { border: double; border-radius:20px; padding: 20px; width:90%; display:grid; background-color: #f2e9e9; position: relative; box-sizing: border-box; }
         
+        .top-controls { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 10; }
+        .view-toggle-btn, .download-sql-btn { padding: 8px 12px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em; text-decoration: none; white-space: nowrap; }
         .view-toggle-btn { background-color: #e27979; }
-        .view-toggle-btn:hover { background-color: #d66a6a; }
-        
         .download-sql-btn { background-color: #3498db; }
-        .download-sql-btn:hover { background-color: #2980b9; }
 
         @media (min-width: 600px) { 
             .dropdown-inner { flex-direction: row; } 
@@ -453,7 +396,7 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
             currentView = 'works';
             btn.innerText = "Switch to Artists";
             searchInput.placeholder = "Search works...";
-            sortButtons.style.display = 'flex'; // Ensure sort buttons are visible
+            sortButtons.style.display = 'flex'; 
             renderWorks(allWorks);
         } else {
             currentView = 'profiles';
