@@ -235,24 +235,25 @@ if (isset($_SESSION['email']) && isset($_POST['upload_work'])) {
             $safe_last = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $_SESSION['last']);
             $user_folder_name = $safe_first . "_" . $safe_last;
             
-            // Change: Save to central work directory instead of user's work folder
+            // Define the central work directory
             $central_work_dir = "/var/www/html/work";
-            if (!is_dir($central_work_dir)) mkdir($central_work_dir, 0755, true);
+            if (!is_dir($central_work_dir)) {
+                mkdir($central_work_dir, 0755, true);
+            }
 
             $file_type = $allowed_mimes[$mime_type];
             $ext = pathinfo($_FILES['work_file']['name'], PATHINFO_EXTENSION);
             $uuid = generateUUID();
-            
-            // Save to central dir with UUID filename to avoid collisions
             $target_file = $central_work_dir . "/work_" . $uuid . "." . $ext;
             
             if (move_uploaded_file($_FILES['work_file']['tmp_name'], $target_file)) {
-                // Web path now points to /work/ instead of pusers/...
+                // The web path is now relative to the root, pointing to the /work/ directory
                 $web_path = "/work/work_" . $uuid . "." . $ext;
                 
+                // Add the work metadata to the user's profile.json in their pusers folder
                 add_user_work($_SESSION['first'], $_SESSION['last'], $title, $desc, $date, $web_path, $uuid, $file_type);
 
-                // Log the work to the central supervisor file
+                // Log the work to the central supervisor file (workSupervisor.php)
                 $artist_name = $_SESSION['first'] . ' ' . $_SESSION['last'];
                 logWork($uuid, $title, $desc, $date, $web_path, $file_type, $artist_name, $user_folder_name);
                 
