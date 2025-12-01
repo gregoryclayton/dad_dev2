@@ -344,16 +344,19 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
     function toggleView() {
         const btn = document.getElementById('viewToggleBtn');
         const searchInput = document.getElementById('artistSearchBar');
+        const sortButtons = document.getElementById('sortButtons');
         
         if (currentView === 'profiles') {
             currentView = 'works';
             btn.innerText = "Switch to Artists";
             searchInput.placeholder = "Search works...";
+            sortButtons.style.display = 'flex'; // Ensure sort buttons are visible
             renderWorks(allWorks);
         } else {
             currentView = 'profiles';
             btn.innerText = "Switch to Works";
             searchInput.placeholder = "Search artists...";
+            sortButtons.style.display = 'flex';
             renderProfiles(userProfiles);
         }
     }
@@ -617,37 +620,47 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         }
     }
     
+    // Robust sorting helper to handle nulls/undefined/case
+    function safeSortStr(strA, strB) {
+        var a = String(strA || "").toLowerCase().trim();
+        var b = String(strB || "").toLowerCase().trim();
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
+    }
+
+    function safeSortDate(dateA, dateB) {
+        var dA = dateA ? new Date(dateA).getTime() : 0;
+        var dB = dateB ? new Date(dateB).getTime() : 0;
+        // Handle invalid dates (NaN) by treating them as 0
+        if (isNaN(dA)) dA = 0;
+        if (isNaN(dB)) dB = 0;
+        return dA - dB;
+    }
+
     function sortAndRender(criteria) {
         if (currentView === 'profiles') {
             let sorted = userProfiles.slice();
             if (criteria === 'alpha') {
-                sorted.sort((a, b) => ((a.first||"")+" "+(a.last||"")).toLowerCase().localeCompare(((b.first||"")+" "+(b.last||"")).toLowerCase()));
+                sorted.sort((a, b) => safeSortStr((a.first||"")+" "+(a.last||""), (b.first||"")+" "+(b.last||"")));
             } else if (criteria === 'date') {
-                sorted.sort((a, b) => {
-                    const da = a.dob ? new Date(a.dob) : new Date(0);
-                    const db = b.dob ? new Date(b.dob) : new Date(0);
-                    return da - db;
-                });
+                sorted.sort((a, b) => safeSortDate(a.dob, b.dob));
             } else if (criteria === 'country') {
-                sorted.sort((a, b) => (a.country||"").toLowerCase().localeCompare((b.country||"").toLowerCase()));
+                sorted.sort((a, b) => safeSortStr(a.country, b.country));
             } else if (criteria === 'genre') {
-                sorted.sort((a, b) => (a.genre||"").toLowerCase().localeCompare((b.genre||"").toLowerCase()));
+                sorted.sort((a, b) => safeSortStr(a.genre, b.genre));
             }
             renderProfiles(sorted);
         } else {
             let sorted = allWorks.slice();
             if (criteria === 'alpha') { 
-                sorted.sort((a, b) => (a.title||"").toLowerCase().localeCompare((b.title||"").toLowerCase()));
+                sorted.sort((a, b) => safeSortStr(a.title, b.title));
             } else if (criteria === 'date') { 
-                sorted.sort((a, b) => {
-                    const da = a.date ? new Date(a.date) : new Date(0);
-                    const db = b.date ? new Date(b.date) : new Date(0);
-                    return da - db;
-                });
+                sorted.sort((a, b) => safeSortDate(a.date, b.date));
             } else if (criteria === 'country') { 
-                sorted.sort((a, b) => (a.country||"").toLowerCase().localeCompare((b.country||"").toLowerCase()));
+                sorted.sort((a, b) => safeSortStr(a.country, b.country));
             } else if (criteria === 'genre') { 
-                sorted.sort((a, b) => (a.genre||"").toLowerCase().localeCompare((b.genre||"").toLowerCase()));
+                sorted.sort((a, b) => safeSortStr(a.genre, b.genre));
             }
             renderWorks(sorted);
         }
