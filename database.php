@@ -277,8 +277,8 @@ if (isset($_SESSION['first']) && isset($_SESSION['last'])) {
         .dropdown-gallery-title { margin-top:15px; font-weight:600; font-size:1em; }
         
         .dropdown-work-gallery { 
-            display:flex; overflow-x:auto; gap:10px; padding:5px 0 10px; 
-            width: 100%; /* Constrain width */
+            display:flex; overflow-x:scroll; gap:10px; padding:5px 0 10px; 
+           
             -webkit-overflow-scrolling: touch; 
         }
         
