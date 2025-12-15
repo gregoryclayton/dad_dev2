@@ -1,0 +1,18 @@
+# Deny access to sensitive directories
+<DirectoryMatch "^(pusers|pusers2|work)">
+    Require all denied
+</DirectoryMatch>
+
+# Allow server-side access to directories/files when referenced internally
+<FilesMatch ".*">
+    Require ip 127.0.0.1
+    Require ip ::1
+</FilesMatch>
+
+# Prevent public access to sensitive files
+<FilesMatch "(^connection\.php$|\.env$|\.ini$|^config\.php$)">
+    Require all denied
+</FilesMatch>
+
+# Disable directory browsing globally
+Options -Indexes
